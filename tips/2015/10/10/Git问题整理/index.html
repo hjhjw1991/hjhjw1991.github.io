@@ -1,0 +1,638 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Git问题整理 | hjhjw1991&#39;s blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="hjhjw1991">
+    
+
+    
+    <meta name="description" content="Git使用过程中遇到的一些问题和技巧，方便排查">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Git问题整理">
+<meta property="og:url" content="http://blog.hjhjw1991.net/tips/2015/10/10/Git问题整理/index.html">
+<meta property="og:site_name" content="hjhjw1991's blog">
+<meta property="og:description" content="Git使用过程中遇到的一些问题和技巧，方便排查">
+<meta property="og:updated_time" content="2016-08-30T08:03:26.717Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Git问题整理">
+<meta name="twitter:description" content="Git使用过程中遇到的一些问题和技巧，方便排查">
+
+    
+    <link rel="alternative" href="/atom.xml" title="hjhjw1991&#39;s blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/author.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/author.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="hjhjw1991&#39;s blog" title="hjhjw1991&#39;s blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="hjhjw1991&#39;s blog">hjhjw1991&#39;s blog</a></h1>
+				<h2 class="blog-motto">Coder, Learn</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="http://zhannei.baidu.com/cse/search" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value= 8741923514077570040 ><input type="text" name="q" size="30" placeholder="搜索"><br>
+						</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/tips/2015/10/10/Git问题整理/" title="Git问题整理" itemprop="url">Git问题整理</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="hjhjw1991" target="_blank" itemprop="author">hjhjw1991</a>
+		
+  <p class="article-time">
+    <time datetime="2015-10-09T16:00:00.000Z" itemprop="datePublished"> 发表于 2015-10-10</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#中文文件或目录名被转码"><span class="toc-number">1.</span> <span class="toc-text">中文文件或目录名被转码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fatal-cannot-exec-Permission-denied"><span class="toc-number">2.</span> <span class="toc-text">fatal: cannot exec .. Permission denied</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Cygwin-git-ca-bundle-cert错误"><span class="toc-number">3.</span> <span class="toc-text">Cygwin git ca-bundle.cert错误</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#recursion-detected-in-die-handler"><span class="toc-number">4.</span> <span class="toc-text">recursion detected in die handler</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#重写分支历史"><span class="toc-number">5.</span> <span class="toc-text">重写分支历史</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#reference"><span class="toc-number">6.</span> <span class="toc-text">reference</span></a></li></ol>
+		
+		</div>
+		
+		<h2 id="中文文件或目录名被转码"><a href="#中文文件或目录名被转码" class="headerlink" title="中文文件或目录名被转码"></a>中文文件或目录名被转码</h2><p>git默认会对路径里超过0x80的字节进行转码，设置<code>core.quotepath</code>为<code>fasle</code>可以禁止自动转码，详情见<a href="https://www.kernel.org/pub/software/scm/git/docs/git-config.html" target="_blank" rel="external">git-config(1)</a>的<code>core.quotepath</code>部分。</p>
+<pre><code>git config --global core.quotepath false
+</code></pre><h2 id="fatal-cannot-exec-Permission-denied"><a href="#fatal-cannot-exec-Permission-denied" class="headerlink" title="fatal: cannot exec .. Permission denied"></a>fatal: cannot exec .. Permission denied</h2><p>使用<code>git alias</code>命令<code>git st</code>(参考<a href="http://blog.atime.me/note/git-config.html#alias" target="_blank" rel="external">这里的配置</a>)时提示如下错误:</p>
+<pre><code>fatal: cannot exec git st: Permission denied  
+</code></pre><p>参考<a href="http://stackoverflow.com/questions/7997700/git-aliases-causing-permission-denied-error" target="_blank" rel="external">stackoverflow</a>上的解答, 使用如下方法解决.  </p>
+<ul>
+<li><p>安装strace</p>
+<p>  <code>apt-get install strace</code></p>
+</li>
+<li><p>使用strace执行<code>git st</code></p>
+<p>  <code>strace -f -e execve git st</code></p>
+</li>
+<li><p>根据输出结果进行修正.</p>
+</li>
+</ul>
+<h2 id="Cygwin-git-ca-bundle-cert错误"><a href="#Cygwin-git-ca-bundle-cert错误" class="headerlink" title="Cygwin git ca-bundle.cert错误"></a>Cygwin git ca-bundle.cert错误</h2><p>cygwin下用git向远程https仓库推送数据时遇到以下问题:  </p>
+<pre><code>error: error setting certificate verify locations:
+CAfile: /usr/ssl/certs/ca-bundle.crt
+CApath: none while accessing https://github.com/wilbur-ma/dokuwiki-tweak.git/info/refs
+fatal: HTTP request failed
+</code></pre><p>参考<a href="http://tech.idv2.com/2012/09/14/cygwin-git-error/" target="_blank" rel="external">这里</a>，解决办法是在cygwin上安装ca-certificates。</p>
+<h2 id="recursion-detected-in-die-handler"><a href="#recursion-detected-in-die-handler" class="headerlink" title="recursion detected in die handler"></a>recursion detected in die handler</h2><p>使用<code>git push</code>的时候遇到如下问题:</p>
+<pre><code>fatal: recursion detected in die handler  
+</code></pre><p>有时候也表现为：</p>
+<pre><code>POST git-receive-pack (chunked) 
+</code></pre><p>或者这样：  </p>
+<pre><code>error: RPC failed; result=22, HTTP code = 411
+fatal: The remote end hung up unexpectedly
+fatal: The remote end hung up unexpectedly
+</code></pre><p>这个问题非常常见，原因是<font color="red"><strong>http.postBuffer默认上限为1M</strong></font>所致，这算是一个bug，只有当remote是http(s)方式的时候会遇到。<br>在git的配置里将<code>http.postBuffer</code>变量改大一些即可，比如将上限设为5M：</p>
+<pre><code>git config http.postBuffer 5242880  
+</code></pre><p>also @see <a href="http://idas643.blog.163.com/blog/static/167104838201482810323961/" target="_blank" rel="external">POST git-receive-pack (chunked) </a><br>and  @see <a href="http://stackoverflow.com/questions/12651749/git-push-fails-rpc-failed-result-22-http-code-411" target="_blank" rel="external">git push fails: RPC failed; result=22, HTTP code = 411</a></p>
+<h2 id="重写分支历史"><a href="#重写分支历史" class="headerlink" title="重写分支历史"></a>重写分支历史</h2><p>使用交互式变基<code>git rebase -i &lt;target_commit_hash&gt;</code>  </p>
+<h2 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h2><p><a href="http://stackoverflow.com/questions/7997700/git-aliases-causing-permission-denied-error" target="_blank" rel="external">git aliases causing permission denied error</a><br><a href="http://stackoverflow.com/questions/12651749/git-push-fails-rpc-failed-result-22-http-code-411" target="_blank" rel="external">git push fails: RPC failed; result=22, HTTP code = 411</a><br><a href="https://www.kernel.org/pub/software/scm/git/docs/git-config.html" target="_blank" rel="external">git-config(1) Manual Page</a><br><a href="http://idas643.blog.163.com/blog/static/167104838201482810323961/" target="_blank" rel="external">POST git-receive-pack (chunked) </a>  </p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/tips/">tips</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/git/">git</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://blog.hjhjw1991.net/tips/2015/10/10/Git问题整理/" data-title="Git问题整理 | hjhjw1991&#39;s blog" data-tsina="1304671950" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/opinion/2015/10/15/开坑-Leetcode题解/" title="开坑Leetcode题解">
+  <strong>上一篇：</strong><br/>
+  <span>
+  开坑Leetcode题解</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/blog/2015/09/17/JIRA管理维护备忘/"  title="JIRA管理维护备忘">
+ <strong>下一篇：</strong><br/> 
+ <span>JIRA管理维护备忘
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#中文文件或目录名被转码"><span class="toc-number">1.</span> <span class="toc-text">中文文件或目录名被转码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#fatal-cannot-exec-Permission-denied"><span class="toc-number">2.</span> <span class="toc-text">fatal: cannot exec .. Permission denied</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Cygwin-git-ca-bundle-cert错误"><span class="toc-number">3.</span> <span class="toc-text">Cygwin git ca-bundle.cert错误</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#recursion-detected-in-die-handler"><span class="toc-number">4.</span> <span class="toc-text">recursion detected in die handler</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#重写分支历史"><span class="toc-number">5.</span> <span class="toc-text">重写分支历史</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#reference"><span class="toc-number">6.</span> <span class="toc-text">reference</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="hjhjw1991" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js" ></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/android/" title="android">android<sup>13</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/blog/" title="blog">blog<sup>12</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/leetcode/" title="leetcode">leetcode<sup>9</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/opinion/" title="opinion">opinion<sup>4</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/python/" title="python">python<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/tips/" title="tips">tips<sup>4</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/android/" title="android">android<sup>14</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/教程/" title="教程">教程<sup>12</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/面试/" title="面试">面试<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/windows/" title="windows">windows<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vps/" title="vps">vps<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ssh/" title="ssh">ssh<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/jekyll/" title="jekyll">jekyll<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/正则表达式/" title="正则表达式">正则表达式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vpn/" title="vpn">vpn<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/uwsgi/" title="uwsgi">uwsgi<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ios/" title="ios">ios<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://google.com" target="_blank" title="Google">Google</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="120" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=1304671950&verifier=64e7ae81&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Huang Jun. <br/>
+			This is my blog.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		<a href="http://weibo.com/1304671950" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/hjhjw1991" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:hjhjw1991@gmail.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="hjhjw1991">hjhjw1991</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'hjhjw1991';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?cd0e561542c22cc83da2e311ec57da84";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

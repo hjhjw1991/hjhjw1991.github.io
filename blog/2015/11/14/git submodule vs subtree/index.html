@@ -1,0 +1,680 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>git submodule vs. subtree | hjhjw1991&#39;s blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="hjhjw1991">
+    
+
+    
+    <meta name="description" content="当我们的项目中包含别的在逻辑上独立管理的项目，或者干脆就是别人的项目时，使用submodule或subtree会带来方便。那么这两种方式怎么用，区别又在哪呢？">
+<meta property="og:type" content="article">
+<meta property="og:title" content="git submodule vs. subtree">
+<meta property="og:url" content="http://blog.hjhjw1991.net/blog/2015/11/14/git submodule vs subtree/index.html">
+<meta property="og:site_name" content="hjhjw1991's blog">
+<meta property="og:description" content="当我们的项目中包含别的在逻辑上独立管理的项目，或者干脆就是别人的项目时，使用submodule或subtree会带来方便。那么这两种方式怎么用，区别又在哪呢？">
+<meta property="og:updated_time" content="2016-08-30T08:03:26.717Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="git submodule vs. subtree">
+<meta name="twitter:description" content="当我们的项目中包含别的在逻辑上独立管理的项目，或者干脆就是别人的项目时，使用submodule或subtree会带来方便。那么这两种方式怎么用，区别又在哪呢？">
+
+    
+    <link rel="alternative" href="/atom.xml" title="hjhjw1991&#39;s blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/author.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/author.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="hjhjw1991&#39;s blog" title="hjhjw1991&#39;s blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="hjhjw1991&#39;s blog">hjhjw1991&#39;s blog</a></h1>
+				<h2 class="blog-motto">Coder, Learn</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="http://zhannei.baidu.com/cse/search" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value= 8741923514077570040 ><input type="text" name="q" size="30" placeholder="搜索"><br>
+						</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/blog/2015/11/14/git submodule vs subtree/" title="git submodule vs. subtree" itemprop="url">git submodule vs. subtree</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="hjhjw1991" target="_blank" itemprop="author">hjhjw1991</a>
+		
+  <p class="article-time">
+    <time datetime="2015-11-13T16:00:00.000Z" itemprop="datePublished"> 发表于 2015-11-14</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#submodule"><span class="toc-number">1.</span> <span class="toc-text">submodule</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#概念"><span class="toc-number">1.1.</span> <span class="toc-text">概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#使用方式"><span class="toc-number">1.2.</span> <span class="toc-text">使用方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#缺点"><span class="toc-number">1.3.</span> <span class="toc-text">缺点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#subtree"><span class="toc-number">2.</span> <span class="toc-text">subtree</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#概念-1"><span class="toc-number">2.1.</span> <span class="toc-text">概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#使用方式-1"><span class="toc-number">2.2.</span> <span class="toc-text">使用方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#缺点-1"><span class="toc-number">2.3.</span> <span class="toc-text">缺点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#submodule与subtree各自适用的场景"><span class="toc-number">3.</span> <span class="toc-text">submodule与subtree各自适用的场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#references"><span class="toc-number">4.</span> <span class="toc-text">references</span></a></li></ol>
+		
+		</div>
+		
+		<blockquote>
+<p>场景是，我的git仓库需要依赖一个单独的子git仓库，而且我希望每次它的更新我都可以通过操作本仓库直接获取到，但又不属于我管理。在这样的需求下我注意到了git提供的submodule命令。  </p>
+</blockquote>
+<h2 id="submodule"><a href="#submodule" class="headerlink" title="submodule"></a>submodule</h2><h3 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h3><p>submodule是git最初为子模块这样一个需求而建立的功能，其作用正如其名，可以让你在你的仓库中导入别人的项目，保持它独立的提交历史，但是与你自己的仓库同步。它很方便你解决库依赖问题，如果你依赖于某个库的某次提交，使用这种方式可以保证你的仓库始终依赖于同一个子模块。如果该子模块缺失（而不是主动移除），你的修改将不可提交。</p>
+<h3 id="使用方式"><a href="#使用方式" class="headerlink" title="使用方式"></a>使用方式</h3><p>概念中提到了，父项目中保存的是子模块的提交，而不是别的什么，所以当你在子模块中修改了什么并提交之后，父项目就会知道你当前HEAD改变了，于是会记录这个改变。  </p>
+<p>可能的使用场景是：  </p>
+<ul>
+<li>你所依赖的仓库非常活跃，API变化频繁，极有可能导致你父项目不能正常工作。此时你可以锁定某个提交。  </li>
+<li>你依赖于一个几乎不变的仓库。这时候你也可以锁定某个提交，作为引用依赖。</li>
+<li>当你想把项目中的一部分交由第三方开发（并作为你的子模块）的时候，你可以选择特定的提交来集成。  </li>
+</ul>
+<p>使用的命令：  </p>
+<pre><code>git submodule [--quiet] add [-b &lt;branch&gt;] [-f|--force] [--name &lt;name&gt;]  # same with git add
+              [--reference &lt;repository&gt;] [--depth &lt;depth&gt;] [--] &lt;repository&gt; [&lt;path&gt;]  
+git submodule [--quiet] status [--cached] [--recursive] [--] [&lt;path&gt;…]  # same with git status
+git submodule [--quiet] init [--] [&lt;path&gt;…]  # same with git clone
+git submodule [--quiet] deinit [-f|--force] [--] &lt;path&gt;…  
+git submodule [--quiet] update [--init] [--remote] [-N|--no-fetch]  
+              [-f|--force] [--rebase|--merge] [--reference &lt;repository&gt;]  
+              [--depth &lt;depth&gt;] [--recursive] [--] [&lt;path&gt;…]  
+git submodule [--quiet] summary [--cached|--files] [(-n|--summary-limit) &lt;n&gt;]  
+              [commit] [--] [&lt;path&gt;…]  
+git submodule [--quiet] foreach [--recursive] &lt;command&gt;  # used when submodule has submodules
+git submodule [--quiet] sync [--recursive] [--] [&lt;path&gt;…]  # used when submodule&apos;s remote changed
+</code></pre><p>如果你经常使用submodule，可以在<code>~/.gitconfig</code>中为submodule命令设置别名，如下： </p>
+<pre><code>[alias]
+st = status -s
+ci = commit
+l = log --oneline --decorate -12 --color
+ll = log --oneline --decorate --color
+lc = log --graph --color
+co = checkout
+br = branch
+rb = rebase
+dci = dcommit
+sbi = submodule init
+sbu = submodule update
+sbp = submodule foreach git pull
+sbc = submodule foreach git co master
+</code></pre><h3 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h3><p>虽然开始用的时候submodule看起来很方便很美，不幸的是，实际使用中缺点不少。  </p>
+<ol>
+<li>如果你要在父项目中切换到别的不含submodule的分支工作，你会得到一个警告，说你的submodule目录无法删除  </li>
+<li>如果你想在这个submodule中直接修改提交什么东西，想要共享给所有引用它的项目，那是不行的，在修改子模块的时候，需要注意submodule默认是在HEAD上的，并没有在任何分支上，所以如果你要在submodule中修改并且提交到某个分支上，需要先<code>checkout</code>这个分支，再做修改和提交（如果已经在HEAD上提交了，那么请记住提交的hash，<code>checkout master</code>，使用<code>cherry-pick</code>把更改拉到<code>master</code>上）  </li>
+<li>以上，如果你只想要在本地修改这个submodule，而不想提交到仓库（从而避免影响依赖它的其他项目），那是不行的，你将会无法提交父项目  </li>
+<li>含有submodule的项目，你每次pull的时候都最好要手动执行一次<code>git submodule update</code>来更新，如果submodule有了更新而你没有及时<code>update</code>，不幸你又<code>git commit -a</code>提交了父项目，那么你的子模块就没有更新  </li>
+<li><code>git submodule update</code>的坑在于，这是个强制覆盖的行为，如果你对子模块有任何改动，需要先提交，否则就会被覆盖  </li>
+<li>需要移除子模块的时候步骤比较多。submodule子模块信息在<code>.gitmodules</code>文件中，并且在<code>.git/config</code>里面存有副本。因此移除的时候不是简单地删文件夹了事，需要<strong>手动</strong>执行以下步骤：  <ul>
+<li>在<code>.gitmodules</code>中删除相关行</li>
+<li>在<code>.git/config</code>中删除相关行</li>
+<li>运行<code>git rm -cached path_to_submodule</code></li>
+<li>删除子模块文件，提交  </li>
+</ul>
+</li>
+</ol>
+<p><hr></p>
+<blockquote>
+<p>在搜索解决submodule问题的过程中得知了具有相似功能但据称更好用的subtree功能。  </p>
+</blockquote>
+<h2 id="subtree"><a href="#subtree" class="headerlink" title="subtree"></a>subtree</h2><h3 id="概念-1"><a href="#概念-1" class="headerlink" title="概念"></a>概念</h3><p>直译叫做子树，从名字可以看出它在概念上的设计，如果一个项目是一棵树，它就是作为子树而存在的。事实上，它将你所指定的仓库内容合并到了父项目中。在<code>git 1.7.11+</code>版本中可以使用，但可以支持早期的git仓库。相较于submodule，它的优势在于不会添加额外的元数据，而且在父项目clone好之后子项目也就好了，不需要手动<code>update</code>或者<code>init</code>，你甚至感觉不到subtree的存在，同时它允许你对subtree内容做修改而不影响原始仓库。  </p>
+<h3 id="使用方式-1"><a href="#使用方式-1" class="headerlink" title="使用方式"></a>使用方式</h3><p>subtree的命令比submodule少一些，因此workflow上更加清楚<br>例如，将vim某个插件作为子树放到bundle下指定目录  </p>
+<pre><code>git subtree add --prefix .vim/bundle/tpope-vim-surround \
+https://bitbucket.org/vim-plugins-mirror/vim-surround.git master --squash
+</code></pre><p>没有<code>init</code>或<code>update</code>  </p>
+<h3 id="缺点-1"><a href="#缺点-1" class="headerlink" title="缺点"></a>缺点</h3><p>缺点非常明显，至少到我写本文时为止，存在以下问题：  </p>
+<ol>
+<li>一次提交是针对父项目还是子树，这个维护需要你自己做</li>
+<li>对于子树上游代码的更新较为复杂</li>
+<li>subtree有不同的merge策略，需要学习</li>
+<li>初始化的时候命令有点长</li>
+</ol>
+<p>上游代码更新和<code>subtree merge</code>可以参考<a href="http://blogs.atlassian.com/2013/05/alternatives-to-git-submodule-git-subtree/" target="_blank" rel="external">alternatives-to-git-submodule-git-subtree</a>  </p>
+<h2 id="submodule与subtree各自适用的场景"><a href="#submodule与subtree各自适用的场景" class="headerlink" title="submodule与subtree各自适用的场景"></a>submodule与subtree各自适用的场景</h2><p>从以上对比中可以看出，submodule和subtree具有各自适用的场景：  </p>
+<p><em>submodule</em> 适用特点：  仓库单独管理; 只依赖于某个特定提交; 上游端较不活跃;</p>
+<p><em>subtree</em> 适用特点：  希望隐藏subtree，作为一整个仓库管理; 简化子模块维护流程; 对上游端贡献频率低</p>
+<p>在<code>git 1.5.2</code>以后建议使用subtree管理子模块  </p>
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><p><a href="http://www.tuicool.com/articles/JR3qUz" target="_blank" rel="external">Git submodule VS Git Subtree</a><br><a href="http://blog.charlescy.com/blog/2013/08/17/git-subtree-tutorial/" target="_blank" rel="external">非常棒的 SubTree 教程</a><br><a href="https://gist.github.com/kvnsmth/4688345" target="_blank" rel="external">一个真实场景的使用例子</a><br><a href="http://blogs.atlassian.com/2013/05/alternatives-to-git-submodule-git-subtree/" target="_blank" rel="external">alternatives-to-git-submodule-git-subtree</a><br><a href="http://blogs.atlassian.com/2013/03/git-submodules-workflows-tips/" target="_blank" rel="external">Git Submodules: Core concept, workflows and tips</a><br><a href="http://wenku.baidu.com/link?url=ola85Z5tIXJpxCjLTk-dcO81ayXLs68_y6dsmXIa0niF8vWlnAtnEEiZTGlzCNk1G_g36UYNHUBpu9oszONFNB54LNzo3rX7W_ULJg-P-eG" target="_blank" rel="external">为什么使用Git Subtree - 百度文库</a><br><a href="http://git-scm.com/docs/git-cherry-pick/" target="_blank" rel="external">Git Submodule的坑</a><br><a href="http://mobile.51cto.com/aprogram-393324.htm" target="_blank" rel="external">使用Git Submodule可能遇到的坑</a><br><a href="http://blog.csdn.net/kangear/article/details/13169395" target="_blank" rel="external">Git深度使用经验总结</a><br><a href="http://www.speirs.org/blog/2009/5/11/understanding-git-submodules.html" target="_blank" rel="external">understanding git submodules</a></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/blog/">blog</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/git/">git</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://blog.hjhjw1991.net/blog/2015/11/14/git submodule vs subtree/" data-title="git submodule vs. subtree | hjhjw1991&#39;s blog" data-tsina="1304671950" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/tips/2015/12/14/Windows下查看dns缓存和网络连接状态/" title="Windows 7下查看dns缓存和网络连接状态">
+  <strong>上一篇：</strong><br/>
+  <span>
+  Windows 7下查看dns缓存和网络连接状态</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/android/2015/10/23/[Android源码伴读]Layout那些事儿/"  title="【Android源码伴读】Layout那些事儿">
+ <strong>下一篇：</strong><br/> 
+ <span>【Android源码伴读】Layout那些事儿
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#submodule"><span class="toc-number">1.</span> <span class="toc-text">submodule</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#概念"><span class="toc-number">1.1.</span> <span class="toc-text">概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#使用方式"><span class="toc-number">1.2.</span> <span class="toc-text">使用方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#缺点"><span class="toc-number">1.3.</span> <span class="toc-text">缺点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#subtree"><span class="toc-number">2.</span> <span class="toc-text">subtree</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#概念-1"><span class="toc-number">2.1.</span> <span class="toc-text">概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#使用方式-1"><span class="toc-number">2.2.</span> <span class="toc-text">使用方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#缺点-1"><span class="toc-number">2.3.</span> <span class="toc-text">缺点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#submodule与subtree各自适用的场景"><span class="toc-number">3.</span> <span class="toc-text">submodule与subtree各自适用的场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#references"><span class="toc-number">4.</span> <span class="toc-text">references</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="hjhjw1991" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js" ></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/android/" title="android">android<sup>13</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/blog/" title="blog">blog<sup>12</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/leetcode/" title="leetcode">leetcode<sup>9</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/opinion/" title="opinion">opinion<sup>4</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/python/" title="python">python<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/tips/" title="tips">tips<sup>4</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/android/" title="android">android<sup>14</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/教程/" title="教程">教程<sup>12</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/面试/" title="面试">面试<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/windows/" title="windows">windows<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vps/" title="vps">vps<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ssh/" title="ssh">ssh<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/jekyll/" title="jekyll">jekyll<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/正则表达式/" title="正则表达式">正则表达式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vpn/" title="vpn">vpn<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/uwsgi/" title="uwsgi">uwsgi<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ios/" title="ios">ios<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://google.com" target="_blank" title="Google">Google</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="120" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=1304671950&verifier=64e7ae81&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Huang Jun. <br/>
+			This is my blog.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		<a href="http://weibo.com/1304671950" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/hjhjw1991" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:hjhjw1991@gmail.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="hjhjw1991">hjhjw1991</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'hjhjw1991';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?cd0e561542c22cc83da2e311ec57da84";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

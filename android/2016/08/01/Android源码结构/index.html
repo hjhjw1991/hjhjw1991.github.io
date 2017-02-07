@@ -1,0 +1,619 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Android源码结构 | hjhjw1991&#39;s blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="hjhjw1991">
+    
+
+    
+    <meta name="description" content="本文讲述Android源码中目录的含义, 方便各位按图索骥">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android源码结构">
+<meta property="og:url" content="http://blog.hjhjw1991.net/android/2016/08/01/Android源码结构/index.html">
+<meta property="og:site_name" content="hjhjw1991's blog">
+<meta property="og:description" content="本文讲述Android源码中目录的含义, 方便各位按图索骥">
+<meta property="og:updated_time" content="2017-02-07T09:18:02.211Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android源码结构">
+<meta name="twitter:description" content="本文讲述Android源码中目录的含义, 方便各位按图索骥">
+
+    
+    <link rel="alternative" href="/atom.xml" title="hjhjw1991&#39;s blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/author.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/author.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="hjhjw1991&#39;s blog" title="hjhjw1991&#39;s blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="hjhjw1991&#39;s blog">hjhjw1991&#39;s blog</a></h1>
+				<h2 class="blog-motto">Coder, Learn</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="http://zhannei.baidu.com/cse/search" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value= 8741923514077570040 ><input type="text" name="q" size="30" placeholder="搜索"><br>
+						</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/android/2016/08/01/Android源码结构/" title="Android源码结构" itemprop="url">Android源码结构</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="hjhjw1991" target="_blank" itemprop="author">hjhjw1991</a>
+		
+  <p class="article-time">
+    <time datetime="2016-07-31T16:00:00.000Z" itemprop="datePublished"> 发表于 2016-08-01</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			
+		
+		</div>
+		
+		<p>相信各位对于Android系统架构图的三层或四层结构已经了然于胸，迫不及待想要膜拜一下源码，但是可能好不容易下载好源码打开一看就懵逼了：这目录是啥？这又是啥？其实Android源码目录名字已经很浅显地表明了目录的内容和功能，但对于初学者特别是背景知识不够宽宏的初学者而言还是有点摸不着头脑。本文简单介绍Android系统源码目录结构，好让读者对Android源码有一个整体的概念，这样当深入到某一模块研究的时候能够同时心中有全局。<br>首先要了解一个理念：Android源码以什么样的原则来分包和存放。从目录看，Android很自然地将源码分为Core、External和Package三种，其中Core是核心工程，在根目录的各个文件夹中，External是扩展工程，使用其他开源项目扩展的功能，在external文件夹中，Package是提供应用程序和服务的，在package中，平时用到的各种系统应用就是在这里面写就的。<br>以下按层次结构依次标注目录功能（源码版本：android_4.4.1-r1）：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line">.</div><div class="line">├── abi                application binary interface，应用程序二进制接口</div><div class="line">├── art                art虚拟机</div><div class="line">├── bionic             [Build] bionic C运行时支持：libc、libm、libdl、动态linker</div><div class="line">├── bootable           启动引导相关代码</div><div class="line">├── build              [Build]存放系统编译规则及generic等基础开发配置</div><div class="line">├── cts                Android兼容性测试套件标准</div><div class="line">├── dalvik             dalvik虚拟机</div><div class="line">├── developers         开发者相关</div><div class="line">├── development        应用程序开发相关</div><div class="line">├── device             设备相关代码（厂商定制代码就放在这里）</div><div class="line">├── docs               开源相关文档</div><div class="line">├── external           Android使用的开源模块</div><div class="line">├── frameworks         核心框架，包含Java source和C++ source</div><div class="line">├── hardware           主要是硬件适配层HAL</div><div class="line">├── libcore            核心库相关</div><div class="line">├── libnativehelper    动态库，是实现JNI的基础</div><div class="line">├── Makefile           [Build]make的入口点，其内容只有一句话即include build/core/main.mk</div><div class="line">├── ndk                ndk相关代码</div><div class="line">├── out                编译输出文件夹，默认编译完成后的结果输出到此目录</div><div class="line">├── packages           应用程序包</div><div class="line">├── pdk                Plug Development Kit，本地开发套件</div><div class="line">├── prebuilts          预编译的资源（例如Linux-Kernel，分为x86和arm架构）</div><div class="line">├── sdk                sdk及模拟器相关代码</div><div class="line">├── system             文件系统和应用组件，c/c++代码</div><div class="line">├── tools              工具文件夹，如gradle等</div></pre></td></tr></table></figure>
+<p>作为开发者根据自己的需要可以对不同部分加以关注，我们主要关注packages和frameworks目录。我们打开frameworks，发现它的目录结构如下：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div><div class="line">157</div><div class="line">158</div><div class="line">159</div><div class="line">160</div><div class="line">161</div><div class="line">162</div><div class="line">163</div><div class="line">164</div><div class="line">165</div><div class="line">166</div><div class="line">167</div><div class="line">168</div><div class="line">169</div><div class="line">170</div><div class="line">171</div><div class="line">172</div><div class="line">173</div><div class="line">174</div><div class="line">175</div><div class="line">176</div><div class="line">177</div><div class="line">178</div><div class="line">179</div><div class="line">180</div><div class="line">181</div><div class="line">182</div><div class="line">183</div><div class="line">184</div><div class="line">185</div><div class="line">186</div><div class="line">187</div><div class="line">188</div><div class="line">189</div><div class="line">190</div><div class="line">191</div><div class="line">192</div><div class="line">193</div><div class="line">194</div><div class="line">195</div><div class="line">196</div><div class="line">197</div><div class="line">198</div><div class="line">199</div><div class="line">200</div><div class="line">201</div><div class="line">202</div><div class="line">203</div><div class="line">204</div><div class="line">205</div><div class="line">206</div><div class="line">207</div><div class="line">208</div><div class="line">209</div><div class="line">210</div><div class="line">211</div><div class="line">212</div><div class="line">213</div><div class="line">214</div><div class="line">215</div><div class="line">216</div><div class="line">217</div><div class="line">218</div><div class="line">219</div><div class="line">220</div><div class="line">221</div><div class="line">222</div><div class="line">223</div><div class="line">224</div><div class="line">225</div><div class="line">226</div><div class="line">227</div><div class="line">228</div><div class="line">229</div><div class="line">230</div><div class="line">231</div><div class="line">232</div><div class="line">233</div><div class="line">234</div><div class="line">235</div><div class="line">236</div></pre></td><td class="code"><pre><div class="line">./frameworks/</div><div class="line">├── av                      Audio/Video</div><div class="line">│   ├── camera              相机</div><div class="line">│   ├── CleanSpec.mk        本模块的清除步骤，下同</div><div class="line">│   ├── cmds                command目录，包含录屏和stagefright两个子目录</div><div class="line">│   ├── drm                 digital rights management相关</div><div class="line">│   ├── include             头文件</div><div class="line">│   ├── libvideoeditor      视频编辑器库</div><div class="line">│   ├── media               媒体</div><div class="line">│   ├── MODULE_LICENSE_APACHE2    开源协议</div><div class="line">│   ├── NOTICE              声明</div><div class="line">│   ├── services            服务，包含audioflinger，camera和medialog</div><div class="line">│   └── tools               工具</div><div class="line">├── base                    基础定义，我们主要关注这个文件夹下的内容</div><div class="line">│   ├── Android.mk          本模块的编译步骤，下同</div><div class="line">│   ├── api                 当前api定义，如果api有变化这个文件会相应更新</div><div class="line">│   ├── CleanSpec.mk</div><div class="line">│   ├── cmds</div><div class="line">│   ├── core                framework核心代码，实现了几乎所有底层功能，包含java和c/c++代码，android.xx.xx/com.android.internal.xx/com.android.server的NetworkObserver代码位于这里</div><div class="line">│   ├── data                数据文件夹，包含字体、键盘定义、声音、视频等数据</div><div class="line">│   ├── docs                文档</div><div class="line">│   ├── drm                 版权保护</div><div class="line">│   ├── graphics            图形</div><div class="line">│   ├── include             ...</div><div class="line">│   ├── keystore</div><div class="line">│   ├── libs</div><div class="line">│   ├── location</div><div class="line">│   ├── media</div><div class="line">│   ├── MODULE_LICENSE_APACHE2</div><div class="line">│   ├── native</div><div class="line">│   ├── nfc-extras</div><div class="line">│   ├── NOTICE</div><div class="line">│   ├── obex</div><div class="line">│   ├── opengl</div><div class="line">│   ├── packages</div><div class="line">│   ├── policy</div><div class="line">│   ├── preloaded-classes</div><div class="line">│   ├── samples</div><div class="line">│   ├── sax</div><div class="line">│   ├── services            com.android.server的大部分代码位于这里</div><div class="line">│   ├── telephony</div><div class="line">│   ├── test-runner</div><div class="line">│   ├── tests</div><div class="line">│   ├── tools</div><div class="line">│   └── wifi</div><div class="line">├── compile                 下面的内容不再一一介绍，用到的时候再去详解也不迟</div><div class="line">│   ├── libbcc</div><div class="line">│   ├── mclinker</div><div class="line">│   └── slang</div><div class="line">├── ex</div><div class="line">│   ├── camera2</div><div class="line">│   ├── carousel</div><div class="line">│   ├── chips</div><div class="line">│   ├── CleanSpec.mk</div><div class="line">│   ├── common</div><div class="line">│   ├── photoviewer</div><div class="line">│   ├── variablespeed</div><div class="line">│   └── widget</div><div class="line">├── mff</div><div class="line">├── ml</div><div class="line">│   ├── Android.mk</div><div class="line">│   └── bordeaux</div><div class="line">├── native</div><div class="line">│   ├── build</div><div class="line">│   ├── cmds</div><div class="line">│   ├── data</div><div class="line">│   ├── include</div><div class="line">│   ├── libs</div><div class="line">│   ├── MODULE_LICENSE_APACHE2</div><div class="line">│   ├── NOTICE</div><div class="line">│   ├── opengl</div><div class="line">│   └── services</div><div class="line">├── opt</div><div class="line">│   ├── calendar</div><div class="line">│   ├── carddav</div><div class="line">│   ├── colorpicker</div><div class="line">│   ├── datetimepicker</div><div class="line">│   ├── emoji</div><div class="line">│   ├── inputmethodcommon</div><div class="line">│   ├── mailcommon</div><div class="line">│   ├── mms</div><div class="line">│   ├── net</div><div class="line">│   ├── photoviewer</div><div class="line">│   ├── telephony</div><div class="line">│   ├── timezonepicker</div><div class="line">│   └── vcard</div><div class="line">├── rs</div><div class="line">│   ├── Android.mk</div><div class="line">│   ├── CleanSpec.mk</div><div class="line">│   ├── cpp</div><div class="line">│   ├── cpu_ref</div><div class="line">│   ├── driver</div><div class="line">│   ├── java</div><div class="line">│   ├── rsAdapter.cpp</div><div class="line">│   ├── rsAdapter.h</div><div class="line">│   ├── rsAllocation.cpp</div><div class="line">│   ├── rsAllocation.h</div><div class="line">│   ├── rsAnimation.cpp</div><div class="line">│   ├── rsAnimation.h</div><div class="line">│   ├── rsCompatibilityLib.cpp</div><div class="line">│   ├── rsCompatibilityLib.h</div><div class="line">│   ├── rsComponent.cpp</div><div class="line">│   ├── rsComponent.h</div><div class="line">│   ├── rsContext.cpp</div><div class="line">│   ├── rsContext.h</div><div class="line">│   ├── rsCppUtils.cpp</div><div class="line">│   ├── rsCppUtils.h</div><div class="line">│   ├── rsDebugHelper.h</div><div class="line">│   ├── rsDefines.h</div><div class="line">│   ├── rsDevice.cpp</div><div class="line">│   ├── rsDevice.h</div><div class="line">│   ├── rsElement.cpp</div><div class="line">│   ├── rsElement.h</div><div class="line">│   ├── rsEnv.h</div><div class="line">│   ├── rsFBOCache.cpp</div><div class="line">│   ├── rsFBOCache.h</div><div class="line">│   ├── rsFifo.h</div><div class="line">│   ├── rsFifoSocket.cpp</div><div class="line">│   ├── rsFifoSocket.h</div><div class="line">│   ├── rsFileA3D.cpp</div><div class="line">│   ├── rsFileA3D.h</div><div class="line">│   ├── rsFont.cpp</div><div class="line">│   ├── rsFont.h</div><div class="line">│   ├── rsgApi.cpp.rsg</div><div class="line">│   ├── rsgApiFuncDecl.h.rsg</div><div class="line">│   ├── rsgApiReplay.cpp.rsg</div><div class="line">│   ├── rsgApiStructs.h.rsg</div><div class="line">│   ├── rsg_generator.c</div><div class="line">│   ├── rsGrallocConsumer.cpp</div><div class="line">│   ├── rsGrallocConsumer.h</div><div class="line">│   ├── rsg.spec</div><div class="line">│   ├── rs.h</div><div class="line">│   ├── rs_hal.h</div><div class="line">│   ├── rsMatrix2x2.cpp</div><div class="line">│   ├── rsMatrix2x2.h</div><div class="line">│   ├── rsMatrix3x3.cpp</div><div class="line">│   ├── rsMatrix3x3.h</div><div class="line">│   ├── rsMatrix4x4.cpp</div><div class="line">│   ├── rsMatrix4x4.h</div><div class="line">│   ├── rsMesh.cpp</div><div class="line">│   ├── rsMesh.h</div><div class="line">│   ├── rsMutex.cpp</div><div class="line">│   ├── rsMutex.h</div><div class="line">│   ├── rs_native.spec</div><div class="line">│   ├── rsObjectBase.cpp</div><div class="line">│   ├── rsObjectBase.h</div><div class="line">│   ├── rsPath.cpp</div><div class="line">│   ├── rsPath.h</div><div class="line">│   ├── rsProgramBase.h</div><div class="line">│   ├── rsProgram.cpp</div><div class="line">│   ├── rsProgramFragment.cpp</div><div class="line">│   ├── rsProgramFragment.h</div><div class="line">│   ├── rsProgram.h</div><div class="line">│   ├── rsProgramRaster.cpp</div><div class="line">│   ├── rsProgramRaster.h</div><div class="line">│   ├── rsProgramStore.cpp</div><div class="line">│   ├── rsProgramStore.h</div><div class="line">│   ├── rsProgramVertex.cpp</div><div class="line">│   ├── rsProgramVertex.h</div><div class="line">│   ├── rsRuntime.h</div><div class="line">│   ├── rsSampler.cpp</div><div class="line">│   ├── rsSampler.h</div><div class="line">│   ├── rsScriptC.cpp</div><div class="line">│   ├── rsScriptC.h</div><div class="line">│   ├── rsScriptC_Lib.cpp</div><div class="line">│   ├── rsScriptC_LibGL.cpp</div><div class="line">│   ├── rsScript.cpp</div><div class="line">│   ├── rsScriptGroup.cpp</div><div class="line">│   ├── rsScriptGroup.h</div><div class="line">│   ├── rsScript.h</div><div class="line">│   ├── rsScriptIntrinsic.cpp</div><div class="line">│   ├── rsScriptIntrinsic.h</div><div class="line">│   ├── rsSignal.cpp</div><div class="line">│   ├── rsSignal.h</div><div class="line">│   ├── rs.spec</div><div class="line">│   ├── rsStream.cpp</div><div class="line">│   ├── rsStream.h</div><div class="line">│   ├── rsThreadIO.cpp</div><div class="line">│   ├── rsThreadIO.h</div><div class="line">│   ├── rsType.cpp</div><div class="line">│   ├── rsType.h</div><div class="line">│   ├── rsUtils.h</div><div class="line">│   ├── scriptc</div><div class="line">│   ├── server</div><div class="line">│   ├── spec.h</div><div class="line">│   ├── spec.l</div><div class="line">│   └── tests</div><div class="line">├── support</div><div class="line">│   ├── build.gradle</div><div class="line">│   ├── CleanSpec.mk</div><div class="line">│   ├── local.properties</div><div class="line">│   ├── settings.gradle</div><div class="line">│   ├── tests</div><div class="line">│   ├── v13</div><div class="line">│   ├── v4</div><div class="line">│   ├── v7</div><div class="line">│   └── v8</div><div class="line">├── testing</div><div class="line">│   ├── Android.mk</div><div class="line">│   ├── androidtestlib</div><div class="line">│   ├── app-tests</div><div class="line">│   ├── MODULE_LICENSE_APACHE2</div><div class="line">│   ├── uiautomator</div><div class="line">│   └── uiautomator_test_libraries</div><div class="line">├── uiautomator</div><div class="line">│   ├── Android.mk</div><div class="line">│   ├── api</div><div class="line">│   ├── apicheck_msg_current.txt</div><div class="line">│   ├── apicheck_msg_last.txt</div><div class="line">│   ├── BuildConstants.java.in</div><div class="line">│   ├── cmds</div><div class="line">│   ├── MODULE_LICENSE_APACHE2</div><div class="line">│   ├── samples</div><div class="line">│   ├── src</div><div class="line">│   ├── tests</div><div class="line">│   └── utils</div><div class="line">├── volley</div><div class="line">│   ├── AndroidManifest.xml</div><div class="line">│   ├── Android.mk</div><div class="line">│   ├── build.gradle</div><div class="line">│   ├── build.xml</div><div class="line">│   ├── custom_rules.xml</div><div class="line">│   ├── proguard.cfg</div><div class="line">│   ├── proguard-project.txt</div><div class="line">│   ├── project.properties</div><div class="line">│   ├── src</div><div class="line">│   └── tests</div><div class="line">├── webview</div><div class="line">│   ├── Android.mk</div><div class="line">│   └── chromium</div><div class="line">└── wilhelm</div><div class="line">    ├── doc</div><div class="line">    ├── include</div><div class="line">    ├── src</div><div class="line">    ├── tests</div><div class="line">    └── tools</div></pre></td></tr></table></figure>
+<p>以上可以看出android系统的源码是非常庞大而复杂的，源码研究是一项艰苦而持久的任务。世上无难事, 只要肯放弃, 下面我们看点轻松的好理解的内容：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">./packages/</div><div class="line">├── apps                    应用程序库</div><div class="line">├── experimental            实验性的库（打印服务，bug汇报，通知，RPC等）</div><div class="line">├── inputmethods            输入法</div><div class="line">├── providers               四大组建之一Provider的系统自带模块</div><div class="line">├── screensavers            屏保</div><div class="line">├── services                系统服务（电话服务）</div><div class="line">└── wallpapers              壁纸</div></pre></td></tr></table></figure>
+<p>有了以上的准备，阅读起源码来就心里有数，想要找什么代码也有了大致的搜索范围。<br>下面特别指出一些库的位置，有兴趣的可自行阅读：  </p>
+<ul>
+<li>系统C库 bionic</li>
+<li>媒体库  frameworks/av/media</li>
+<li>图形显示库  frameworks/native/services/surfaceflinger</li>
+<li>网络引擎库  external/webp, external/webrtc</li>
+<li>3D图形库  frameworks/native/opengl</li>
+<li>SQLite  Java layer framworks/base/core/java/android/database, C++ layer external/sqlite</li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/教程/">教程</a><a href="/tags/android/">android</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://blog.hjhjw1991.net/android/2016/08/01/Android源码结构/" data-title="Android源码结构 | hjhjw1991&#39;s blog" data-tsina="1304671950" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/android/2016/08/01/build-android-sdk/" title="从源码编译Android SDK">
+  <strong>上一篇：</strong><br/>
+  <span>
+  从源码编译Android SDK</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/android/2016/04/01/[Android教程]AIDL入门/"  title="【Android教程】AIDL入门">
+ <strong>下一篇：</strong><br/> 
+ <span>【Android教程】AIDL入门
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ 
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="hjhjw1991" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js" ></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/android/" title="android">android<sup>13</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/blog/" title="blog">blog<sup>12</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/leetcode/" title="leetcode">leetcode<sup>9</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/opinion/" title="opinion">opinion<sup>4</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/python/" title="python">python<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/tips/" title="tips">tips<sup>4</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/android/" title="android">android<sup>14</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/教程/" title="教程">教程<sup>12</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/面试/" title="面试">面试<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/windows/" title="windows">windows<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vps/" title="vps">vps<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ssh/" title="ssh">ssh<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/jekyll/" title="jekyll">jekyll<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/正则表达式/" title="正则表达式">正则表达式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vpn/" title="vpn">vpn<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/uwsgi/" title="uwsgi">uwsgi<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ios/" title="ios">ios<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://google.com" target="_blank" title="Google">Google</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="120" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=1304671950&verifier=64e7ae81&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Huang Jun. <br/>
+			This is my blog.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		<a href="http://weibo.com/1304671950" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/hjhjw1991" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:hjhjw1991@gmail.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="hjhjw1991">hjhjw1991</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'hjhjw1991';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?cd0e561542c22cc83da2e311ec57da84";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

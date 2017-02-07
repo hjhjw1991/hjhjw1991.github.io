@@ -1,0 +1,879 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>【Android教程】NDK&amp;JNI入门 | hjhjw1991&#39;s blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="hjhjw1991">
+    
+
+    
+    <meta name="description" content="又叫【花样劝退教程】。本文讲NDK &amp; JNI基础">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【Android教程】NDK&JNI入门">
+<meta property="og:url" content="http://blog.hjhjw1991.net/android/2016/12/21/[Android教程]ndk&jni/index.html">
+<meta property="og:site_name" content="hjhjw1991's blog">
+<meta property="og:description" content="又叫【花样劝退教程】。本文讲NDK &amp; JNI基础">
+<meta property="og:image" content="http://blog.hjhjw1991.net/images/blogs/c++runtimelibrary.jpg">
+<meta property="og:updated_time" content="2017-02-07T09:48:01.195Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="【Android教程】NDK&JNI入门">
+<meta name="twitter:description" content="又叫【花样劝退教程】。本文讲NDK &amp; JNI基础">
+<meta name="twitter:image" content="http://blog.hjhjw1991.net/images/blogs/c++runtimelibrary.jpg">
+
+    
+    <link rel="alternative" href="/atom.xml" title="hjhjw1991&#39;s blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/author.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/author.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="hjhjw1991&#39;s blog" title="hjhjw1991&#39;s blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="hjhjw1991&#39;s blog">hjhjw1991&#39;s blog</a></h1>
+				<h2 class="blog-motto">Coder, Learn</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="http://zhannei.baidu.com/cse/search" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value= 8741923514077570040 ><input type="text" name="q" size="30" placeholder="搜索"><br>
+						</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/android/2016/12/21/[Android教程]ndk&jni/" title="【Android教程】NDK&amp;JNI入门" itemprop="url">【Android教程】NDK&amp;JNI入门</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="hjhjw1991" target="_blank" itemprop="author">hjhjw1991</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-20T16:00:00.000Z" itemprop="datePublished"> 发表于 2016-12-21</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#NDK-amp-JNI"><span class="toc-number">1.</span> <span class="toc-text">NDK & JNI</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JNI中的映射关系"><span class="toc-number">2.</span> <span class="toc-text">JNI中的映射关系</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#NDK用到的C-C-运行库"><span class="toc-number">3.</span> <span class="toc-text">NDK用到的C/C++运行库</span></a></li></ol>
+		
+		</div>
+		
+		<h2 id="NDK-amp-JNI"><a href="#NDK-amp-JNI" class="headerlink" title="NDK &amp; JNI"></a>NDK &amp; JNI</h2><p>NDK和JNI的关系是: Java通过JNI的方式调用由NDK编译生成的本地库.<br>JNI是独立于NDK的一个技术, NDK是帮助编译c/cpp文件的一个工具.  </p>
+<p>在JNI的c文件中如果用到了<code>#include &lt;utils/Log.h&gt;</code>  </p>
+<p>然后用NDK 编译的时候会提示<code>error: utils/Log.h: No such file or directory</code><br>这个是因为这个头文件在Android源码的<code>frameworks/base/include</code>中，不在SDK或NDK中  </p>
+<p>如果想要使用NDK的LOG功能的话  </p>
+<p>1—–修改Android.mk文件配置,添加如下语句，这是载入liblog库，其中$(SYSROOT)是NDK中platform的路径  </p>
+<p><code>LOCAL_LDLIBS += -L$(SYSROOT)/usr/lib -llog</code>  </p>
+<p>2—–在.c文件中修改为如下语句。这是引入NDK中的日志头文件，位置在<code>$(SYSROOT)/usr/include</code><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">#include&lt;android/log.h&gt;</div></pre></td></tr></table></figure></p>
+<p>3—–使用方法。其中这后面的方法在头文件中可以找到定义</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">#define LOG_TAG &quot;debug&quot;</div><div class="line">#define LOGI(fmt, args...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, fmt, ##args)</div><div class="line">#define LOGD(fmt, args...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, fmt, ##args)</div><div class="line">#define LOGE(fmt, args...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, fmt, ##args)</div></pre></td></tr></table></figure>
+<p>4—-打印语句<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">LOGI(&quot;test log!!!!&quot;);</div><div class="line"></div><div class="line">LOGI(&quot;the string is: %s \n&quot;,buff);</div></pre></td></tr></table></figure></p>
+<p>5—-错误输出到日志<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">LOGI(strerror(errno))</div></pre></td></tr></table></figure></p>
+<p>如果想要开启NDK的Debug功能，需要按照下列步骤操作。  </p>
+<h2 id="JNI中的映射关系"><a href="#JNI中的映射关系" class="headerlink" title="JNI中的映射关系"></a>JNI中的映射关系</h2><p>基本类型</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Java 类型</th>
+<th>jni本地类型</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">boolean</td>
+<td>jboolean</td>
+<td style="text-align:left">C/C++ unsigned 8 bits</td>
+<td></td>
+</tr>
+<tr>
+<td style="text-align:left">byte</td>
+<td>jbyte</td>
+<td style="text-align:left">C/C++ signed 8 bits</td>
+</tr>
+<tr>
+<td style="text-align:left">char</td>
+<td>jchar</td>
+<td style="text-align:left">C/C++ unsigned 16 bits</td>
+</tr>
+<tr>
+<td style="text-align:left">short</td>
+<td>jshort</td>
+<td style="text-align:left">C/C++ signed 16 bits</td>
+</tr>
+<tr>
+<td style="text-align:left">int</td>
+<td>jint</td>
+<td style="text-align:left">C/C++ signed 32 bits</td>
+</tr>
+<tr>
+<td style="text-align:left">long</td>
+<td>jlong</td>
+<td style="text-align:left">C/C++ signed 64 bits</td>
+</tr>
+<tr>
+<td style="text-align:left">float</td>
+<td>jfloat</td>
+<td style="text-align:left">C/C++  32位浮点型</td>
+</tr>
+<tr>
+<td style="text-align:left">double</td>
+<td>jdouble</td>
+<td style="text-align:left">C/C++  64位浮点型</td>
+</tr>
+<tr>
+<td style="text-align:left">void</td>
+<td>void</td>
+<td style="text-align:left">N/A</td>
+</tr>
+</tbody>
+</table>
+<p>命名规则就是java基本类型加j前缀.  </p>
+<p>引用类型和数组类型也差不多:<br>引用类型  </p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Object</td>
+<td>jobject</td>
+<td>任何Java对象，或者没有对应java类型的对象</td>
+</tr>
+<tr>
+<td>Class</td>
+<td>jclass</td>
+<td>class对象</td>
+</tr>
+<tr>
+<td>String</td>
+<td>jstring</td>
+<td>字符串对象</td>
+</tr>
+</tbody>
+</table>
+<p>数组类型  </p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>boolean[]</td>
+<td>jbooleanArray</td>
+<td>布尔型数组 unsigned</td>
+</tr>
+<tr>
+<td>byte[]</td>
+<td>jbyteArray</td>
+<td>比特型数组 signed</td>
+</tr>
+<tr>
+<td>char[]</td>
+<td>jcharArray</td>
+<td>字符型数组 unsigned</td>
+</tr>
+<tr>
+<td>short[]</td>
+<td>jshortArray</td>
+<td>短整型数组 signed</td>
+</tr>
+<tr>
+<td>int[]</td>
+<td>jintArray</td>
+<td>整型数组 signed</td>
+</tr>
+<tr>
+<td>long[]</td>
+<td>jlongArray</td>
+<td>长整型数组 signed</td>
+</tr>
+<tr>
+<td>float[]</td>
+<td>jfloatArray</td>
+<td>浮点型数组</td>
+</tr>
+<tr>
+<td>double[]</td>
+<td>jdoubleArray</td>
+<td>双浮点型数组</td>
+</tr>
+<tr>
+<td>Object[]</td>
+<td>jobjectArray</td>
+<td>任何对象的数组</td>
+</tr>
+</tbody>
+</table>
+<p>数组类型多个Array后缀.  </p>
+<p>JNI函数签名<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">JNIEXPORT jstring JNICALL Java_com_study_jnilearn_HelloWorld_sayHello(JNIEnv *, jclass, jstring);</div></pre></td></tr></table></figure></p>
+<p>第一个参数: <code>JNIEnv*</code> 是定义任意 <code>native</code> 函数的第一个参数(包括调用 JNI 的 <code>RegisterNatives</code> 函数注册的函数), 指向 JVM 函数表的指针, 函数表中的每一个入口指向一个 JNI 函数, 每个函数用于访问 JVM 中特定的数据结构.<br>第二个参数: 调用 Java 中 native 方法的实例或 Class 对象, 如果这个 <code>native</code> 方法是实例方法, 则该参数是 <code>jobject</code>,如果是静态方法，则是 <code>jclass</code>.<br>第三个参数: Java 对应 JNI 中的数据类型, Java 中 String 类型对应 JNI 的 jstring 类型. (前面已介绍 JAVA 与 JNI 数据类型的映射关系)  </p>
+<p>函数签名也可以手动动态映射, 通过<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">static JNINativeMethod gMethods[] = &#123;</div><div class="line">// 这里写映射关系数组</div><div class="line">// &#123;&quot;native函数名&quot;, &quot;参数列表&quot;, 对应的JNI方法&#125;</div><div class="line">&#125;;</div></pre></td></tr></table></figure></p>
+<p>其中参数列表有个缩写映射规则,要用缩写表示Java类型.<br>当参数为引用类型的时候，参数类型的标示的格式为”L完整路径名;”,前面L后面分号.如果是数组就是在成员类型前面加[,有多少层加多少个[.例如String对应的就是<code>(Ljava/lang/String;)</code>  </p>
+<table>
+<thead>
+<tr>
+<th>类型标志</th>
+<th>Java类型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Z</td>
+<td>boolean</td>
+</tr>
+<tr>
+<td>F</td>
+<td>float</td>
+</tr>
+<tr>
+<td>B</td>
+<td>byte</td>
+</tr>
+<tr>
+<td>D</td>
+<td>double</td>
+</tr>
+<tr>
+<td>C</td>
+<td>char</td>
+</tr>
+<tr>
+<td>Ljava/lang/String</td>
+<td>String</td>
+</tr>
+<tr>
+<td>S</td>
+<td>short</td>
+</tr>
+<tr>
+<td>[I</td>
+<td>Int[]</td>
+</tr>
+<tr>
+<td>I</td>
+<td>int</td>
+</tr>
+<tr>
+<td>[Ljava/lang/object</td>
+<td>Object[]</td>
+</tr>
+<tr>
+<td>J</td>
+<td>long</td>
+</tr>
+</tbody>
+</table>
+<p><code>javap</code>可以生成函数签名. <code>javap -s -p xxx</code>. 参数含义参见help.  </p>
+<p>JNI层就相当于是在用C写东西了, 所以语法也是C的语法.<br>对于基本类型, 可以直接强制类型转换成对应长度的C/C++类型(事实上, 查看jni基本类型的定义可以发现, 它们都是c基本类型的<code>typedef</code>).<br>对于数组类型, 需要使用JNIEnv提供的方法, 简单类型的数组会把其指针直接暴露给本地代码. 一系列GetXXXArrayElements函数可以把Java数组作为参数, 返回一个指向对应的本地类型的数组指针.  </p>
+<table>
+<thead>
+<tr>
+<th>函数</th>
+<th>Java 数组类型</th>
+<th>本地类型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GetBooleanArrayElements</td>
+<td>jbooleanArray</td>
+<td>jboolean</td>
+</tr>
+<tr>
+<td>GetByteArrayElements</td>
+<td>jbyteArray</td>
+<td>jbyte</td>
+</tr>
+<tr>
+<td>GetCharArrayElements</td>
+<td>jcharArray</td>
+<td>jchar</td>
+</tr>
+<tr>
+<td>GetShortArrayElements</td>
+<td>jshortArray</td>
+<td>jshort</td>
+</tr>
+<tr>
+<td>GetIntArrayElements</td>
+<td>jintArray</td>
+<td>jint</td>
+</tr>
+<tr>
+<td>GetLongArrayElements</td>
+<td>jlongArray</td>
+<td>jlong</td>
+</tr>
+<tr>
+<td>GetFloatArrayElements</td>
+<td>jfloatArray</td>
+<td>jfloat</td>
+</tr>
+<tr>
+<td>GetDoubleArrayElements</td>
+<td>jdoubleArray</td>
+<td>jdouble</td>
+</tr>
+</tbody>
+</table>
+<p>使用完之后要调用对应的ReleaseXXXArrayElements, 参数是对应的数组和前面GetXXXArrayElements返回的指针. 这个函数会把你对本地数组做的变化复制到Java数组中, 然后释放相关资源.<br>JNIEnv还有一些别的方法:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">GetArrayLength</div><div class="line"></div><div class="line">NewXXXArray</div><div class="line"></div><div class="line">GetXXXArrayElements</div><div class="line"></div><div class="line">ReleaseXXXArrayElements</div><div class="line"></div><div class="line">GetXXXArrayRegion</div><div class="line"></div><div class="line">SetXXXArrayRegion</div></pre></td></tr></table></figure></p>
+<p>这些方法都是Env预定义的方法, 帮助你在C/C++的Array和Java的Array之间转换.  </p>
+<h2 id="NDK用到的C-C-运行库"><a href="#NDK用到的C-C-运行库" class="headerlink" title="NDK用到的C/C++运行库"></a>NDK用到的C/C++运行库</h2><p>你在Android.mk文件中可以指定LOCAL_CPP_EXTENSION来告诉编译器, 把什么后缀的文件当做C++源文件来编译. 对于C和C++会采用不同的编译器. 不过，编译过后的C++程序想要执行，还必须要有C++运行环境（C++ Runtime）的支持。默认情况下，Android NDK会使用一个非常迷你的C++运行环境，称做“libstdc++”。这个运行环境几乎什么都没有，不支持异常和RTTI（RunTime Type Information，即运行时类型识别），甚至连C++标准库也没有。  </p>
+<p><style><br>img {<br>  width: 600px;<br>  height: 400px;<br>  margin: auto;<br>}<br></style><br><img src="/images/blogs/c++runtimelibrary.jpg" alt="c++ runtime library">  </p>
+<p><code>.a</code>是静态库, <code>.so</code>是动态库, 也叫共享库. 通过<code>Application.mk</code>的<code>APP_STL</code>可以配置想要用什么运行库, 需要注意的是Android源码目录的ndk子目录下面, 就有各个目标平台和架构的运行库, Android 8(Android 2.2)之前, 是只有默认的那个库.  </p>
+<p>最后，还有一点需要注意，如果你的JNI功能都是包含在一个模块（也就是程序中只有一个.so文件）中的话，可以考虑用静态库C++运行时库的形式。而如果你的程序中包含了多个模块，请尽量使用动态C++运行时库。  </p>
+<p>在用动态C++运行时库的时候，相应的动态库.so文件（默认的C++运行时库除外）会随你的程序一起发布出去，位于apk文件中的lib目录下。  </p>
+<p>如果你的目标Android系统是4.3之前，那么你必须要在加载所有你自己的模块之前，显式的加载C++动态运行时库。  </p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/教程/">教程</a><a href="/tags/android/">android</a><a href="/tags/面试/">面试</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://blog.hjhjw1991.net/android/2016/12/21/[Android教程]ndk&jni/" data-title="【Android教程】NDK&amp;JNI入门 | hjhjw1991&#39;s blog" data-tsina="1304671950" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/android/2017/01/06/[Android教程]Handler全解/" title="【Android教程】Handler全解">
+  <strong>上一篇：</strong><br/>
+  <span>
+  【Android教程】Handler全解</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/android/2016/08/01/build-android/"  title="在Ubuntu 16.04 64bit上下载、编译和安装Android源码">
+ <strong>下一篇：</strong><br/> 
+ <span>在Ubuntu 16.04 64bit上下载、编译和安装Android源码
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#NDK-amp-JNI"><span class="toc-number">1.</span> <span class="toc-text">NDK & JNI</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JNI中的映射关系"><span class="toc-number">2.</span> <span class="toc-text">JNI中的映射关系</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#NDK用到的C-C-运行库"><span class="toc-number">3.</span> <span class="toc-text">NDK用到的C/C++运行库</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="hjhjw1991" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js" ></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/android/" title="android">android<sup>13</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/blog/" title="blog">blog<sup>12</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/leetcode/" title="leetcode">leetcode<sup>9</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/opinion/" title="opinion">opinion<sup>4</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/python/" title="python">python<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/tips/" title="tips">tips<sup>4</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/android/" title="android">android<sup>14</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/教程/" title="教程">教程<sup>12</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/面试/" title="面试">面试<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/windows/" title="windows">windows<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vps/" title="vps">vps<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ssh/" title="ssh">ssh<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/jekyll/" title="jekyll">jekyll<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/正则表达式/" title="正则表达式">正则表达式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vpn/" title="vpn">vpn<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/uwsgi/" title="uwsgi">uwsgi<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ios/" title="ios">ios<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://google.com" target="_blank" title="Google">Google</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="120" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=1304671950&verifier=64e7ae81&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Huang Jun. <br/>
+			This is my blog.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		<a href="http://weibo.com/1304671950" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/hjhjw1991" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:hjhjw1991@gmail.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="hjhjw1991">hjhjw1991</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'hjhjw1991';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?cd0e561542c22cc83da2e311ec57da84";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

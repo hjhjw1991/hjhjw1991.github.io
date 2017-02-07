@@ -1,0 +1,617 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>【Android源码伴读】Layout那些事儿 | hjhjw1991&#39;s blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="hjhjw1991">
+    
+
+    
+    <meta name="description" content="android中layout可以通过xml和java代码两种方式来定义，那么它是怎么做到的？android中对于layout的属性概念是怎么定义的？绘制的时候又是怎么发挥作用的呢？ --施工中">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【Android源码伴读】Layout那些事儿">
+<meta property="og:url" content="http://blog.hjhjw1991.net/android/2015/10/23/[Android源码伴读]Layout那些事儿/index.html">
+<meta property="og:site_name" content="hjhjw1991's blog">
+<meta property="og:description" content="android中layout可以通过xml和java代码两种方式来定义，那么它是怎么做到的？android中对于layout的属性概念是怎么定义的？绘制的时候又是怎么发挥作用的呢？ --施工中">
+<meta property="og:updated_time" content="2017-02-07T09:50:28.799Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="【Android源码伴读】Layout那些事儿">
+<meta name="twitter:description" content="android中layout可以通过xml和java代码两种方式来定义，那么它是怎么做到的？android中对于layout的属性概念是怎么定义的？绘制的时候又是怎么发挥作用的呢？ --施工中">
+
+    
+    <link rel="alternative" href="/atom.xml" title="hjhjw1991&#39;s blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/author.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/author.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="hjhjw1991&#39;s blog" title="hjhjw1991&#39;s blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="hjhjw1991&#39;s blog">hjhjw1991&#39;s blog</a></h1>
+				<h2 class="blog-motto">Coder, Learn</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="http://zhannei.baidu.com/cse/search" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value= 8741923514077570040 ><input type="text" name="q" size="30" placeholder="搜索"><br>
+						</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/android/2015/10/23/[Android源码伴读]Layout那些事儿/" title="【Android源码伴读】Layout那些事儿" itemprop="url">【Android源码伴读】Layout那些事儿</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="hjhjw1991" target="_blank" itemprop="author">hjhjw1991</a>
+		
+  <p class="article-time">
+    <time datetime="2015-10-22T16:00:00.000Z" itemprop="datePublished"> 发表于 2015-10-23</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#android-layout-xxx"><span class="toc-number">1.</span> <span class="toc-text">android:layout_xxx</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#layout-weight"><span class="toc-number">1.1.</span> <span class="toc-text">layout_weight</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#layout-gravity"><span class="toc-number">1.2.</span> <span class="toc-text">layout_gravity</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#padding-margin-align"><span class="toc-number">2.</span> <span class="toc-text">padding margin align</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Layout及所有xml文件的加载原理"><span class="toc-number">3.</span> <span class="toc-text">Layout及所有xml文件的加载原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Layout源码分析"><span class="toc-number">4.</span> <span class="toc-text">Layout源码分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#自己动手写Layout"><span class="toc-number">5.</span> <span class="toc-text">自己动手写Layout</span></a></li></ol>
+		
+		</div>
+		
+		<blockquote>
+<p>前言：Layout的xml文件本质上也就是遵从某一命名空间schema的xml描述，其使用的xmlns命名空间的名字是android，如此而已，还有一些如tools和app的命名空间前缀。在android命名空间中，Layout是用于布局的概念，它拥有一些属性，它在android中是怎么发挥作用的？</p>
+</blockquote>
+<h2 id="android-layout-xxx"><a href="#android-layout-xxx" class="headerlink" title="android:layout_xxx"></a>android:layout_xxx</h2><p>简单来说，有layout前缀的属性，表示这个属性是一个针对所属layout的属性，它的值是被父容器所用的，而不是本容器。<br>换句话说，带layout前缀的属性，是针对当前整个容器本身的，而不带layout前缀的属性，则是针对容器的内容而定的。如果是一个TextView，那么前者就是TextView本身，而后者就是TextView里面的text属性，也就是文字内容。<br>一些易于理解及不易混淆的属性，例如layout_height和layout_width两个属性，就不详加说明了。下面以一个不太易理解的例子和一个易混淆的例子来说明android中这个layout前缀的含义。  </p>
+<h3 id="layout-weight"><a href="#layout-weight" class="headerlink" title="layout_weight"></a>layout_weight</h3><p>weight的混淆来自于望文生义。诚然weight是代表权重的意思，是用于修饰layout的width和height的，但是它在和width、height两个属性一起使用的时候，会发生一些与我们第一印象的预期不太符合的现象。<br>首先，它的正当用途就是指定所修饰的属性在父容器中对剩余空间的分配权重的，值越大权重越大，所分配的比例越大。在官方的指导中，是建议被修饰的属性其值设置为”0dp”，从而避免发生意料之外的行为。官方表示，会发生意料之外的行为是因为根据width值的分配过程与根据weight值的分配过程是两个独立的不同的过程，因此建议使用weight的时候仅使用weight。<br>我们前面说过，weight表示的是对<strong>剩余空间</strong>的分配权重。<br>于是我们可以猜想，这个过程是在分配了其他明确知道大小的同级兄弟View之后才进行的过程。由此我们猜想，layout分配的时候，先计算确定大小的view，然后在剩余的空间中，按照权重分配空间给剩余view。<br>基于这个猜想，我们有以下的考虑：  </p>
+<ul>
+<li>如果从书写顺序上，带weight的view与确定大小的view交错书写，那么会发生什么呢？  </li>
+<li>如果我们在书写的时候，被修饰的width和height指定了值，会发生什么？</li>
+<li>我们可不可以对width和height指定不同的权重？weight是怎么找到它应该修饰的属性的？</li>
+<li>weight的值有什么限制吗？</li>
+<li>如果我们猜测是错误的，那么真实过程是怎么样的？</li>
+</ul>
+<p>我们接下来会做一系列的实验来猜想和验证weight的分配逻辑，给出这些问题的答案（除了最后一个，最后一个问题将放在Layout加载原理和源码中解析）。  </p>
+<h3 id="layout-gravity"><a href="#layout-gravity" class="headerlink" title="layout_gravity"></a>layout_gravity</h3><h2 id="padding-margin-align"><a href="#padding-margin-align" class="headerlink" title="padding margin align"></a>padding margin align</h2><h2 id="Layout及所有xml文件的加载原理"><a href="#Layout及所有xml文件的加载原理" class="headerlink" title="Layout及所有xml文件的加载原理"></a>Layout及所有xml文件的加载原理</h2><h2 id="Layout源码分析"><a href="#Layout源码分析" class="headerlink" title="Layout源码分析"></a>Layout源码分析</h2><h2 id="自己动手写Layout"><a href="#自己动手写Layout" class="headerlink" title="自己动手写Layout"></a>自己动手写Layout</h2>  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/android/">android</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://blog.hjhjw1991.net/android/2015/10/23/[Android源码伴读]Layout那些事儿/" data-title="【Android源码伴读】Layout那些事儿 | hjhjw1991&#39;s blog" data-tsina="1304671950" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/blog/2015/11/14/git submodule vs subtree/" title="git submodule vs. subtree">
+  <strong>上一篇：</strong><br/>
+  <span>
+  git submodule vs. subtree</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/android/2015/10/20/[Android源码伴读]ListView那些事儿/"  title="【Android源码伴读】ListView那些事儿">
+ <strong>下一篇：</strong><br/> 
+ <span>【Android源码伴读】ListView那些事儿
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#android-layout-xxx"><span class="toc-number">1.</span> <span class="toc-text">android:layout_xxx</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#layout-weight"><span class="toc-number">1.1.</span> <span class="toc-text">layout_weight</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#layout-gravity"><span class="toc-number">1.2.</span> <span class="toc-text">layout_gravity</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#padding-margin-align"><span class="toc-number">2.</span> <span class="toc-text">padding margin align</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Layout及所有xml文件的加载原理"><span class="toc-number">3.</span> <span class="toc-text">Layout及所有xml文件的加载原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Layout源码分析"><span class="toc-number">4.</span> <span class="toc-text">Layout源码分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#自己动手写Layout"><span class="toc-number">5.</span> <span class="toc-text">自己动手写Layout</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="hjhjw1991" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js" ></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/android/" title="android">android<sup>13</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/blog/" title="blog">blog<sup>12</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/leetcode/" title="leetcode">leetcode<sup>9</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/opinion/" title="opinion">opinion<sup>4</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/python/" title="python">python<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/tips/" title="tips">tips<sup>4</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/android/" title="android">android<sup>14</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/教程/" title="教程">教程<sup>12</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/面试/" title="面试">面试<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/windows/" title="windows">windows<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vps/" title="vps">vps<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ssh/" title="ssh">ssh<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/jekyll/" title="jekyll">jekyll<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/正则表达式/" title="正则表达式">正则表达式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vpn/" title="vpn">vpn<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/uwsgi/" title="uwsgi">uwsgi<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ios/" title="ios">ios<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://google.com" target="_blank" title="Google">Google</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="120" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=1304671950&verifier=64e7ae81&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Huang Jun. <br/>
+			This is my blog.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		<a href="http://weibo.com/1304671950" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/hjhjw1991" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:hjhjw1991@gmail.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="hjhjw1991">hjhjw1991</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'hjhjw1991';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?cd0e561542c22cc83da2e311ec57da84";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

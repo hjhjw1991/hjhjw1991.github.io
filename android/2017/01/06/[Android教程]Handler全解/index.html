@@ -1,0 +1,649 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>【Android教程】Handler全解 | hjhjw1991&#39;s blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="hjhjw1991">
+    
+
+    
+    <meta name="description" content="又叫【花样劝退教程】。本文讲Handler异步消息机制">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【Android教程】Handler全解">
+<meta property="og:url" content="http://blog.hjhjw1991.net/android/2017/01/06/[Android教程]Handler全解/index.html">
+<meta property="og:site_name" content="hjhjw1991's blog">
+<meta property="og:description" content="又叫【花样劝退教程】。本文讲Handler异步消息机制">
+<meta property="og:updated_time" content="2017-02-07T09:11:13.923Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="【Android教程】Handler全解">
+<meta name="twitter:description" content="又叫【花样劝退教程】。本文讲Handler异步消息机制">
+
+    
+    <link rel="alternative" href="/atom.xml" title="hjhjw1991&#39;s blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/author.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/author.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="hjhjw1991&#39;s blog" title="hjhjw1991&#39;s blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="hjhjw1991&#39;s blog">hjhjw1991&#39;s blog</a></h1>
+				<h2 class="blog-motto">Coder, Learn</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="http://zhannei.baidu.com/cse/search" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value= 8741923514077570040 ><input type="text" name="q" size="30" placeholder="搜索"><br>
+						</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/android/2017/01/06/[Android教程]Handler全解/" title="【Android教程】Handler全解" itemprop="url">【Android教程】Handler全解</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="hjhjw1991" target="_blank" itemprop="author">hjhjw1991</a>
+		
+  <p class="article-time">
+    <time datetime="2017-01-05T16:00:00.000Z" itemprop="datePublished"> 发表于 2017-01-06</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#某渣的凭印象回顾"><span class="toc-number">1.</span> <span class="toc-text">某渣的凭印象回顾</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#为什么需要Handler"><span class="toc-number">2.</span> <span class="toc-text">为什么需要Handler</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Handler的设计思想-工作原理"><span class="toc-number">3.</span> <span class="toc-text">Handler的设计思想/工作原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#实践"><span class="toc-number">4.</span> <span class="toc-text">实践</span></a></li></ol>
+		
+		</div>
+		
+		<h2 id="某渣的凭印象回顾"><a href="#某渣的凭印象回顾" class="headerlink" title="某渣的凭印象回顾"></a>某渣的凭印象回顾</h2><p>Handler是线程间消息通讯的一种方式. 使用它需要Message, MessageQueue, Looper几个东西的配合. 每个线程都有一个Looper对象, 它里面有个方法loop()会去轮询消息队列MessageQueue中的Message, 对每个Message去调用它目标线程的Handler来处理这个消息. 轮询的操作会调用native方法使用epoll机制来获得Message. 最常见的使用场景就是子线程中做计算, 将结果返回给主线程, 此时子线程就需要使用主线程的Handler来发送消息到主线程的消息队列, 再由主线程的Handler来处理消息.  </p>
+<h2 id="为什么需要Handler"><a href="#为什么需要Handler" class="headerlink" title="为什么需要Handler"></a>为什么需要Handler</h2><p>参考: <a href="http://blog.csdn.net/innost/article/details/47317823" target="_blank" rel="external">&lt;&lt;深入理解Android 卷III&gt;&gt;第二章 深入理解Java Binder和MessageQueue</a>  </p>
+<ol>
+<li>线程之间通信的需要. 在Android中, 系统做了一个隐含假设, 即用来显示UI的线程应该只用来显示UI包括更新UI, 不应该做过多的事情, 而同时, 其他线程应该做他们该做的事情, 而不应该更新UI. 因此, 如果试图在一个非UI线程中更新UI组件, 会抛出异常(如果你知道某个叫<code>runOnMainThread</code>的黑科技你当然可以用), 而如果在UI线程中做了过多的事情, 会导致UI线程阻塞(ANR). 这就造成一个问题, 我们经常需要根据业务逻辑或计算结果去更新UI, 这怎么办呢? 就需要其他线程和UI线程之间进行通信, 传递需要的信息.  </li>
+<li>事件异步处理的需要. 有时候我们会遇到这样一种情况: 我们希望过一段时间去做某件事, 但又不希望线程阻塞去等待这个时间, 这时候我们当然可以通过新建一个线程在一段时间后与主线程通信的方式来实现这个目的, 但这样显然有点小题大做了, 有没有更好的机制能够异步处理消息而不需要额外创建子线程呢? 答案就是Handler.  </li>
+</ol>
+<h2 id="Handler的设计思想-工作原理"><a href="#Handler的设计思想-工作原理" class="headerlink" title="Handler的设计思想/工作原理"></a>Handler的设计思想/工作原理</h2><p>Handler不是一个孤立的类, 它与MessageQueue, Message, Looper几个类共同构成了线程间消息传递的系统.<br>其中, Message是具体消息的载体, Handler负责生产和消耗Message, MessageQueue负责把Message构成一个有序的队列, Looper负责从MessageQueue中取出Message对象. Handler, MessageQueue, Looper三个类构成了一个Message流动的循环.  </p>
+<h2 id="实践"><a href="#实践" class="headerlink" title="实践"></a>实践</h2><p>对于一般的线程, 我们只需要定义一个MyHandler类, 让它继承Handler类, 实现我们自己的<code>handleMessage</code>方法, 处理对应类型的Message就可以了, 大多数情况下甚至我们只需要在UI线程代码中定义一个继承Handler的匿名内部类并实现其<code>handleMessage</code>方法足矣. <code>Handler</code>中的<code>sendMessage</code>系列方法可以完成将Message入队的操作. <code>obtainMessage</code>可以获取一个空闲的Message对象. 如果你只满足于<code>Handler</code>的基本使用方法, 那知道这些就足够用了.(完)  </p>
+<p><div name="empty"><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br></div><br>很好, 看来你跟我一样不只想要知道怎么用, 还想知道为什么这样用. Android那帮大牛将Handler设计得很巧妙, 机制简单易懂, 封装得非常好, 以至于我们一般情况下只需要知道上面那段话就行了. 不一般的情况呢, 我们从问题入手, 随便抛出几个问题:  </p>
+<ol>
+<li>Message具体怎么实现的?它可以承载哪些信息?  </li>
+<li>Handler默认实现是怎样的?它的<code>obtainMessage</code>做了啥?为什么要用<code>obtainMessage</code>, 直接<code>new Message</code>可以吗?<code>sendMessage</code>又做了啥?这两个方法还可以更高效吗?除了<code>handleMessage</code>和<code>sendMessage</code>, Hanlder还可以做什么?  </li>
+<li>MessageQueue是什么时候创建的?它怎么处理具有延迟时间的Message?MessageQueue有容量限制吗?  </li>
+<li>Looper是什么时候创建的?它怎么处理Message为空的情况?它怎么把消息分发到正确的Handler对象?  </li>
+</ol>
+<p>以上都是很容易想到的问题, 而要彻底搞懂它们, 免不了要打开Android源码.<br>我说的”实践”, 就是看Android源码对Handler的实现.<br>现在, 先让我们抛开那些问题, 从Handler开始, 一步一步看清这背后的真相. 打开Handler源码查看它的定义, 发现它有以下几个成员:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">final MessageQueue mQueue;</div><div class="line">final Looper mLooper;</div><div class="line">final Callback mCallback;</div><div class="line">final boolean mAsynchronous;</div></pre></td></tr></table></figure></p>
+<p>一看到这几个我们心里就有点猜测了, 前两个不就是前面提到的消息队列和消息循环器吗! 不过后两个是什么鬼? 别急, 先看Handler构造方法.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">public Handler(Callback callback, boolean async) &#123;</div><div class="line">    mLooper = Looper.myLooper();</div><div class="line">    if (mLooper == null) &#123;</div><div class="line">        throw new RuntimeException(</div><div class="line">            &quot;Can&apos;t create handler inside thread that has not called Looper.prepare()&quot;);</div><div class="line">    &#125;</div><div class="line">    mQueue = mLooper.mQueue;</div><div class="line">    mCallback = callback;</div><div class="line">    mAsynchronous = async;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>原来上面几个成员变量都在构造函数中初始化了. 其中<code>mLooper</code>使用的是<code>Looper.myLooper()</code>的返回结果, 而<code>mQueue</code>直接使用了<code>mLooper.mQueue</code>. 可以猜测MessageQueue实例是由Looper来创建的, Handler持有这个Looper实例的引用, Handler和mLooper共同持有MessageQueue实例的引用. 构造方法传进来的两个参数用来初始化其余两个成员变量.<br>来看<code>Looper.myLooper()</code>, 代码如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">static final ThreadLocal&lt;Looper&gt; sThreadLocal = new ThreadLocal&lt;Looper&gt;();</div><div class="line"></div><div class="line">public static @Nullable Looper myLooper() &#123;</div><div class="line">    return sThreadLocal.get();</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>从Looper的静态成员变量<code>sThreadLocal</code>中获取的Looper实例. 那么有<code>get()</code>应该也有<code>set()</code>, 可我们好像没有看到哪里有调用<code>set()</code>? 以及<code>ThreadLocal</code>这个类是个什么东西?<br>关于ThreadLocal可以看<a href="http://blog.csdn.net/singwhatiwanna/article/details/48350919" target="_blank" rel="external">任玉刚的这篇博客</a>了解, 简单来说就是一个可以存储和访问仅对当前线程可见的数据的类.<br>我们直奔<code>set()</code>方法去看看, 发现了下面这段代码:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">public static void prepare() &#123;</div><div class="line">    prepare(true);</div><div class="line">&#125;</div><div class="line"></div><div class="line">private static void prepare(boolean quitAllowed) &#123;</div><div class="line">    if (sThreadLocal.get() != null) &#123;</div><div class="line">        throw new RuntimeException(&quot;Only one Looper may be created per thread&quot;);</div><div class="line">    &#125;</div><div class="line">    sThreadLocal.set(new Looper(quitAllowed));</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>原来是<code>prepare()</code>这个方法直接新建了一个<code>Looper</code>对象放在里面, 这样在之后取的话就能取到这个Looper了. 可是我们好像也没有调用<code>prepare()</code>? 事实上, 如果我们没有调用<code>prepare()</code>的话, 就会抛出上面Handler构造方法里面mLooper为空时的那个异常啦! 所以<code>prepare()</code>这个方法是必调的, 而且一定是在Handler所在线程中先于Handler实例创建.<br>再来看Looper的构造函数, 如下:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">private Looper(boolean quitAllowed) &#123;</div><div class="line">       mQueue = new MessageQueue(quitAllowed);</div><div class="line">       mThread = Thread.currentThread();</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>明白了, 在Looper构造函数中, 新建了MessageQueue, 并且持有了当前线程的引用.<br>细心的同学可能会问了: “我在Activity里面没有调用prepare方法, 可我用Handler也用得很6啊!”. 这位同学, 我很欣赏你的细心. <code>Activity</code>就是我们的UI线程了, 为什么我们在UI线程里面可以不调用<code>prepare</code>呢? 答案是, 系统已经帮我们调用过了. 有看过Activity启动源码的同学可能会知道, 在Android中Activity的启动是通过<code>ActivityManagerService</code>做到的, 其中在<code>ActivityThread</code>里面, 会调用<code>Looper.prepareMainLooper()</code>为主线程准备一个Looper, 并且调用<code>Looper.loop()</code>开始轮询. 其中<code>prepareMainLooper()</code>大体上就是调用了<code>prepare</code>方法, 只不过加了个锁来保证主线程Looper对象的唯一性.  </p>
+<p>到此, 我们已经知道了Looper对象从哪里来, 到哪里去, 我们也知道调用<code>loop()</code>方法之后Looper就开始轮询MessageQueue了, 但我们还不知道Looper对象的<code>loop()</code>方法在干嘛. 看看源码:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">public static void loop() &#123;</div><div class="line"></div><div class="line">    //获得一个 Looper 对象</div><div class="line">    final Looper me = myLooper();</div><div class="line"></div><div class="line">    // 拿到 looper 对应的 mQueue 对象</div><div class="line">    final MessageQueue queue = me.mQueue;</div><div class="line"></div><div class="line">    //死循环监听(如果没有消息变化，他不会工作的) 不断轮询 queue 中的 Message</div><div class="line">    for (;;) &#123;</div><div class="line">        // 通过 queue 的 next 方法拿到一个 Message</div><div class="line">        Message msg = queue.next(); // 可能会阻塞, 具体是调用native方法时可能阻塞</div><div class="line">        //空判断</div><div class="line">        if (msg == null)return;</div><div class="line">        //消息分发   </div><div class="line">        msg.target.dispatchMessage(msg);</div><div class="line">        //回收操作  </div><div class="line">        msg.recycleUnchecked();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>取到MessageQueue实例, 死循环读取下一个消息, 再调用<code>Message.target.dispatchMessage(msg)</code>将消息分发到<code>target</code>中去处理.<br>诶? 这个target是啥? 显然, 它是在Message中设置好的东西, 让我们看看Handler的<code>sendMessage</code>源码. Handler中有许多发送消息的方法, 但追本溯源会到达下面这个方法:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">Handler target;</div><div class="line">public boolean sendMessageAtTime(Message msg, long uptimeMillis) &#123;</div><div class="line">    MessageQueue queue = mQueue;</div><div class="line">    if (queue == null) &#123;</div><div class="line">        RuntimeException e = new RuntimeException(</div><div class="line">                this + &quot; sendMessageAtTime() called with no mQueue&quot;);</div><div class="line">        Log.w(&quot;Looper&quot;, e.getMessage(), e);</div><div class="line">        return false;</div><div class="line">    &#125;</div><div class="line">    return enqueueMessage(queue, msg, uptimeMillis);</div><div class="line">&#125;</div><div class="line"></div><div class="line">private boolean enqueueMessage(MessageQueue queue, Message msg, long uptimeMillis) &#123;</div><div class="line">    msg.target = this;</div><div class="line">    // 使用默认的 handler 构造方法时，mAsynchronous 为 false。</div><div class="line">    if (mAsynchronous) &#123;</div><div class="line">       msg.setAsynchronous(true);</div><div class="line">    &#125;</div><div class="line">    return queue.enqueueMessage(msg, uptimeMillis);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>有意思, 发送消息时首先检验MessageQueue是不是为空, 不空的话就执行入队操作, 在入队的方法中让Message对象持有当前Handler的引用, 然后调用MessageQueue的入队方法. 有兴趣的同学可以再深入看一下MessageQueue的入队方法是怎么实现的, 里面会涉及到更加具体的所使用的数据结构, 由于它不影响咱们理解Handler机制, 这里就暂不展开了.<br>再看<code>dispatchMessage</code>方法:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">public void dispatchMessage(Message msg) &#123;</div><div class="line">    if (msg.callback != null) &#123;</div><div class="line">        handleCallback(msg);</div><div class="line">    &#125; else &#123;</div><div class="line">        if (mCallback != null) &#123;</div><div class="line">            if (mCallback.handleMessage(msg)) &#123;</div><div class="line">                return;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        handleMessage(msg);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>一切都连起来了. 在这里, 如果你的Message对象中, callback为空, 那么就会执行到Handler成员<code>mCallback</code>的<code>handleMessage</code>方法或Handler的<code>handleMessage</code>方法, 否则会直接执行<code>handleCallback</code>. 我们去看一下<code>handleCallback</code>和<code>Message</code>的源码, 就会发现<code>callback</code>是一个<code>Runnable</code>对象, 而<code>handleCallback</code>中直接调用了这个对象的<code>run()</code>方法. 所以我们可以得出结论, 如果设置了Message的callback, 那handleMessage就不起作用了, 转而用callback来处理这个消息. 按Android那帮天才的习惯, Handler里应该有对应的API来供开发者调用. 果不其然, 可以找到<code>post</code>等相关方法.  </p>
+<p>至此, Message是怎么进入和退出MessageQueue, 又是怎么被Handler处理的, 这个过程我们都已经清楚了. 尝试回答一下本节开头时提出的问题:  </p>
+<ol>
+<li>Message具体怎么实现的?它可以承载哪些信息?<br>A: 看源码.  </li>
+<li>Handler默认实现是怎样的?它的<code>obtainMessage</code>做了啥?为什么要用<code>obtainMessage</code>, 直接<code>new Message</code>可以吗?<code>sendMessage</code>又做了啥?这两个方法还可以更高效吗?除了<code>handleMessage</code>和<code>sendMessage</code>, Hanlder还可以做什么?<br>A: 看源码.  </li>
+<li>MessageQueue是什么时候创建的?它怎么处理具有延迟时间的Message?MessageQueue有容量限制吗?<br>A: 看源码, 看我上面的分析.  </li>
+<li>Looper是什么时候创建的?它怎么处理Message为空的情况?它怎么把消息分发到正确的Handler对象?<br>A: 看我上面的分析.  </li>
+</ol>
+<p>如果你有种上当的感觉的话, 你的感觉是对的, 我上面这一段分析基本上没有回答这几个问题. 其实看到这里你应该也有所感觉, 重要的是这种设计的思路, 厘清了思路之后, 具体能做什么/怎么做, 就是可以自己把控的了.  </p>
+<p>然鹅, 这里我正正经经回答一下上面那些问题, 免得搜索那些问题进来的同学们失望:  </p>
+<ol>
+<li>Message具体怎么实现的?它可以承载哪些信息?<br>A: <code>android.os.Message</code>是一个<code>final</code>类, 它实现了<code>Parcelable</code>接口, 通过一个<code>int</code>型的<code>flags</code>来标记状态, 状态包括<code>FLAG_IN_USE</code>, <code>FLAG_ASYNCHRONOUS</code>, <code>FLAGS_TO_CLEAR_ON_COPY_FROM</code>三种. <code>Message</code>内主要的成员变量有:  <ul>
+<li>公共成员变量what/arg1/arg2/obj/replyTo/sendingUid, 前三个是整型, 后三个分别是<code>Object</code>, <code>Message</code>, <code>int</code>型. 我们可以通过<code>obtain</code>方法的重载来设置前四个变量.  </li>
+<li>包可见成员变量flags(及其三个标志状态)/when/data/target/callback/next, 类型分别是<code>int</code>, <code>long</code>, <code>Bundle</code>, <code>Handler</code>, <code>Runnable</code>, <code>Message</code>. 其中除了next以外都有对应的设置方法.  </li>
+<li>私有变量sPoolSync/sPool/sPoolSize/MAX_POOL_SIZE/gCheckRecycle, 类型分别是<code>Object</code>, <code>Message</code>, <code>int</code>, <code>final int</code>, <code>boolean</code>. 前四个的作用是在消息池非空时同步地从消息池(单链表, sPool指向表头)中摘出表头节点作为<code>obtain()</code>的返回值(所有重载的<code>obtain</code>方法都通过该无参方法获得Message实例), 或者在<code>recycleUnchecked()</code>时将当前消息插入到表头. 表的最大容量是50. 最后一个是在API 21加入的标记, 标志是否要检查回收状态. 使用中的<code>Message</code>被回收时如果该标志为<code>true</code>则抛出<code>IllegalStateException</code>异常.<br>总结来说, Message实现了一个最大容量为50的单链表结构, 其类静态变量<code>sPool</code>指向表头, 其实现了<code>Parcelable</code>接口, 可以承载包括<code>Bundle</code>在内的复杂数据.  </li>
+</ul>
+</li>
+<li>Handler默认实现是怎样的?它的<code>obtainMessage</code>做了啥?为什么要用<code>obtainMessage</code>, 直接<code>new Message</code>可以吗?<code>sendMessage</code>又做了啥?这两个方法还可以更高效吗?除了<code>handleMessage</code>和<code>sendMessage</code>, Hanlder还可以做什么?<br>A: <code>android.os.Handler</code>是一个专用于继承实现的类, 它的<code>handleMessage</code>是一个空方法. 它内部定义了一个<code>Callback</code>接口, 含有<code>boolean handleMessage(Message msg)</code>方法, 成员变量<code>mCallback</code>就是这个接口类型, 在Handler的<code>dispatchMessage</code>中拥有第二优先权, 仅次于Message本身的Callback. 继承Handler类容易造成内存泄漏, 这一点需要格外注意. <code>obtainMessage</code>代理了<code>Message</code>类的静态多态方法<code>obtain</code>. 由于<code>Message</code>没有显式定义构造函数, 直接<code>new Message</code>显然是可以的, <code>obtain()</code>就是通过这个构造函数初始化消息池. 但这样做无法循环利用消息池, 造成内存浪费, 因此<code>obtainMessage</code>是更好地获取Message实例的方法. <code>sendMessage</code>做了什么见上文的相关段落,  由于这个是系统调用机制, 效率上我没有想到更好的实现方式. <code>sendMessageAtTime</code>等方法允许子类重写. 除了<code>handleMessage</code>和<code>sendMessage</code>, Handler中还定义了一些实用的方法和类, 例如可以获取到Looper, 可以传入Runnable获取Message实例, 可以dump信息, 实现了一个阻塞的<code>final class BlockingRunnable</code>用于内部的<code>runWithScissors</code>. 实现了一个<code>final class MessengerImpl</code>用于在发送Message之前设置Message的Uid为Binder的Uid, 并让包可见成员变量mMessenger持有该类的实例, 但实际上这个成员变量未在别处引用.  </li>
+<li>MessageQueue是什么时候创建的?它怎么处理具有延迟时间的Message?MessageQueue有容量限制吗?<br>A: 上文已经分析了<code>MessageQueue</code>是什么时候创建的(创建Looper时). 在每个消息进入队列(<code>enqueueMessage</code>)的时候, 会根据该消息的时间when将它插入到消息队列链表(这个链表不同于消息池的链表)中, 因此消息队列中的消息都是按照消息时间排序好的, 在取出Message时, 如果没有到该消息的执行时间, 会<code>nativePollOnce</code>等待到执行时间. <code>MessageQueue</code>从代码看没有容量限制.  </li>
+<li>Looper是什么时候创建的?它怎么处理Message为空的情况?它怎么把消息分发到正确的Handler对象?<br>A: 上文已经分析了Looper是什么时候创建的(<code>Looper.prepare()</code>调用时). 它怎么处理Message为空的情况? 答案是退出循环, 因为Message为空只可能出现在MessageQueue已经没有内容时. 它怎么分发到正确的Handler对象, 这可以看前文分析, 答案是在<code>sendMessage</code>调用<code>enqueueMessage</code>时, Handler默认会把每个<code>Message</code>的<code>target</code>都设置为它自己, 循环处理时直接调用<code>msg.target.dispatchMessage(msg)</code>来分发. 循环时Looper会保证始终在同一线程上处理消息队列, 如果线程发生变化, Looper会记录一个<code>Log.wtf()</code>日志(注释说是<code>What a Terrible Failure</code>, 但我怎么看都觉得是<code>What The Fxxk</code>). Looper每处理完一个Message都会调用它的<code>recycleUnchecked()</code>让它进入消息池.  </li>
+</ol>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/教程/">教程</a><a href="/tags/android/">android</a><a href="/tags/面试/">面试</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://blog.hjhjw1991.net/android/2017/01/06/[Android教程]Handler全解/" data-title="【Android教程】Handler全解 | hjhjw1991&#39;s blog" data-tsina="1304671950" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/android/2017/01/10/[Android教程]Binder全解/" title="【Android教程】Binder全解">
+  <strong>上一篇：</strong><br/>
+  <span>
+  【Android教程】Binder全解</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/android/2016/12/21/[Android教程]ndk&jni/"  title="【Android教程】NDK&amp;JNI入门">
+ <strong>下一篇：</strong><br/> 
+ <span>【Android教程】NDK&amp;JNI入门
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#某渣的凭印象回顾"><span class="toc-number">1.</span> <span class="toc-text">某渣的凭印象回顾</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#为什么需要Handler"><span class="toc-number">2.</span> <span class="toc-text">为什么需要Handler</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Handler的设计思想-工作原理"><span class="toc-number">3.</span> <span class="toc-text">Handler的设计思想/工作原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#实践"><span class="toc-number">4.</span> <span class="toc-text">实践</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="hjhjw1991" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js" ></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/android/" title="android">android<sup>13</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/blog/" title="blog">blog<sup>12</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/leetcode/" title="leetcode">leetcode<sup>9</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/opinion/" title="opinion">opinion<sup>4</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/python/" title="python">python<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/tips/" title="tips">tips<sup>4</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/android/" title="android">android<sup>14</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/教程/" title="教程">教程<sup>12</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/面试/" title="面试">面试<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/windows/" title="windows">windows<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vps/" title="vps">vps<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ssh/" title="ssh">ssh<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/jekyll/" title="jekyll">jekyll<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/正则表达式/" title="正则表达式">正则表达式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vpn/" title="vpn">vpn<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/uwsgi/" title="uwsgi">uwsgi<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ios/" title="ios">ios<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://google.com" target="_blank" title="Google">Google</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="120" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=1304671950&verifier=64e7ae81&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Huang Jun. <br/>
+			This is my blog.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		<a href="http://weibo.com/1304671950" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/hjhjw1991" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:hjhjw1991@gmail.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="hjhjw1991">hjhjw1991</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'hjhjw1991';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?cd0e561542c22cc83da2e311ec57da84";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

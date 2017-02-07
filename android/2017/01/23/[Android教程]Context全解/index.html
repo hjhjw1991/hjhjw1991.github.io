@@ -1,0 +1,609 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>【Android教程】Context全解 | hjhjw1991&#39;s blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="hjhjw1991">
+    
+
+    
+    <meta name="description" content="又叫【花样劝退教程】。本文讲Android中的Context">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【Android教程】Context全解">
+<meta property="og:url" content="http://blog.hjhjw1991.net/android/2017/01/23/[Android教程]Context全解/index.html">
+<meta property="og:site_name" content="hjhjw1991's blog">
+<meta property="og:description" content="又叫【花样劝退教程】。本文讲Android中的Context">
+<meta property="og:updated_time" content="2017-02-07T09:14:15.423Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="【Android教程】Context全解">
+<meta name="twitter:description" content="又叫【花样劝退教程】。本文讲Android中的Context">
+
+    
+    <link rel="alternative" href="/atom.xml" title="hjhjw1991&#39;s blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/author.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/author.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="hjhjw1991&#39;s blog" title="hjhjw1991&#39;s blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="hjhjw1991&#39;s blog">hjhjw1991&#39;s blog</a></h1>
+				<h2 class="blog-motto">Coder, Learn</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="http://zhannei.baidu.com/cse/search" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value= 8741923514077570040 ><input type="text" name="q" size="30" placeholder="搜索"><br>
+						</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/android/2017/01/23/[Android教程]Context全解/" title="【Android教程】Context全解" itemprop="url">【Android教程】Context全解</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="hjhjw1991" target="_blank" itemprop="author">hjhjw1991</a>
+		
+  <p class="article-time">
+    <time datetime="2017-01-22T16:00:00.000Z" itemprop="datePublished"> 发表于 2017-01-23</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Context接口和作用"><span class="toc-number">1.</span> <span class="toc-text">Context接口和作用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Context默认实现"><span class="toc-number">2.</span> <span class="toc-text">Context默认实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Context使用中需要注意的问题"><span class="toc-number">3.</span> <span class="toc-text">Context使用中需要注意的问题</span></a></li></ol>
+		
+		</div>
+		
+		<p>我们在开发过程中会遇到很多场景需要Context, 包括但不限于: 获取资源, 创建View, 显示UI元素… 稍微追踪一下知道Context是一个接口, 当然从名字知道它是提供环境信息的接口, 今天我们就来看看, Context以及它的衍生类.  </p>
+<h2 id="Context接口和作用"><a href="#Context接口和作用" class="headerlink" title="Context接口和作用"></a>Context接口和作用</h2><p>位于<code>frameworks/base/core/java/android/content/Context.java</code>, 是一个抽象类, 它定义了所有可用的接口, 在AS中查看它的类继承关系, 可以发现它有<code>MockContext</code>和<code>ContextWrapper</code>两个直接子类, 继续追下去会发现它有数量不少的间接子类, <code>Application</code> <code>Activity</code> <code>Service</code>都是它的子类, 这也正是在这些类中用到Context参数时可以直接传<code>this</code>的原因. 我们来看Context定义了哪些接口, 接口及其说明在官网Context页都有说明, 我这里只是相当于翻译一下. 大致上可以分为两类:  </p>
+<ol>
+<li><p>全局信息资源接口及其配套常量. 包括但不限于以下接口:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">getResources 返回Resources实例, 提供应用包的资源管理接口.  </div><div class="line">getAssets 返回AssetManager实例, 它提供资源管理接口. 它管理的资源应当和getResources管理的资源保持一致, 即它们维护同一套资源.  </div><div class="line">getPackageManager 返回PackageManager实例, 提供全局包信息.  </div><div class="line">getContentResolver 返回ContentResolver实例, 提供内容解析接口.  </div><div class="line">getText 封装Resources.getText  </div><div class="line">getString 封装Resources.getString</div><div class="line">getClassLoader 获取ClassLoader实例, 可以由此获取包内所有类</div><div class="line">getPackageName 获取应用包的包名  </div><div class="line">getSystemService 获取系统服务, 系统服务的名字以常量形式存在Context类中</div></pre></td></tr></table></figure>
+</li>
+<li><p>公共方法及其配套常量. 包括但不限于:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">getMainLooper 返回当前Context的Looper实例  </div><div class="line">getApplicationContext 获取应用的Context实例, 它不同于当前Context实例, 而是一个属于当前进程的, 全局的, 单例的, Application对象, 这意味着它的生命周期不同于当前Context, 而是跟当前进程捆绑  </div><div class="line">registerComponentCallbacks 注册组件回调  </div><div class="line">unregisterComponentCallbacks 注销组件回调  </div><div class="line">deleteFile 删除与当前应用包关联的私有文件  </div><div class="line">deleteDatabase 删除与当前应用包关联的私有SQLiteDatabase数据库  </div><div class="line">startActivity 开始一个Activity  </div><div class="line">registerReceiver 注册广播接收器  </div><div class="line">unregisterReceiver 注销广播接收器</div><div class="line">bindService 绑定服务  </div><div class="line">unbindService 解绑服务  </div><div class="line">startService 开始服务  </div><div class="line">stopService 停止服务  </div><div class="line">createPackageContext 以给定应用包名创建该应用的Context</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<h2 id="Context默认实现"><a href="#Context默认实现" class="headerlink" title="Context默认实现"></a>Context默认实现</h2><p>前文说了, Activity和Application都是Context的间接子类. 但是他们处于不同层级, 拥有不同的继承链, <code>Application</code>继承了<code>ContextWrapper</code>(<code>Service</code>也继承了它), 而<code>Activity</code>继承了<code>ContextThemeWrapper</code>(它是<code>ContextWrapper</code>的直接子类). 在<code>ContextWrapper</code>中提供了大多数方法的默认实现, 正如其名, 它只是包装了一个Context实现, 这个实现就是它的<code>mBase</code>成员变量, 是通过构造函数或者<code>attachBaseContext</code>传入的Context实例. 在应用启动过程中, <code>performLaunchActivity</code>会将一个<code>ContextImpl</code>实例作为参数传入<code>Activity.attach</code>方法, 该方法就用这个实例调用<code>attachBaseContext</code>设置好Context. 换句话说, Activity所拥有的Context就是一个随Activity生命周期的<code>ContextImpl</code>实例, Activity中对Context接口的调用, 中途经过<code>ContextThemeWrapper</code>和<code>ContextWrapper</code>, 最终到达这个<code>mBase</code>指向的<code>ContextImpl</code>的相应接口调用. 也就是说, 它就是我们要找的Activity Context默认实现.<br>那么Application Context呢? 它调用Context接口时最终同样会传达到mBase上, 它的mBase对象又是什么呢? 我们考察应用启动过程, 发现在<code>performLaunchActivity</code>中, 有一步是<code>makeApplication</code>, 返回一个<code>Application</code>对象. 该方法属于<code>LoadedApk</code>类, 打开该类查看, 发现它维护了一个<code>Application mApplication</code>成员变量, <code>makeApplication</code>方法在该变量非空时直接返回该变量(意味着无论调用多少次, 都返回同一个Application实例), 否则新建一个<code>ContextImpl</code>对象, 并以它为参数之一, 调用<code>mActivityThread.mInstrumentation.newApplication</code>返回一个<code>Application</code>对象. 再查看<code>newApplication</code>方法, 它位于<code>frameworks/base/core/java/android/app/Instrumentation.java</code>中, 其行为是使用给定的<code>ClassLoader</code>先装载给定的类(这里是<code>LoadedApk.makeApplication</code>中字符串<code>appClass</code>代表的<code>Application</code>类, 如果没有指定或强制使用默认appClass, 则该值为”android.app.Application”), 再用该类对象的<code>newInstance</code>创建实例并调用<code>attach</code>方法绑定Context实例. 可见, <code>Application</code>的Context仍然是<code>ContextImpl</code>实例, 不同的是它的生命周期与<code>Application</code>一致.<br><code>ContextImpl</code>类中对Context大多数接口方法都有了默认实现, 我们重点只看<code>getApplicationContext</code>:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">// in file ContextImpl.java</div><div class="line"></div><div class="line">@Override</div><div class="line">public Context getApplicationContext() &#123;</div><div class="line">    return (mPackageInfo != null) ?</div><div class="line">            mPackageInfo.getApplication() : mMainThread.getApplication();</div><div class="line">&#125;// mPackageInfo是LoadedApk类型</div></pre></td></tr></table></figure></p>
+<p>方法<code>Activity.getApplication</code>返回的是成员变量<code>mApplication</code>, 根据其构造过程, 是在<code>attach</code>时赋值的<code>Application</code>实例, 换句话说, 在同一个应用中时, <code>Activity</code>中调用<code>getApplication</code>跟调用<code>getApplicationContext</code>返回的是同一个对象, 这可以很方便地验证.  </p>
+<h2 id="Context使用中需要注意的问题"><a href="#Context使用中需要注意的问题" class="headerlink" title="Context使用中需要注意的问题"></a>Context使用中需要注意的问题</h2><p>前文中我们曾特地指出, <code>Activity</code>的Context跟<code>Application</code>的Context生命周期不同, 细心的同学可能要问了, 强调这个是因为有什么坑吗? 是的, 这里有坑.<br>原因就在于我们在创建组件的时候经常会用到Context这个参数, 有时为了图方便就直接传<code>this</code>, 大多数情况下也挺好使, 但其实这里存在很大的内存泄漏风险.<br>举个例子, 我们假设在<code>Activity</code>中创建了一个<code>Bitmap</code>, 为了在手机横竖屏切换的时候不至于重新装载这个资源, 我们将它写成<code>static</code>, 这样它的生命周期也就跟<code>Activity.class</code>相同了. 然后我们通过<code>setBackgroundDrawable</code>将它设置成了某个<code>View</code>(该<code>View</code>是通过<code>new View(this)</code>方法构造的实例)的背景. 我们知道, 在手机横竖屏切换的时候, 当前Activity会被销毁再重新创建, 因此此间会有一个gc标记过程. 这里存在什么问题呢? <code>setBackgroundDrawable</code>之后, 静态变量<code>Bitmap</code>会持有一个该<code>View</code>的引用, 而这个<code>View</code>持有一个<code>Activity</code>的引用, 这就导致<code>Activity</code>的引用计数不为0, gc过程无法回收该对象内存, 但是该对象已经不被任何过程使用, 于是就泄露了. 归根到底是因为创建<code>View</code>的时候使用了<code>Activity</code>作为Context, 但是该<code>View</code>由于存在被静态变量<code>Bitmap</code>引用的情况, 其实际生命周期要长于<code>Activity</code>.<br>解决这种泄露的方法是, 保证在<code>Activity</code>中使用<code>Activity</code>或<code>this</code>作为Context的任何对象, 其生命周期都不长于<code>Activity</code>本身, 否则应该考虑使用<code>Application Context</code>.<br>另外, 如果定义了非静态内部类, 那么对非静态内部类实例的引用也有可能导致外部类实例内存泄漏, 解决这种内存泄漏的方法是控制内部类的引用, 对于生命周期长于外部类的内部类, 应定义为静态内部类.  </p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/教程/">教程</a><a href="/tags/android/">android</a><a href="/tags/面试/">面试</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://blog.hjhjw1991.net/android/2017/01/23/[Android教程]Context全解/" data-title="【Android教程】Context全解 | hjhjw1991&#39;s blog" data-tsina="1304671950" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+
+<div class="next">
+<a href="/android/2017/01/23/[Android教程]SharedPreference详解/"  title="【Android教程】SharedPreference详解">
+ <strong>下一篇：</strong><br/> 
+ <span>【Android教程】SharedPreference详解
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Context接口和作用"><span class="toc-number">1.</span> <span class="toc-text">Context接口和作用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Context默认实现"><span class="toc-number">2.</span> <span class="toc-text">Context默认实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Context使用中需要注意的问题"><span class="toc-number">3.</span> <span class="toc-text">Context使用中需要注意的问题</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="hjhjw1991" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js" ></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/android/" title="android">android<sup>13</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/blog/" title="blog">blog<sup>12</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/leetcode/" title="leetcode">leetcode<sup>9</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/opinion/" title="opinion">opinion<sup>4</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/python/" title="python">python<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/tips/" title="tips">tips<sup>4</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/android/" title="android">android<sup>14</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/教程/" title="教程">教程<sup>12</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/面试/" title="面试">面试<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/windows/" title="windows">windows<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vps/" title="vps">vps<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ssh/" title="ssh">ssh<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/jekyll/" title="jekyll">jekyll<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/正则表达式/" title="正则表达式">正则表达式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vpn/" title="vpn">vpn<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/uwsgi/" title="uwsgi">uwsgi<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ios/" title="ios">ios<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://google.com" target="_blank" title="Google">Google</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="120" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=1304671950&verifier=64e7ae81&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Huang Jun. <br/>
+			This is my blog.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		<a href="http://weibo.com/1304671950" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/hjhjw1991" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:hjhjw1991@gmail.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="hjhjw1991">hjhjw1991</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'hjhjw1991';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?cd0e561542c22cc83da2e311ec57da84";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

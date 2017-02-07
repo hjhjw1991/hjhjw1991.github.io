@@ -1,0 +1,652 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>【Android教程】AIDL入门 | hjhjw1991&#39;s blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="hjhjw1991">
+    
+
+    
+    <meta name="description" content="又叫【花样劝退教程】。本文讲AIDL进程间通讯">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【Android教程】AIDL入门">
+<meta property="og:url" content="http://blog.hjhjw1991.net/android/2016/04/01/[Android教程]AIDL入门/index.html">
+<meta property="og:site_name" content="hjhjw1991's blog">
+<meta property="og:description" content="又叫【花样劝退教程】。本文讲AIDL进程间通讯">
+<meta property="og:image" content="http://blog.hjhjw1991.net/images/blogs/aidl-basic.png">
+<meta property="og:image" content="http://blog.hjhjw1991.net/images/blogs/aidl-call.png">
+<meta property="og:image" content="http://blog.hjhjw1991.net/images/blogs/aidl-instance.png">
+<meta property="og:image" content="http://blog.hjhjw1991.net/images/blogs/aidl-axiom.png">
+<meta property="og:updated_time" content="2017-02-07T09:01:57.299Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="【Android教程】AIDL入门">
+<meta name="twitter:description" content="又叫【花样劝退教程】。本文讲AIDL进程间通讯">
+<meta name="twitter:image" content="http://blog.hjhjw1991.net/images/blogs/aidl-basic.png">
+
+    
+    <link rel="alternative" href="/atom.xml" title="hjhjw1991&#39;s blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/author.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/author.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="hjhjw1991&#39;s blog" title="hjhjw1991&#39;s blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="hjhjw1991&#39;s blog">hjhjw1991&#39;s blog</a></h1>
+				<h2 class="blog-motto">Coder, Learn</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="http://zhannei.baidu.com/cse/search" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value= 8741923514077570040 ><input type="text" name="q" size="30" placeholder="搜索"><br>
+						</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/android/2016/04/01/[Android教程]AIDL入门/" title="【Android教程】AIDL入门" itemprop="url">【Android教程】AIDL入门</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="hjhjw1991" target="_blank" itemprop="author">hjhjw1991</a>
+		
+  <p class="article-time">
+    <time datetime="2016-03-31T16:00:00.000Z" itemprop="datePublished"> 发表于 2016-04-01</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#AIDL"><span class="toc-number">2.</span> <span class="toc-text">AIDL</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#案例"><span class="toc-number">3.</span> <span class="toc-text">案例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#原理"><span class="toc-number">4.</span> <span class="toc-text">原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#结论"><span class="toc-number">5.</span> <span class="toc-text">结论</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">6.</span> <span class="toc-text">参考</span></a></li></ol>
+		
+		</div>
+		
+		<blockquote>
+<p>AIDL,android interface definition language  </p>
+</blockquote>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
+<p>某天，我问谷歌爸爸，在Android中进程之间如何进行通讯？<br>我以为这很简单，我去找到要通讯的对象进程，然后建立连接，直接通讯。<br>然而谷歌爸爸说，不行，你这么做不安全，你崩掉了可能让人家也崩掉，锅不是这么甩的。<br>我问谷歌爸爸，那怎么办？<br>谷歌爸爸说，我给你工具，我给你通道，你给我间接地来，我保证你们互不影响。<br>工具在哪？叫什么名字？<br>工具在SDK里，有AIDL，Binder，Messenger，Service，需要什么用什么<br>怎么用？<br>自己看文档<br>看不懂怎么办？<br>边看边写<br>写了还不懂怎么办？<br>考虑改行吧<br>哦  </p>
+</blockquote>
+<p><img src="/images/blogs/aidl-basic.png" alt="aidl">  </p>
+<h2 id="AIDL"><a href="#AIDL" class="headerlink" title="AIDL"></a>AIDL</h2><p>在Android中，进程之间是不能直接通讯的，他们也没有公共数据区域，但我们实实在在地需要进程间通讯，怎么办呢？Android为我们提供了四种进程间通讯的方式，正好对应四种基本应用程序组件：Activity, Content Provider, Broadcase, Service.  </p>
+<ul>
+<li>Activity可以跨进程调用其他的Activity  </li>
+<li>Content Provider以形似DBC(database connector)的方式访问其他应用程序的数据  </li>
+<li>Broadcast以发送广播的方式唤起对应进程  </li>
+<li>Service以AIDL方式访问其他应用程序的数据  </li>
+</ul>
+<p>AIDL是一种IPC(Inter-Process Communication)方式，是C/S结构，如果接触过Java中RPC框架(例如hessian)，可以很快理解这种方式。  </p>
+<p>AIDL可以算是一种DSL(Domain Specific Language)。Android中一个进程不允许直接访问另一个进程的内存数据，他们必须要将数据分解(parcel)成操作系统可以识别的最基本的数据类型之后进行传输。AIDL就负责这一块。  </p>
+<p>与所有技术一样，只有在需要的时候才考虑AIDL，因为跨进程通讯是有代价的。那么什么时候用AIDL呢？  </p>
+<ul>
+<li>如果你<strong>只需要IPC</strong>，不需要多线程，你应该考虑Android提供的<strong>Messenger</strong>机制</li>
+<li>如果你还要<strong>多线程</strong>，但是不需要多个应用程序并发进行IPC，你应该考虑Android提供的<strong>Binder</strong>机制(特化的AIDL)</li>
+<li>如果你需要<strong>多个应用程序并发IPC</strong>，还需要多线程处理，你应该考虑使用AIDL</li>
+</ul>
+<p>那么，AIDL怎么写，怎么用？其实一句话懂的人就懂了：AIDL就是RPC中的服务接口。<br>如下图示(绿色虚线框为服务端代码，蓝色虚线框为客户端代码)：<br><img src="/images/blogs/aidl-call.png" alt="aidl-call"></p>
+<p>假设我们的应用A需要自己能被别的应用调用和访问，不妨假设调用者为应用B。这样被访问的一方，就是提供服务的一方，即C/S中的S，而访问的一方就是客户端C。<br>我们需要在应用A中和应用B中都定义AIDL，并且在应用A中实现AIDL接口。<br>如果A不实现AIDL，是没法以AIDL的方式被调用的。这很好理解，你想跟别人对话，也要看别人愿不愿意跟你对话，对吧。  </p>
+<p>Android SDK中aidl工具会将<code>.aidl</code>文件加入一些东西(比如自动加入抽象静态内部类<strong>Stub</strong>)，转换为同名的<code>.java</code>文件以供使用。<br>Eclipse和Android Studio都可以调用aidl工具将你定义的<code>.aidl</code>文件转换成<code>.java</code>。<br>AIDL文件中可以引用其他AIDL文件定义的接口，但不能直接引用<code>.java</code>中定义的接口。<br>但是！有能力的程序员完全可以自己写<code>.java</code>文件，完全手工完成接口定义。  </p>
+<h2 id="案例"><a href="#案例" class="headerlink" title="案例"></a>案例</h2><p>继续沿用上一节末尾提到的应用A和应用B，这里为了简化场景，假设A是某个Application中负责远程计算的Service，运行在独立的进程中，B是这同一个Application中负责业务逻辑的模块，需要调用A来进行远程计算。  </p>
+<p>在具体使用的时候，需要结合具体情境给出回调方式以获取服务实例，这里以使用Service为例，它自带onBind回调，我们只需要实现这个回调返回给客户端一个实例。  </p>
+<p>当获得了服务端的实例之后就可以直接使用这个对象了。  </p>
+<p>如下图所示：</p>
+<p><img src="/images/blogs/aidl-instance.png" alt="aidl-instance"></p>
+<p>由于画图技能没点，该图讲得不好，最好结合自己写的aidl和对应生成的<code>.java</code>文件来看。  </p>
+<h2 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h2><p>aidl自动生成的文件中，使用抽象类Stub帮助你从外部定义服务端的实现，系统通过Stub和asInterface等存在于该生成文件中的预定义的方法来实现调用。  </p>
+<p>打开<code>.java</code>文件，看看它的所有新增的方法和成员，可以帮助深入理解aidl的设计思想和运行原理。它里面有非常神奇的一些用法，例如抽象内部类Stub实现了存在于其外部的接口（它自身！），然后利用Proxy代理使用服务端实现。  </p>
+<p>客户端获取到的实际上是远程服务的代理。而实际工作，是在服务端的代理中调用方法，以及代理前后调用onTransact进行序列化和反序列化。  </p>
+<p>以下是示意图，写下去涉及的东西就多了，而且我也没有仔细阅读，这里就不误人子弟了，强烈建议大家自己去阅读感兴趣的部分。  </p>
+<p><img src="/images/blogs/aidl-axiom.png" alt="aidl-axiom"></p>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>先上最重要的结论：<strong>在自带的<code>Binder</code>机制和<code>Messenger</code>机制无法解决你的多线程、多应用间通讯的场景时，使用aidl</strong>  </p>
+<p>aidl提供了由系统支持的类RPC的进程间通讯方式。与直接通信的区别在于，系统可以借助aidl的定义来找到实现该aidl的组件，而且看起来好像并没有切换出当前进程环境(事实上是系统帮你把远程服务端运行起来了，aidl的执行都是在服务端，这就是为什么你在使用完毕的时候需要解绑服务端进程以避免内存泄漏)，使得客户端使用较为流畅无痕。隔离客户端和服务端，两者只需要面向接口编程，客户端可以完全不关心服务端的行为。  </p>
+<p>aidl的缺点是传输的数据只支持Java内建基本数据类型(而且<code>short</code>除外)、<code>String</code>、<code>CharSequence</code>、只包含以上支持类型的List和Map，以及实现了<code>Parcelable</code>(一个类似于<code>Serializable</code>的接口，但强制要求实现类必须实现反序列化生成器<code>public static final Parcelable.Creator&lt;T&gt; CREATOR</code>和序列化生成器<code>writeToParcel</code>，其中<code>CREATOR</code>虽然是自己写的成员变量，但是名称和修饰词都不能更改)接口的类型。  </p>
+<p>在<code>List</code>和<code>Map</code>这种用到泛型的情况下，需要指明List和Map是作为<code>in/out/inout</code>哪种方式使用的。网上某视频说在传输数据的时候会有一个打包和解包的过程，而这个过程代价非常大，说是出于节约资源的考虑才要求指明是作为输入还是作为输出。这或许也是考虑之一，但我更倾向于认为是出于保持里氏代换原则的考虑，毕竟这里如果你没声明的话会报编译错误，而一般来说影响性能的行为只会报警告，而不是错误。而且看到<code>in/out</code>这种词语，我很容易就联想到我的另一篇blog<a href="http://blog.hjhjw1991.net/blog/2016/02/25/Java%E4%B8%AD%E7%9A%84%E5%8D%8F%E5%8F%98%E5%92%8C%E9%80%86%E5%8F%98/">Java中的协变和逆变</a>  </p>
+<p>另外，如果使用<code>Parcelable</code>接口传递自定义的数据对象，由于传递对象的时候序列化之后本质上是二进制流，那实现相应的序列化和反序列化的方法时，成员顺序必须完全一致，而且客户端和服务端都需要有完全一致的该自定义类文件。也是由于底层序列化会把<code>short</code>类型强行提升为<code>int</code>型，所以就直接不支持<code>short</code>类型的序列化 。  </p>
+<p>对于aidl来说，它不直接识别java的源文件，所以需要给出自定义类的相应的aidl描述。当然aidl中对于实体的描述比接口描述要简单得多，只需要直接声明实体就行了。  </p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p>《Android开发艺术探索》<br><a href="http://blog.csdn.net/luoshengyang/article/details/6642463" target="_blank" rel="external">Android系统进程间通信Binder机制在应用程序框架层的Java接口源代码分析</a><br><a href="http://blog.csdn.net/coding_glacier/article/details/7520199" target="_blank" rel="external">Android Binder机制</a><br><a href="http://blog.csdn.net/toyuexinshangwan/article/details/8640709" target="_blank" rel="external">Android跨进程通信的四种方式</a><br><a href="http://blog.csdn.net/thegameisfives/article/details/14000941" target="_blank" rel="external">Android ： 基本空间划分 ＆ IPC框架分析</a><br><a href="http://www.cnblogs.com/a284628487/p/3187320.html" target="_blank" rel="external">Android 内核–Binder架构分析</a><br><a href="http://blog.csdn.net/stonecao/article/details/6425019" target="_blank" rel="external">Android AIDL使用详解</a><br><a href="http://www.cnblogs.com/feike/archive/2013/01/08/2851833.html" target="_blank" rel="external">Binder与AIDL服务</a>  </p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/教程/">教程</a><a href="/tags/android/">android</a><a href="/tags/面试/">面试</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="http://blog.hjhjw1991.net/android/2016/04/01/[Android教程]AIDL入门/" data-title="【Android教程】AIDL入门 | hjhjw1991&#39;s blog" data-tsina="1304671950" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/android/2016/08/01/Android源码结构/" title="Android源码结构">
+  <strong>上一篇：</strong><br/>
+  <span>
+  Android源码结构</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/leetcode/2016/03/21/[Leetcode题解]3-Longest Substring Without Repeating Characters/"  title="【Leetcode题解】3-Longest Substring Without Repeating Characters">
+ <strong>下一篇：</strong><br/> 
+ <span>【Leetcode题解】3-Longest Substring Without Repeating Characters
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#AIDL"><span class="toc-number">2.</span> <span class="toc-text">AIDL</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#案例"><span class="toc-number">3.</span> <span class="toc-text">案例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#原理"><span class="toc-number">4.</span> <span class="toc-text">原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#结论"><span class="toc-number">5.</span> <span class="toc-text">结论</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">6.</span> <span class="toc-text">参考</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="hjhjw1991" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js" ></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/android/" title="android">android<sup>13</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/blog/" title="blog">blog<sup>12</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/leetcode/" title="leetcode">leetcode<sup>9</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/opinion/" title="opinion">opinion<sup>4</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/python/" title="python">python<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/tips/" title="tips">tips<sup>4</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/android/" title="android">android<sup>14</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/教程/" title="教程">教程<sup>12</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/面试/" title="面试">面试<sup>6</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/windows/" title="windows">windows<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vps/" title="vps">vps<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ssh/" title="ssh">ssh<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/jekyll/" title="jekyll">jekyll<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/正则表达式/" title="正则表达式">正则表达式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vpn/" title="vpn">vpn<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/uwsgi/" title="uwsgi">uwsgi<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ios/" title="ios">ios<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://google.com" target="_blank" title="Google">Google</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="120" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=1304671950&verifier=64e7ae81&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Huang Jun. <br/>
+			This is my blog.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		<a href="http://weibo.com/1304671950" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/hjhjw1991" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:hjhjw1991@gmail.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="hjhjw1991">hjhjw1991</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'hjhjw1991';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?cd0e561542c22cc83da2e311ec57da84";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>
