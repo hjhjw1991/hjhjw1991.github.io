@@ -14,18 +14,18 @@
     <meta name="description" content="又叫【花样劝退教程】。本文讲AIDL进程间通讯">
 <meta property="og:type" content="article">
 <meta property="og:title" content="【Android教程】AIDL入门">
-<meta property="og:url" content="http://blog.hjhjw1991.net/android/2016/04/01/[Android教程]AIDL入门/index.html">
+<meta property="og:url" content="https://hjhjw1991.github.io/android/2016/04/01/[Android教程]AIDL入门/index.html">
 <meta property="og:site_name" content="hjhjw1991's blog">
 <meta property="og:description" content="又叫【花样劝退教程】。本文讲AIDL进程间通讯">
-<meta property="og:image" content="http://blog.hjhjw1991.net/images/blogs/aidl-basic.png">
-<meta property="og:image" content="http://blog.hjhjw1991.net/images/blogs/aidl-call.png">
-<meta property="og:image" content="http://blog.hjhjw1991.net/images/blogs/aidl-instance.png">
-<meta property="og:image" content="http://blog.hjhjw1991.net/images/blogs/aidl-axiom.png">
+<meta property="og:image" content="https://hjhjw1991.github.io/images/blogs/aidl-basic.png">
+<meta property="og:image" content="https://hjhjw1991.github.io/images/blogs/aidl-call.png">
+<meta property="og:image" content="https://hjhjw1991.github.io/images/blogs/aidl-instance.png">
+<meta property="og:image" content="https://hjhjw1991.github.io/images/blogs/aidl-axiom.png">
 <meta property="og:updated_time" content="2017-02-07T09:01:57.299Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="【Android教程】AIDL入门">
 <meta name="twitter:description" content="又叫【花样劝退教程】。本文讲AIDL进程间通讯">
-<meta name="twitter:image" content="http://blog.hjhjw1991.net/images/blogs/aidl-basic.png">
+<meta name="twitter:image" content="https://hjhjw1991.github.io/images/blogs/aidl-basic.png">
 
     
     <link rel="alternative" href="/atom.xml" title="hjhjw1991&#39;s blog" type="application/atom+xml">
@@ -143,7 +143,7 @@
 <h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>先上最重要的结论：<strong>在自带的<code>Binder</code>机制和<code>Messenger</code>机制无法解决你的多线程、多应用间通讯的场景时，使用aidl</strong>  </p>
 <p>aidl提供了由系统支持的类RPC的进程间通讯方式。与直接通信的区别在于，系统可以借助aidl的定义来找到实现该aidl的组件，而且看起来好像并没有切换出当前进程环境(事实上是系统帮你把远程服务端运行起来了，aidl的执行都是在服务端，这就是为什么你在使用完毕的时候需要解绑服务端进程以避免内存泄漏)，使得客户端使用较为流畅无痕。隔离客户端和服务端，两者只需要面向接口编程，客户端可以完全不关心服务端的行为。  </p>
 <p>aidl的缺点是传输的数据只支持Java内建基本数据类型(而且<code>short</code>除外)、<code>String</code>、<code>CharSequence</code>、只包含以上支持类型的List和Map，以及实现了<code>Parcelable</code>(一个类似于<code>Serializable</code>的接口，但强制要求实现类必须实现反序列化生成器<code>public static final Parcelable.Creator&lt;T&gt; CREATOR</code>和序列化生成器<code>writeToParcel</code>，其中<code>CREATOR</code>虽然是自己写的成员变量，但是名称和修饰词都不能更改)接口的类型。  </p>
-<p>在<code>List</code>和<code>Map</code>这种用到泛型的情况下，需要指明List和Map是作为<code>in/out/inout</code>哪种方式使用的。网上某视频说在传输数据的时候会有一个打包和解包的过程，而这个过程代价非常大，说是出于节约资源的考虑才要求指明是作为输入还是作为输出。这或许也是考虑之一，但我更倾向于认为是出于保持里氏代换原则的考虑，毕竟这里如果你没声明的话会报编译错误，而一般来说影响性能的行为只会报警告，而不是错误。而且看到<code>in/out</code>这种词语，我很容易就联想到我的另一篇blog<a href="http://blog.hjhjw1991.net/blog/2016/02/25/Java%E4%B8%AD%E7%9A%84%E5%8D%8F%E5%8F%98%E5%92%8C%E9%80%86%E5%8F%98/">Java中的协变和逆变</a>  </p>
+<p>在<code>List</code>和<code>Map</code>这种用到泛型的情况下，需要指明List和Map是作为<code>in/out/inout</code>哪种方式使用的。网上某视频说在传输数据的时候会有一个打包和解包的过程，而这个过程代价非常大，说是出于节约资源的考虑才要求指明是作为输入还是作为输出。这或许也是考虑之一，但我更倾向于认为是出于保持里氏代换原则的考虑，毕竟这里如果你没声明的话会报编译错误，而一般来说影响性能的行为只会报警告，而不是错误。而且看到<code>in/out</code>这种词语，我很容易就联想到我的另一篇blog<a href="http://blog.hjhjw1991.net/blog/2016/02/25/Java%E4%B8%AD%E7%9A%84%E5%8D%8F%E5%8F%98%E5%92%8C%E9%80%86%E5%8F%98/" target="_blank" rel="external">Java中的协变和逆变</a>  </p>
 <p>另外，如果使用<code>Parcelable</code>接口传递自定义的数据对象，由于传递对象的时候序列化之后本质上是二进制流，那实现相应的序列化和反序列化的方法时，成员顺序必须完全一致，而且客户端和服务端都需要有完全一致的该自定义类文件。也是由于底层序列化会把<code>short</code>类型强行提升为<code>int</code>型，所以就直接不支持<code>short</code>类型的序列化 。  </p>
 <p>对于aidl来说，它不直接识别java的源文件，所以需要给出自定义类的相应的aidl描述。当然aidl中对于实体的描述比接口描述要简单得多，只需要直接声明实体就行了。  </p>
 <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p>《Android开发艺术探索》<br><a href="http://blog.csdn.net/luoshengyang/article/details/6642463" target="_blank" rel="external">Android系统进程间通信Binder机制在应用程序框架层的Java接口源代码分析</a><br><a href="http://blog.csdn.net/coding_glacier/article/details/7520199" target="_blank" rel="external">Android Binder机制</a><br><a href="http://blog.csdn.net/toyuexinshangwan/article/details/8640709" target="_blank" rel="external">Android跨进程通信的四种方式</a><br><a href="http://blog.csdn.net/thegameisfives/article/details/14000941" target="_blank" rel="external">Android ： 基本空间划分 ＆ IPC框架分析</a><br><a href="http://www.cnblogs.com/a284628487/p/3187320.html" target="_blank" rel="external">Android 内核–Binder架构分析</a><br><a href="http://blog.csdn.net/stonecao/article/details/6425019" target="_blank" rel="external">Android AIDL使用详解</a><br><a href="http://www.cnblogs.com/feike/archive/2013/01/08/2851833.html" target="_blank" rel="external">Binder与AIDL服务</a>  </p>
@@ -169,7 +169,7 @@
 
 	<div class="article-share" id="share">
 	
-	  <div data-url="http://blog.hjhjw1991.net/android/2016/04/01/[Android教程]AIDL入门/" data-title="【Android教程】AIDL入门 | hjhjw1991&#39;s blog" data-tsina="1304671950" class="share clearfix">
+	  <div data-url="https://hjhjw1991.github.io/android/2016/04/01/[Android教程]AIDL入门/" data-title="【Android教程】AIDL入门 | hjhjw1991&#39;s blog" data-tsina="1304671950" class="share clearfix">
 	  </div>
 	
 	</div>
@@ -239,11 +239,11 @@
 		<ul>
 		
 		  
-			<li><a href="/categories/android/" title="android">android<sup>13</sup></a></li>
+			<li><a href="/categories/android/" title="android">android<sup>18</sup></a></li>
 		  
 		
 		  
-			<li><a href="/categories/blog/" title="blog">blog<sup>12</sup></a></li>
+			<li><a href="/categories/blog/" title="blog">blog<sup>13</sup></a></li>
 		  
 		
 		  
@@ -252,10 +252,6 @@
 		
 		  
 			<li><a href="/categories/opinion/" title="opinion">opinion<sup>4</sup></a></li>
-		  
-		
-		  
-			<li><a href="/categories/python/" title="python">python<sup>1</sup></a></li>
 		  
 		
 		  
@@ -272,11 +268,11 @@
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/android/" title="android">android<sup>14</sup></a></li>
+				<li><a href="/tags/android/" title="android">android<sup>19</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/教程/" title="教程">教程<sup>12</sup></a></li>
+				<li><a href="/tags/教程/" title="教程">教程<sup>15</sup></a></li>
 			
 		
 			
@@ -284,7 +280,7 @@
 			
 		
 			
-				<li><a href="/tags/面试/" title="面试">面试<sup>6</sup></a></li>
+				<li><a href="/tags/面试/" title="面试">面试<sup>7</sup></a></li>
 			
 		
 			
@@ -296,7 +292,7 @@
 			
 		
 			
-				<li><a href="/tags/ssh/" title="ssh">ssh<sup>2</sup></a></li>
+				<li><a href="/tags/Java/" title="Java">Java<sup>2</sup></a></li>
 			
 		
 			
@@ -304,19 +300,19 @@
 			
 		
 			
-				<li><a href="/tags/Java/" title="Java">Java<sup>2</sup></a></li>
+				<li><a href="/tags/ssh/" title="ssh">ssh<sup>2</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/正则表达式/" title="正则表达式">正则表达式<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/vpn/" title="vpn">vpn<sup>1</sup></a></li>
+				<li><a href="/tags/python/" title="python">python<sup>1</sup></a></li>
 			
 		
 			
 				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/正则表达式/" title="正则表达式">正则表达式<sup>1</sup></a></li>
 			
 		
 			
@@ -325,6 +321,10 @@
 		
 			
 				<li><a href="/tags/ios/" title="ios">ios<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vpn/" title="vpn">vpn<sup>1</sup></a></li>
 			
 		
 		</ul>

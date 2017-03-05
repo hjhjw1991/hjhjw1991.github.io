@@ -1,0 +1,825 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>【Android教程】ActivityManagerService全解 | hjhjw1991&#39;s blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="hjhjw1991">
+    
+
+    
+    <meta name="description" content="又叫【花样劝退教程】。本文讲ActivityManagerService系统服务.(未完)">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【Android教程】ActivityManagerService全解">
+<meta property="og:url" content="https://hjhjw1991.github.io/android/2017/03/05/[Android教程]ActivityManagerService全解/index.html">
+<meta property="og:site_name" content="hjhjw1991's blog">
+<meta property="og:description" content="又叫【花样劝退教程】。本文讲ActivityManagerService系统服务.(未完)">
+<meta property="og:image" content="https://hjhjw1991.github.io/images/blogs/activity_manager_service_stack.png">
+<meta property="og:image" content="https://hjhjw1991.github.io/images/blogs/activity_manager_service_content_provider.png">
+<meta property="og:updated_time" content="2017-03-05T11:16:22.027Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="【Android教程】ActivityManagerService全解">
+<meta name="twitter:description" content="又叫【花样劝退教程】。本文讲ActivityManagerService系统服务.(未完)">
+<meta name="twitter:image" content="https://hjhjw1991.github.io/images/blogs/activity_manager_service_stack.png">
+
+    
+    <link rel="alternative" href="/atom.xml" title="hjhjw1991&#39;s blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/author.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/author.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="hjhjw1991&#39;s blog" title="hjhjw1991&#39;s blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="hjhjw1991&#39;s blog">hjhjw1991&#39;s blog</a></h1>
+				<h2 class="blog-motto">Coder, Learn</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="http://zhannei.baidu.com/cse/search" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value= 8741923514077570040 ><input type="text" name="q" size="30" placeholder="搜索"><br>
+						</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/android/2017/03/05/[Android教程]ActivityManagerService全解/" title="【Android教程】ActivityManagerService全解" itemprop="url">【Android教程】ActivityManagerService全解</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="hjhjw1991" target="_blank" itemprop="author">hjhjw1991</a>
+		
+  <p class="article-time">
+    <time datetime="2017-03-04T16:00:00.000Z" itemprop="datePublished"> 发表于 2017-03-05</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#ActivityManagerService"><span class="toc-number">1.</span> <span class="toc-text">ActivityManagerService</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ActivityManagerNative-ActivityManagerProxy与ActivityManager"><span class="toc-number">2.</span> <span class="toc-text">ActivityManagerNative, ActivityManagerProxy与ActivityManager</span></a></li></ol>
+		
+		</div>
+		
+		<blockquote>
+<p>在<code>Android</code>操作系统中, 有许多个默默维护<code>Android</code>系统稳定正常流畅运行的幕后工作者, 对于上层App开发者来说这些工作者的名字可能是不太熟悉甚至完全陌生的, 就像电影散场时的演职人员表, 人人都知道没有他们电影完不成, 也都知道他们各有分工, 各有名谓, 但少有人清楚他们具体做了什么. 其中为人所熟知的几大系统服务之一就是<code>ActivityManagerService</code>, 今天我们来访谈一下这位幕后工作者.  </p>
+</blockquote>
+<p>采访者: <a href="https://hjhjw1991.github.io">hjhjw1991</a><br>被采访者: <code>ActivityManagerService</code>家族<br>地点: <code>Android 4.0</code>源码目录<br>时间: 2017-03-01  </p>
+<h2 id="ActivityManagerService"><a href="#ActivityManagerService" class="headerlink" title="ActivityManagerService"></a>ActivityManagerService</h2><ul>
+<li><p>你好, 请简要介绍一下你自己.<br><a href="https://hjhjw1991.github.io">hjhjw1991</a>你好, 大家好, 我是<code>ActivityManagerService</code>, 位于<code>frameworks/base/services/java/com/android/server/am/ActivityManagerService.java</code>. 我的父亲是<code>ActivityManagerNative</code>, 我的祖父是<code>Binder</code>. 我左手这个接口是<code>Watchdog.Monitor</code>, 右手的接口是<code>BatteryStatsImpl.BatteryCallback</code>, 我们家的关系就像下面这幅图所示:<br><img src="/images/blogs/activity_manager_service_stack.png" alt="ActivityManagerService类关系图"><br>感谢我家的健康咨询师<a href="http://blog.csdn.net/innost" target="_blank" rel="external">邓凡平老师</a>为我绘制的族谱, 他将族谱放在了<a href="http://wiki.jikexueyuan.com/project/deep-android-v2/activity.html" target="_blank" rel="external">这里</a>, 有兴趣的同学欢迎买他的书以表支持.  </p>
+</li>
+<li><p>好的, 我就叫你<code>AMS</code>可以吗?<br>没问题, 大家都这么叫我.  </p>
+</li>
+<li><p><code>AMS</code>, 你现在的职业是什么呢?<br>我现在在家族企业<code>Android Framework</code>上班, 日常工作也就是管理管理企业四大金刚<code>Activity</code> <code>Service</code> <code>ContentProvider</code> <code>BroadcastReceiver</code>.  </p>
+</li>
+<li><p>听起来位置很重要呢, 平时主要忙些什么呢?<br>确实非常重要, 我常常忙不过来呢. 我主要负责调度和管理刚刚提到的四大金刚, 他们是我们企业的业务骨干, 几乎所有业务都交给他们去做的, 所以为了他们能安心做好分内工作, 我作为中间协调人就需要负责在业务到来的时候找到合适的执行人并通知他们去执行. 不过说是这么说, 我其实也不是直接通知他们, 像<code>Activity</code>, 我就是在接到相关业务的时候, 选择合适的时机让我父亲<code>ActivityManagerNative</code>判断一下是什么业务, 然后告诉我应该做什么, 我就根据这个具体业务, 找到具体能做这个业务的对象. 我们有一个专门的对外接口人, 他叫<code>ActivityManagerProxy</code>, 负责跑业务.<br>比如接口人接到一个<code>startActivity</code>的任务, 他就拿着资料先给我父亲看一下(<code>ActivityManagerProxy.transact-&gt;ActivityManagerNative.onTransact</code>), 他没有权限见我父亲, 好在他手上有支可以直接接通我父亲的专属电话<code>mRemote</code>, 平时什么业务都是通过这支电话传递的. 据说这支电话是我祖父<code>Binder</code>和他的兄弟们发明的, 他们可以监听电话里所有的通信内容, 我祖父真厉害.<br>我父亲一看, 原来是<code>START_ACTIVITY_TRANSACTION</code>这种事务, 他帮我整理整理事务资料(因为据说事务资料都是包装在一种叫做<code>Parcel</code>的密封材料中的, 需要特别的解封技巧, 我不太会), 然后把整理好的资料交给我. <code>START_ACTIVITY_TRANSACTION</code>是我父亲和接口人<code>Proxy</code>约定好的暗语, 我们有一整套暗语, 写在<code>IActivityManager</code>这个文件里面, 这文件藏在<code>frameworks/base/core/java/android/app/IActivityManager.java</code>, 我也有一份拷贝, 是我父亲给我的, 但我基本上没看过, 都让我父亲看(<code>ActivityManagerService.onTransact</code>里面就是<code>super.onTransact</code>), 没办法我太忙了. 据说这套暗语也是祖父发明的, 我祖父真厉害.<br>父亲将资料交给我的时候也会告诉我, 要用<code>startActivity</code>这个方法去完成这个事务. 这个方法我知道, 我给你手写一下:  </p>
+<pre><code>public final int startActivity(IApplicationThread caller,
+        Intent intent, String resolvedType, Uri[] grantedUriPermissions,
+        int grantedMode, IBinder resultTo,
+        String resultWho, int requestCode, boolean onlyIfNeeded, boolean debug,
+        String profileFile, ParcelFileDescriptor profileFd, boolean autoStopProfiler) { // 方法签名
+    return mMainStack.startActivityMayWait(caller, -1, intent, resolvedType,
+            grantedUriPermissions, grantedMode, resultTo, resultWho,
+            requestCode, onlyIfNeeded, debug, profileFile, profileFd, autoStopProfiler,
+            null, null); // 执行者
+}
+</code></pre><p>你看, 很简单吧, 我其实只是把资料全都交给对的家伙去处理罢了. 说得我都有点不好意思了, 我平时真的很忙的, 真的. 这个<code>mMainStack</code>是我一个得力秘书, 他专精<code>Activity</code>相关管理事务, 据说他们家族是<code>ActivityStack</code>. 我看他能力不错, 就在<code>main</code>的时候把他招进来了.<br>我做的工作差不多都是这种模式, 像<code>startService</code>这种事务我可能做的事要多些, <code>startService -&gt; startServiceLocked -&gt; bringUpServiceLocked -&gt; realStartServiceLocked -&gt; app.thread.scheduleCreateService</code>, 基本上就是检查权限, 检查是不是已经在做了, 检查做的人还在不在, 如果做的人在但是还没开始做并且做的人能做, 我就交给他去做. 这个做事的人, 就是<code>app.thread</code>. <code>app</code>是<code>ProcessRecord</code>家的, 他小弟<code>thread</code>是<code>IApplicationThread</code>家的. 我虽然是<code>ServerThread</code>一手提拔起来让我做到现在位置的, 但是我们的运营完全独立于他, 行话说就是我们在<strong>独立线程</strong>上.  </p>
+</li>
+<li><p>你刚刚提到了<code>main</code>, 你所说的<code>main</code>是个什么过程呢?<br><code>main</code>是我的上司<code>SystemServer::ServerThread</code>交给我的任务. 他一旦告诉我要做<code>main</code>了, 我就要开始工作了. 具体来说, 我做的工作是这样的:  </p>
+<pre><code>public static final Context main(int factoryTest) {
+    AThread thr = new AThread(); // #1 创建一个AThread线程对象
+    thr.start();
+
+    synchronized (thr) {
+        ... // #2 等待线程的thr.mService创建完成
+    }
+
+    ActivityManagerService m = thr.mService;
+    mSelf = m;
+    ActivityThread at = ActivityThread.systemMain(); // #3 调用ActivityThread.systemMain函数
+    mSystemThread = at;
+    Context context = at.getSystemContext(); // #4 获得SystemContext
+    context.setTheme(android.R.style.Theme_Holo);
+    m.mContext = context;
+    m.mFactoryTest = factoryTest;
+    m.mMainStack = new ActivityStack(m, context, true); // #5 使用m和context新建ActivityStack对象
+
+    m.mBatteryStatsService.publish(context); // 调用BSS和USS的publish方法
+    m.mUsageStatsService.publish(context);
+
+    synchronized (thr) {
+        thr.mReady = true; // #6 设置thr为已准备, 并通知thr可以开始他的表演
+        thr.notifyAll();
+    }
+
+    m.startRunning(null, null, null, null); // 全null参数调用startRunning, 主要作用是设置`mStartRunning`标志, 因为此时`mSystemReady`还是默认值`false`, 走不到后面的`systemReady`逻辑
+
+    return context;
+}
+
+static class AThread extends Thread {
+    ActivityManagerService mService;
+    boolean mReady = false;
+
+    public AThread() {
+        super(&quot;ActivityManager&quot;); // 设置线程名字
+    }
+
+    public void run() {
+        Looper.prepare(); // 准备Looper, 估计是要用消息队列来处理消息
+
+        android.os.Process.setThreadPriority(
+                android.os.Process.THREAD_PRIORITY_FOREGROUND); // 设置线程优先级
+        android.os.Process.setCanSelfBackground(false);
+
+        ActivityManagerService m = new ActivityManagerService(); // 创建AMS对象
+
+        synchronized (this) {
+            mService = m; // AMS对象赋值给成员mService
+            notifyAll(); // #7 通知其他以本线程为锁的线程, 可以获取本线程来做锁了
+        }
+
+        synchronized (this) {
+            ...// #8 等待mReady被外部(也就是main所在线程)设置为true
+        }
+        ...
+
+        Looper.loop(); // 开始消息循环
+    }
+}
+</code></pre><p>老大让我开始<code>main</code>之后, 我就分配一个小弟<code>AThread thr</code>, 等他向我汇报(#2), 小弟汇报完(#7)就等我把老大这边交代的工作做完(#3~#6), 然后他再继续剩下的工作(#8), 并处于待命状态, 随时准备处理后面的消息.  </p>
+</li>
+<li><p>好像越来越复杂了, 又是<code>ActivityThread</code>又是<code>SystemServer</code>的, 看来我又多了几个采访对象. 想问一下<code>AMS</code>, 我注意到刚刚在你<code>AThread</code>中有一步是<code>new ActivityManagerService()</code>, 这里面做了什么能让我看一下吗?<br>不能╭(╯^╰)╮. <code>Java</code>类的构造函数就像女孩子的闺房, 允许你看才能看. 我可以大概跟你说里面做了什么. 大概就是下面这样:  </p>
+<pre><code>private ActivityManagerService() {
+    Slog.i(TAG, &quot;Memory class: &quot; + ActivityManager.staticGetMemoryClass()); // 日志
+
+    File dataDir = Environment.getDataDirectory(); // /data/目录
+    File systemDir = new File(dataDir, &quot;system&quot;); // /data/system
+    systemDir.mkdirs();
+    // 创建BatteryStatsService, BSS
+    mBatteryStatsService = new BatteryStatsService(new File(
+            systemDir, &quot;batterystats.bin&quot;).toString());
+    mBatteryStatsService.getActiveStatistics().readLocked();
+    mBatteryStatsService.getActiveStatistics().writeAsyncLocked();
+    mOnBattery = DEBUG_POWER ? true
+            : mBatteryStatsService.getActiveStatistics().getIsOnBattery();
+    mBatteryStatsService.getActiveStatistics().setCallback(this);
+
+    // 创建UsageStatsService, USS
+    mUsageStatsService = new UsageStatsService(new File(
+            systemDir, &quot;usagestats&quot;).toString());
+
+    GL_ES_VERSION = SystemProperties.getInt(&quot;ro.opengles.version&quot;,
+        ConfigurationInfo.GL_ES_VERSION_UNDEFINED); // OpenGL_ES版本
+
+    mConfiguration.setToDefaults();
+    mConfiguration.locale = Locale.getDefault();
+    mProcessStats.init(); // ProcessStats, 用于统计CPU/内存信息, 解析/proc/stat文件的内容
+
+    // 解析/data/system/packages-compat.xml文件, 获得APK的屏幕尺寸要求.  
+    mCompatModePackages = new CompatModePackages(this, systemDir);
+
+    // Add ourself to the Watchdog monitors.
+    Watchdog.getInstance().addMonitor(this);
+
+    // 新线程用于定时更新系统信息
+    mProcessStatsThread = new Thread(&quot;ProcessStats&quot;) {
+        public void run() {
+            while (true) {
+                try {
+                    try {
+                        synchronized(this) {
+                            final long now = SystemClock.uptimeMillis();
+                            long nextCpuDelay = (mLastCpuTime.get()+MONITOR_CPU_MAX_TIME)-now;
+                            long nextWriteDelay = (mLastWriteTime+BATTERY_STATS_TIME)-now;
+                            //Slog.i(TAG, &quot;Cpu delay=&quot; + nextCpuDelay
+                            //        + &quot;, write delay=&quot; + nextWriteDelay);
+                            if (nextWriteDelay &lt; nextCpuDelay) {
+                                nextCpuDelay = nextWriteDelay;
+                            }
+                            if (nextCpuDelay &gt; 0) {
+                                mProcessStatsMutexFree.set(true);
+                                this.wait(nextCpuDelay);
+                            }
+                        }
+                    } catch (InterruptedException e) {
+                    }
+                    updateCpuStatsNow();
+                } catch (Exception e) {
+                    Slog.e(TAG, &quot;Unexpected exception collecting process stats&quot;, e);
+                }
+            }
+        }
+    };
+    mProcessStatsThread.start();
+}
+</code></pre><p>总的来说就是创建了<code>/data/system</code>目录, 实例化了BSS和USS两个服务, 创建了<code>ProcessStats</code>的实例及其运行线程, 这些都是用来监控系统状况的. 另外初始化了<code>mCompatModePackages</code>和<code>mConfiguration</code>.  </p>
+</li>
+<li><p>那<code>ActivityThread.systemMain()</code>和<code>ActivityManagerService.startRunning()</code>又做了什么呢?<br><code>ActivityThread.systemMain()</code>先禁用硬件渲染, 然后实例化了一个<code>ActivityThread</code>对象并调用了它的<code>attach(true)</code>方法, 然后把这个对象丢回来. <code>attach(true)</code>传入的参数表示调用者是否系统进程. 在系统进程下它做了以下工作:  </p>
+<pre><code>
+private void attach(boolean system) {
+    sThreadLocal.set(this);
+    mSystemThread = system;
+    if (!system) {// 非系统进程时的处理
+    } else {
+        // Don&apos;t set application object here -- if the system crashes,
+        // we can&apos;t display an alert, we just want to die die die.
+        // 以上是源码中的注释, 绝不是我在卖萌
+        // 设置显示的进程名称为system_process
+        android.ddm.DdmHandleAppName.setAppName(&quot;system_process&quot;);
+        try {
+            // 构造Instrumentation, Context, Application, 并调用Applicaiton.onCreate()
+            mInstrumentation = new Instrumentation();
+            ContextImpl context = new ContextImpl();
+            // 调用init时第一个参数是getSystemContext().mPackageInfo
+            context.init(getSystemContext().mPackageInfo, null, this);
+            Application app = Instrumentation.newApplication(Application.class, context);
+            mAllApplications.add(app);
+            mInitialApplication = app;
+            app.onCreate();
+        } catch (Exception e) {
+            ...
+        }
+    }
+
+    // 添加Configuration回调
+    ViewRootImpl.addConfigCallback(new ComponentCallbacks2() {
+        public void onConfigurationChanged(Configuration newConfig) {
+            synchronized (mPackages) {
+                // We need to apply this change to the resources
+                // immediately, because upon returning the view
+                // hierarchy will be informed about it.
+                if (applyConfigurationToResourcesLocked(newConfig, null)) {
+                    // This actually changed the resources!  Tell
+                    // everyone about it.
+                    ...
+                }
+            }
+        }
+        public void onLowMemory() {
+        }
+        public void onTrimMemory(int level) {
+        }
+    });
+}
+</code></pre><p>可见, 在系统初始化的时候以系统的身份借助了<code>ActivityThread</code>的功能, 去获取系统资源<code>framework-res.apk</code>(应用名<code>android</code>). 从这个角度来说, <code>SystemServer</code>进程实际上也是一个特殊的应用进程, 在其上运行的应用都是仅供给系统使用的. 在<code>systemMain</code>调用结束后, 就可以通过返回的<code>ActivityThread</code>实例像操作普通应用一样操作系统应用以及和<code>Android</code>环境交互了. 相当于<code>SystemServer</code>也运行在跟应用进程相似的<code>Android</code>运行环境中.<br>然后<code>startRunning()</code>做的事:  </p>
+<pre><code>// 以全null参数调用
+public final void startRunning(String pkg, String cls, String action,
+        String data) {
+    synchronized(this) {
+        if (mStartRunning) {
+            return;
+        }
+        mStartRunning = true; // 设置标记, 如果已经设置过了直接返回
+        mTopComponent = pkg != null &amp;&amp; cls != null
+                ? new ComponentName(pkg, cls) : null;
+        mTopAction = action != null ? action : Intent.ACTION_MAIN;
+        mTopData = data; // 由于传入的参数全null, 所以这里几个成员变量也是null
+        if (!mSystemReady) { // 此时mSystemReady仍为默认值false, 直接返回
+            return;
+        }
+    }
+
+    systemReady(null); // 重要函数, 执行完后意味着系统已经启动完毕. 代码非常长, 本文不表.
+}
+</code></pre></li>
+<li><p>好的, 我大概更糊涂了. 到这里为止都是<code>Activity</code>和<code>Application</code>啥的, 你前面说过跟四大金刚打交道, 那么其他几位你又是怎么跟他们打交道的呢?<br>嗯, 下次有空再说吧  </p>
+</li>
+</ul>
+<p><img src="/images/blogs/activity_manager_service_content_provider.png" alt="ContentProvider">  </p>
+<h2 id="ActivityManagerNative-ActivityManagerProxy与ActivityManager"><a href="#ActivityManagerNative-ActivityManagerProxy与ActivityManager" class="headerlink" title="ActivityManagerNative, ActivityManagerProxy与ActivityManager"></a>ActivityManagerNative, ActivityManagerProxy与ActivityManager</h2>  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/教程/">教程</a><a href="/tags/android/">android</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://hjhjw1991.github.io/android/2017/03/05/[Android教程]ActivityManagerService全解/" data-title="【Android教程】ActivityManagerService全解 | hjhjw1991&#39;s blog" data-tsina="1304671950" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+
+<div class="next">
+<a href="/android/2017/03/01/[Android源码伴读]Retrofit源码探秘/"  title="【Android源码伴读】Retrofit源码探秘">
+ <strong>下一篇：</strong><br/> 
+ <span>【Android源码伴读】Retrofit源码探秘
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#ActivityManagerService"><span class="toc-number">1.</span> <span class="toc-text">ActivityManagerService</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ActivityManagerNative-ActivityManagerProxy与ActivityManager"><span class="toc-number">2.</span> <span class="toc-text">ActivityManagerNative, ActivityManagerProxy与ActivityManager</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="hjhjw1991" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js" ></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/android/" title="android">android<sup>18</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/blog/" title="blog">blog<sup>13</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/leetcode/" title="leetcode">leetcode<sup>9</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/opinion/" title="opinion">opinion<sup>4</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/tips/" title="tips">tips<sup>4</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/android/" title="android">android<sup>19</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/教程/" title="教程">教程<sup>15</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/面试/" title="面试">面试<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/windows/" title="windows">windows<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vps/" title="vps">vps<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/jekyll/" title="jekyll">jekyll<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ssh/" title="ssh">ssh<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/正则表达式/" title="正则表达式">正则表达式<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/uwsgi/" title="uwsgi">uwsgi<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ios/" title="ios">ios<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vpn/" title="vpn">vpn<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://google.com" target="_blank" title="Google">Google</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="120" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=1304671950&verifier=64e7ae81&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Huang Jun. <br/>
+			This is my blog.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		<a href="http://weibo.com/1304671950" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/hjhjw1991" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:hjhjw1991@gmail.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="hjhjw1991">hjhjw1991</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'hjhjw1991';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?cd0e561542c22cc83da2e311ec57da84";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>
