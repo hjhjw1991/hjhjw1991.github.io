@@ -1,3 +1,5 @@
+[![ghit.me](https://ghit.me/badge.svg?repo=hjhjw1991/hjhjw1991.github.io)](https://ghit.me/repo/hjhjw1991/hjhjw1991.github.io)
+
 # update
 原先是来自Beiyuu的主题，使用的jekyll  
 现在使用Hexo全部重做，用了jacman主题  
