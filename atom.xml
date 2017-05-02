@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://hjhjw1991.github.io/"/>
-  <updated>2017-03-05T11:16:22.027Z</updated>
+  <updated>2017-05-02T02:20:44.491Z</updated>
   <id>https://hjhjw1991.github.io/</id>
   
   <author>
@@ -16,11 +16,81 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
-    <title>【Android教程】ActivityManagerService全解</title>
+    <title>Activity中launchMode的理解</title>
+    <link href="https://hjhjw1991.github.io/android/2017/04/28/Activity%E4%B8%ADlaunchMode%E7%9A%84%E7%90%86%E8%A7%A3/"/>
+    <id>https://hjhjw1991.github.io/android/2017/04/28/Activity中launchMode的理解/</id>
+    <published>2017-04-27T16:00:00.000Z</published>
+    <updated>2017-05-02T02:20:44.491Z</updated>
+    
+    <content type="html"><![CDATA[<p>我们知道, <code>Activity</code>需要配置在<code>AndroidManifest.xml</code>中才能正常启动, 其原因是launcher需要它来判断应当从哪个Apk中启动哪个Class. 在配置<code>Activity</code>的时候, 有一个属性叫做<code>launchMode</code>, 它对<code>Activity</code>的启动和退出影响颇大, 今天我们就来深入了解一下这个属性以及其背后的逻辑.  </p>
+<h2 id="launchMode属性"><a href="#launchMode属性" class="headerlink" title="launchMode属性"></a>launchMode属性</h2><blockquote>
+<p>本节内容可自行写demo验证理解</p>
+</blockquote>
+<p>翻阅各种参考, 我们知道(截至本文成文之日)<code>launchMode</code>一共可以指定四种属性值, 分别是<code>standard singleTop singleTask singleInstance</code>, 其中<code>standard</code>也是默认的属性值. 那么他们分别具有怎样的作用呢?<br>总的来说, <code>launchMode</code>属性影响的是<code>Activity</code>的回退栈, 因此我们有必要先理解回退栈这一概念.<br>在<code>Activity</code>启动的时候, 我们需要考虑当它退出的时候, 下一个要展示的<code>Activity</code>是什么, 为此, <code>android</code>中维护一个<code>Task</code>, 称为任务栈, 以栈的数据结构存储启动的<code>Activity</code>. 当我们退出一个<code>Activity</code>的时候, 展示上一个启动的<code>Activity</code>, 于是在<code>Task</code>中, 只要让当前展示的<code>Activity</code>位于栈顶, 在退出时让它出栈, 就可以自然完成这样的回退逻辑. 例如从A启动B, 当我们退出B的时候, 就展示A. 以上就是最简单朴素的回退栈. 但是这里有一个问题, 就是当我们从桌面启动A时, 回退栈中似乎只有一个A, 这时候退出A, 栈就空了, 怎么办呢? 当然我们大家都知道, 这时候其实是回到了桌面的. 原因就在于, <code>Task</code>有两层概念, 第一层是, 任一应用(作为一个process)拥有自身的回退栈, 第二层是, 系统维护跨应用的全部回退栈. 于是在退出A的时候, 我们实际上是退出了当前应用的回退栈, 交由系统决定下一个要展示的回退栈, 这里就是<code>launcher</code>这个系统应用的回退栈了. 而在<code>launcher</code>中, 由于重写了<code>Back</code> <code>Home</code>按键的响应, 所以不会再退出这个应用.<br>可以用图表示如下:  </p>
+<p><img src="/images/blogs/back_stack.png" alt="回退栈示意图">  </p>
+<p>有了回退栈我们就知道了如何处理”退出一个Activity”这件事情. 与此相对的, “启动一个Activity”这件事情就意味着需要将<code>Activity</code>放到某个回退栈中. 如果我们完全按照以上的基本逻辑, 即每个应用拥有自身的回退栈, 并且每启动一个<code>Activity</code>就将它放到栈顶, 这就是<code>launchMode</code>的默认属性<code>standard</code>的行为. 对于<code>standard</code>的<code>Activity</code>来说, 它的实例会被放到启动它的<code>Activity</code>所在的<code>Task</code>中.  </p>
+<p>很可惜现实世界不是这么简单而美好的, “标准行为”总是会引起”标准错误”. 于是就有了后面三种启动模式.<br>考虑一种情况, 我们需要在应用App1中启动应用App2的某个<code>Activity B</code>. 假设这个B以标准模式启动会有什么问题呢? 每次调用都会创建B并添加到任务栈中, 导致任务栈上茫茫多的B, 退都退不完. 更糟糕的是, 默认情况下B没有指定任务栈, 它会被放在调用它的应用的任务栈上, 这就导致你回到原来的应用界面需要穿过千山万水. 这种情形很常见, 例如点击通知栏通知, 就会跳转到指定应用的指定<code>Activity</code>, 点一百次通知就创建一百个实例这是不可接受的. 通常情况下其实只需要更新数据, 根本没必要新建一个实例. 于是我们有了<code>singleTop</code>模式. 它的作用在于, 该模式下的<code>Activity</code>实例, 如果本身已经在栈顶, 那么再次调用<code>startActivity</code>的时候, 不会创建新的实例, 而是调用已存在实例的<code>onNewIntent()</code>生命周期, 处理新传入的<code>Intent</code>. 如果实例不存在或不在栈顶, 那就跟标准模式一样创建新的实例并放在栈顶.<br>考虑另一种情况, 我们需要在A-B两个<code>Activity</code>中反复互相启动(秘技:反复横跳!), 那么就会引起问题. 由于标准模式下只是无脑启动并添加<code>Activity</code>, 就会导致回退栈中存有大量的<code>A-B-A-B-A-B</code>这样的序列, 而实际上存在多个A还是一个A对用户来说没有分别, 反而多个A导致退出的时候需要按很多次<code>Back</code>, 不胜其烦, 而<code>singleTop</code>模式也不能解决这种问题. 于是我们有了<code>singleTask</code>模式. 它的作用在于, 处于<code>singleTask</code>模式的<code>Activity</code>, 在整个<code>Task</code>之中只能有一个实例. 在启动该<code>Activity</code>的时候, 如果<code>Task</code>中没有该实例, 则新建实例并添加到任务栈, 走全新创建的生命周期, 否则将任务栈中处于该实例以上的所有<code>Activity</code>出栈, 令它处于栈顶(唯我独尊有木有!), 然后调用<code>onNewIntent()</code>周期. 它也是可以快速清空栈内<code>Activity</code>的黑科技.(思考: <code>singleTask</code>模式一定会新建一个<code>Task</code>吗?)<br>再考虑另一种情况, 某个<code>Activity</code>的功能非常单一, 我们全局只需要一个这样的实例来完成他的功能就可以了, 相当于要一个单例<code>Activity</code>. 这样的话, 以上三种模式都无法满足需要, 他们都是强调在某一个Task栈中的状态, 但处于不同的Task栈的话就没有限制了(特别说明一下<code>singleTask</code>模式, 它令Task中只有一个实例, 按理说如果我们只有一个Task的话也可以满足单例的要求, 但它的”副作用”是会清空实例以上的全部<code>Activity</code>, 这却不是我们希望的效果), 所以我们需要一个新的模式来代表这种跨Task栈的单例, 由此诞生了<code>singleInstance</code>模式. 处于该模式的<code>Activity</code>, 在被启动的时候会新建一个<code>Task</code>, 整个生命周期都在这个<code>Task</code>中, 并且这个<code>Task</code><strong>有且只有</strong>它一个实例, 无论从哪里启动它, 只要在某个<code>Task</code>中存在实例, 就会调用这个实例的<code>onNewIntent()</code>周期, 而不是新建一个实例. 这样的例子还是挺多的, 例如桌面日历, 桌面时钟.(思考: 如果指定另一个<code>Activity</code>跟这个<code>singleInstance</code>的<code>Activity</code>拥有同样的<code>Task</code>, 会怎样? 如果从这个<code>singleInstance</code>实例中启动新的<code>Activity</code>, 新的<code>Activity</code>会放在哪里?)  </p>
+<p>以上就是四种启动模式的特点. 在官网中对启动模式的描述, 隐含条件是非标准启动模式都指定了<code>taskAffinity</code>属性, 故可能会引起误解.  </p>
+<h2 id="taskAffinity"><a href="#taskAffinity" class="headerlink" title="taskAffinity"></a>taskAffinity</h2><p>启动模式可以配合<code>taskAffinity</code>属性使用.这里来解释一下<code>taskAffinity</code>这个属性.<br>它是<code>Application</code>和<code>Activity</code>标签都有的属性, 用于指定一个<code>Task</code>的名字, 直译的话可以译作”任务归属性”或者”任务亲和性”吧. 不填写该属性的情况下, 所有<code>Activity</code>在一个以包名为名字的<code>Task</code>中, <code>Activity</code>指定了该属性时, 会被放在以该属性值为名字的<code>Task</code>中, <code>Application</code>指定了该属性时, 整个<code>Application</code>的默认<code>Task</code>以该属性值为名.<br>前文曾提出疑问, <code>singleTask</code>是否一定会新建一个<code>Task</code>, 答案是”不一定”. 以<code>singleTask</code>模式启动的<code>Activity</code>, 总是在”将要放置该Activity的Task”中检查实例, 而不指定<code>taskAffinity</code>的情况下将要放置该<code>Activity</code>的就是默认<code>Task</code>了. 实际上只有在指定了<code>taskAffinity</code>并且该<code>Task</code>还不存在的情况下, 才会新建以<code>taskAffinity</code>值命名的<code>Task</code>.<br>需要注意的是, <code>taskAffinity</code>属性是<strong>跨应用的</strong>, 你完全可以为不同的应用指定同一个<code>Task</code>. 要使该属性生效, 必须允许在启动拥有该属性的<code>Activity</code>时新建<code>Task</code>, 即需要传入下文将要介绍的<code>FLAG_ACTIVITY_NEW_TASK</code>标志或为<code>Activity</code>指定<code>allowTaskReparenting</code>为<code>True</code>.  </p>
+<h2 id="intent-flags"><a href="#intent-flags" class="headerlink" title="intent flags"></a>intent flags</h2><p>如果说, 我们想要在代码中动态地改变<code>Activity</code>启动模式, 比如想让本来以<code>standard</code>模式启动的<code>Activity</code>在某种情况下以<code>singleTop</code>模式启动, 这可以办到吗? <code>Android</code>工程师们显然想到了这种情形, 设计了<code>intent flags</code>来达成该目的.<br>在启动<code>Activity</code>的时候需要一个<code>Intent</code>, 通过<code>Intent.setFlags()</code>可以设置启动标志, 其中启动模式和FLAG的对应关系如下:  </p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">启动模式</th>
+<th style="text-align:left">启动标志</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">standard</td>
+<td style="text-align:left">不设置</td>
+</tr>
+<tr>
+<td style="text-align:left">singleTop</td>
+<td style="text-align:left">FLAG_ACTIVITY_SINGLE_TOP</td>
+</tr>
+<tr>
+<td style="text-align:left">singleTask</td>
+<td style="text-align:left">FLAG_ACTIVITY_NEW_TASK &#124; FLAG_ACTIVITY_CLEAR_TOP</td>
+</tr>
+</tbody>
+</table>
+<p>另外还有更多的FLAG可以达成其他效果, 查看<code>Intent</code>类源码可以了解更多.<br>细心的同学可能发现了, 上述表格跟官网的介绍有出入. 官网说仅<code>FLAG_ACTIVITY_NEW_TASK</code>就会产生与<code>singleTask</code>模式相同的行为, 事实上经我实验只有在指定了<code>taskAffinity</code>时这句话才成立. 官网说<code>FLAG_ACTIVITY_CLEAR_TOP</code>属性没有对应的启动模式, 事实上确实如此, 因为它是<code>singleTask</code>模式的其中一个行为.  </p>
+<p>细心的同学可能还发现, 表格中没有<code>singleInstance</code>模式对应的FLAG. 那是因为这种模式要达成的效果需要在处理<code>Intent</code>之前更早的时期来控制, 在<code>Intent</code>中设置没用.  </p>
+<h2 id="任务栈和回退栈"><a href="#任务栈和回退栈" class="headerlink" title="任务栈和回退栈"></a>任务栈和回退栈</h2><p>由前文所述我们接触到两个概念: 任务栈和回退栈. 我姑且在此拙劣地理解一下: 任务栈是为了完成某种任务而形成的<code>Activity</code>的栈; 回退栈是显示回退顺序的<code>Activity</code>栈. 如此理解的话, 那么两者是从不同的侧面来描述<code>Activity</code>的组织方式, 其中任务栈就是我们上文一直在说的<code>Task</code>, 而回退栈只是一个逻辑上的概念. 事实上我们在新建或者唤起一个<code>Activity</code>的时候, 它所在的整个<code>Task</code>会被提到最上层, 也就是”回退栈”的顶端, 就算<code>launcher</code>应用也是以这种方式回到栈顶的, 只不过它对<code>Back</code>和<code>Home</code>做了处理, 我们无法通过返回键令它出栈而回到位于它下面的<code>Activity</code>. 这就是为什么我们能够在不同的应用间切换, 还能保持应用所打开的<code>Activity</code>的原因(事实上通过设置<code>clearTaskOnLaunch</code>等属性, 切入后台后再切回来可以清空已打开的<code>Activity</code>). 一个栈的名字由在这个栈的底端的那个<code>Activity</code>来定义, 默认就是那个<code>Activity</code>所在的应用的包名.<br>最后一个思考题, 这些任务栈是被谁在什么时候进行管理的呢?<br>祭出我们的大杀器: 源码. 全目录搜索关键词<code>launchMode</code>, 然后就会发现一个东西<code>./frameworks/base/services/java/com/android/server/am/ActivityStack.java</code>以及另一个东西<code>./frameworks/base/core/java/android/content/pm/ActivityInfo.java</code>, 其中前者我们在AMS中已经见到过了, 至此得解.  </p>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
+<li><a href="https://developer.android.com/guide/components/tasks-and-back-stack.html#ManagingTasks" target="_blank" rel="external">官网 任务和返回栈</a>  </li>
+<li><a href="http://www.jcodecraeer.com/a/anzhuokaifa/androidkaifa/2015/0520/2897.html" target="_blank" rel="external">Activity启动模式图文详解</a>  </li>
+<li><a href="http://blog.csdn.net/qilamaxiu/article/details/51604957" target="_blank" rel="external">Activity启动模式解析</a>  </li>
+<li><a href="http://blog.csdn.net/liuhe688/article/details/6754323" target="_blank" rel="external">基础总结篇之二：Activity的四种launchMode</a>  </li>
+<li><a href="http://blog.csdn.net/thewalker3000/article/details/62035836" target="_blank" rel="external">如何正确理解和使用 Activity的4种启动模式</a>  </li>
+<li><a href="http://wangkuiwu.github.io/2014/06/26/IntentFlag/" target="_blank" rel="external">Android 之Activity启动模式(二)之 Intent的Flag属性</a>  </li>
+<li><a href="http://www.cloudchou.com/android/post-760.html" target="_blank" rel="external">深入理解Activity启动模式(二)–Activity,回退栈,Task之间的关系</a>  </li>
+<li><a href="http://blog.csdn.net/wanghao200906/article/details/49766309" target="_blank" rel="external">android的启动模式 到底在什么时候用呢</a>  </li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      我们知道, `Activity`需要配置在`AndroidManifest.xml`中才能正常启动, 其原因是launc...
+    
+    </summary>
+    
+      <category term="android" scheme="https://hjhjw1991.github.io/categories/android/"/>
+    
+    
+      <category term="android" scheme="https://hjhjw1991.github.io/tags/android/"/>
+    
+      <category term="guide" scheme="https://hjhjw1991.github.io/tags/guide/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>【Android教程】ActivityManagerService全解(1/5)</title>
     <link href="https://hjhjw1991.github.io/android/2017/03/05/%5BAndroid%E6%95%99%E7%A8%8B%5DActivityManagerService%E5%85%A8%E8%A7%A3/"/>
     <id>https://hjhjw1991.github.io/android/2017/03/05/[Android教程]ActivityManagerService全解/</id>
     <published>2017-03-04T16:00:00.000Z</published>
-    <updated>2017-03-05T11:16:22.027Z</updated>
+    <updated>2017-04-07T03:12:54.948Z</updated>
     
     <content type="html"><![CDATA[<blockquote>
 <p>在<code>Android</code>操作系统中, 有许多个默默维护<code>Android</code>系统稳定正常流畅运行的幕后工作者, 对于上层App开发者来说这些工作者的名字可能是不太熟悉甚至完全陌生的, 就像电影散场时的演职人员表, 人人都知道没有他们电影完不成, 也都知道他们各有分工, 各有名谓, 但少有人清楚他们具体做了什么. 其中为人所熟知的几大系统服务之一就是<code>ActivityManagerService</code>, 今天我们来访谈一下这位幕后工作者.  </p>
@@ -34,225 +104,328 @@
 <li><p><code>AMS</code>, 你现在的职业是什么呢?<br>我现在在家族企业<code>Android Framework</code>上班, 日常工作也就是管理管理企业四大金刚<code>Activity</code> <code>Service</code> <code>ContentProvider</code> <code>BroadcastReceiver</code>.  </p>
 </li>
 <li><p>听起来位置很重要呢, 平时主要忙些什么呢?<br>确实非常重要, 我常常忙不过来呢. 我主要负责调度和管理刚刚提到的四大金刚, 他们是我们企业的业务骨干, 几乎所有业务都交给他们去做的, 所以为了他们能安心做好分内工作, 我作为中间协调人就需要负责在业务到来的时候找到合适的执行人并通知他们去执行. 不过说是这么说, 我其实也不是直接通知他们, 像<code>Activity</code>, 我就是在接到相关业务的时候, 选择合适的时机让我父亲<code>ActivityManagerNative</code>判断一下是什么业务, 然后告诉我应该做什么, 我就根据这个具体业务, 找到具体能做这个业务的对象. 我们有一个专门的对外接口人, 他叫<code>ActivityManagerProxy</code>, 负责跑业务.<br>比如接口人接到一个<code>startActivity</code>的任务, 他就拿着资料先给我父亲看一下(<code>ActivityManagerProxy.transact-&gt;ActivityManagerNative.onTransact</code>), 他没有权限见我父亲, 好在他手上有支可以直接接通我父亲的专属电话<code>mRemote</code>, 平时什么业务都是通过这支电话传递的. 据说这支电话是我祖父<code>Binder</code>和他的兄弟们发明的, 他们可以监听电话里所有的通信内容, 我祖父真厉害.<br>我父亲一看, 原来是<code>START_ACTIVITY_TRANSACTION</code>这种事务, 他帮我整理整理事务资料(因为据说事务资料都是包装在一种叫做<code>Parcel</code>的密封材料中的, 需要特别的解封技巧, 我不太会), 然后把整理好的资料交给我. <code>START_ACTIVITY_TRANSACTION</code>是我父亲和接口人<code>Proxy</code>约定好的暗语, 我们有一整套暗语, 写在<code>IActivityManager</code>这个文件里面, 这文件藏在<code>frameworks/base/core/java/android/app/IActivityManager.java</code>, 我也有一份拷贝, 是我父亲给我的, 但我基本上没看过, 都让我父亲看(<code>ActivityManagerService.onTransact</code>里面就是<code>super.onTransact</code>), 没办法我太忙了. 据说这套暗语也是祖父发明的, 我祖父真厉害.<br>父亲将资料交给我的时候也会告诉我, 要用<code>startActivity</code>这个方法去完成这个事务. 这个方法我知道, 我给你手写一下:  </p>
-<pre><code>public final int startActivity(IApplicationThread caller,
-        Intent intent, String resolvedType, Uri[] grantedUriPermissions,
-        int grantedMode, IBinder resultTo,
-        String resultWho, int requestCode, boolean onlyIfNeeded, boolean debug,
-        String profileFile, ParcelFileDescriptor profileFd, boolean autoStopProfiler) { // 方法签名
-    return mMainStack.startActivityMayWait(caller, -1, intent, resolvedType,
-            grantedUriPermissions, grantedMode, resultTo, resultWho,
-            requestCode, onlyIfNeeded, debug, profileFile, profileFd, autoStopProfiler,
-            null, null); // 执行者
-}
-</code></pre><p>你看, 很简单吧, 我其实只是把资料全都交给对的家伙去处理罢了. 说得我都有点不好意思了, 我平时真的很忙的, 真的. 这个<code>mMainStack</code>是我一个得力秘书, 他专精<code>Activity</code>相关管理事务, 据说他们家族是<code>ActivityStack</code>. 我看他能力不错, 就在<code>main</code>的时候把他招进来了.<br>我做的工作差不多都是这种模式, 像<code>startService</code>这种事务我可能做的事要多些, <code>startService -&gt; startServiceLocked -&gt; bringUpServiceLocked -&gt; realStartServiceLocked -&gt; app.thread.scheduleCreateService</code>, 基本上就是检查权限, 检查是不是已经在做了, 检查做的人还在不在, 如果做的人在但是还没开始做并且做的人能做, 我就交给他去做. 这个做事的人, 就是<code>app.thread</code>. <code>app</code>是<code>ProcessRecord</code>家的, 他小弟<code>thread</code>是<code>IApplicationThread</code>家的. 我虽然是<code>ServerThread</code>一手提拔起来让我做到现在位置的, 但是我们的运营完全独立于他, 行话说就是我们在<strong>独立线程</strong>上.  </p>
-</li>
-<li><p>你刚刚提到了<code>main</code>, 你所说的<code>main</code>是个什么过程呢?<br><code>main</code>是我的上司<code>SystemServer::ServerThread</code>交给我的任务. 他一旦告诉我要做<code>main</code>了, 我就要开始工作了. 具体来说, 我做的工作是这样的:  </p>
-<pre><code>public static final Context main(int factoryTest) {
-    AThread thr = new AThread(); // #1 创建一个AThread线程对象
-    thr.start();
-
-    synchronized (thr) {
-        ... // #2 等待线程的thr.mService创建完成
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div><div class="line">157</div><div class="line">158</div><div class="line">159</div><div class="line">160</div><div class="line">161</div><div class="line">162</div><div class="line">163</div><div class="line">164</div><div class="line">165</div><div class="line">166</div><div class="line">167</div><div class="line">168</div><div class="line">169</div><div class="line">170</div><div class="line">171</div><div class="line">172</div><div class="line">173</div><div class="line">174</div><div class="line">175</div><div class="line">176</div><div class="line">177</div><div class="line">178</div><div class="line">179</div><div class="line">180</div><div class="line">181</div><div class="line">182</div><div class="line">183</div><div class="line">184</div><div class="line">185</div><div class="line">186</div><div class="line">187</div><div class="line">188</div><div class="line">189</div><div class="line">190</div><div class="line">191</div><div class="line">192</div><div class="line">193</div><div class="line">194</div><div class="line">195</div><div class="line">196</div><div class="line">197</div><div class="line">198</div><div class="line">199</div><div class="line">200</div><div class="line">201</div><div class="line">202</div><div class="line">203</div><div class="line">204</div><div class="line">205</div><div class="line">206</div><div class="line">207</div><div class="line">208</div><div class="line">209</div><div class="line">210</div><div class="line">211</div><div class="line">212</div><div class="line">213</div><div class="line">214</div><div class="line">215</div><div class="line">216</div><div class="line">217</div><div class="line">218</div><div class="line">219</div><div class="line">220</div><div class="line">221</div><div class="line">222</div><div class="line">223</div><div class="line">224</div><div class="line">225</div><div class="line">226</div><div class="line">227</div><div class="line">228</div><div class="line">229</div><div class="line">230</div><div class="line">231</div><div class="line">232</div><div class="line">233</div><div class="line">234</div><div class="line">235</div><div class="line">236</div><div class="line">237</div><div class="line">238</div><div class="line">239</div><div class="line">240</div><div class="line">241</div><div class="line">242</div><div class="line">243</div><div class="line">244</div><div class="line">245</div><div class="line">246</div><div class="line">247</div><div class="line">248</div><div class="line">249</div></pre></td><td class="code"><pre><div class="line">  public final int startActivity(IApplicationThread caller,</div><div class="line">          Intent intent, String resolvedType, Uri[] grantedUriPermissions,</div><div class="line">          int grantedMode, IBinder resultTo,</div><div class="line">          String resultWho, int requestCode, boolean onlyIfNeeded, boolean debug,</div><div class="line">          String profileFile, ParcelFileDescriptor profileFd, boolean autoStopProfiler) &#123; // 方法签名</div><div class="line">      return mMainStack.startActivityMayWait(caller, -1, intent, resolvedType,</div><div class="line">              grantedUriPermissions, grantedMode, resultTo, resultWho,</div><div class="line">              requestCode, onlyIfNeeded, debug, profileFile, profileFd, autoStopProfiler,</div><div class="line">              null, null); // 执行者</div><div class="line">  &#125;</div><div class="line">  ```  </div><div class="line">  </div><div class="line">  你看, 很简单吧, 我其实只是把资料全都交给对的家伙去处理罢了. 说得我都有点不好意思了, 我平时真的很忙的, 真的. 这个`mMainStack`是我一个得力秘书, 他专精`Activity`相关管理事务, 据说他们家族是`ActivityStack`. 我看他能力不错, 就在`main`的时候把他招进来了.  </div><div class="line">  我做的工作差不多都是这种模式, 像`startService`这种事务我可能做的事要多些, `startService -&gt; startServiceLocked -&gt; bringUpServiceLocked -&gt; realStartServiceLocked -&gt; app.thread.scheduleCreateService`, 基本上就是检查权限, 检查是不是已经在做了, 检查做的人还在不在, 如果做的人在但是还没开始做并且做的人能做, 我就交给他去做. 这个做事的人, 就是`app.thread`. `app`是`ProcessRecord`家的, 他小弟`thread`是`IApplicationThread`家的. 我虽然是`ServerThread`一手提拔起来让我做到现在位置的, 但是我们的运营完全独立于他, 行话说就是我们在**独立线程**上.  </div><div class="line">  </div><div class="line">- 你刚刚提到了`main`, 你所说的`main`是个什么过程呢?  </div><div class="line">  `main`是我的上司`SystemServer::ServerThread`(位于`frameworks/base/services/java/com/android/server/SystemServer.java`)交给我的任务. 他一旦告诉我要做`main`了, 我就要开始工作了. 具体来说, 我做的工作是这样的:</div><div class="line">  </div><div class="line">  ```  </div><div class="line">    public static final Context main(int factoryTest) &#123;</div><div class="line">        AThread thr = new AThread(); // #1 创建一个AThread线程对象</div><div class="line">        thr.start();</div><div class="line"></div><div class="line">        synchronized (thr) &#123;</div><div class="line">            ... // #2 等待线程的thr.mService创建完成</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        ActivityManagerService m = thr.mService;</div><div class="line">        mSelf = m;</div><div class="line">        ActivityThread at = ActivityThread.systemMain(); // #3 调用ActivityThread.systemMain函数</div><div class="line">        mSystemThread = at;</div><div class="line">        Context context = at.getSystemContext(); // #4 获得SystemContext</div><div class="line">        context.setTheme(android.R.style.Theme_Holo);</div><div class="line">        m.mContext = context;</div><div class="line">        m.mFactoryTest = factoryTest;</div><div class="line">        m.mMainStack = new ActivityStack(m, context, true); // #5 使用m和context新建ActivityStack对象</div><div class="line">        </div><div class="line">        m.mBatteryStatsService.publish(context); // 调用BSS和USS的publish方法</div><div class="line">        m.mUsageStatsService.publish(context);</div><div class="line">        </div><div class="line">        synchronized (thr) &#123;</div><div class="line">            thr.mReady = true; // #6 设置thr为已准备, 并通知thr可以开始他的表演</div><div class="line">            thr.notifyAll();</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        m.startRunning(null, null, null, null); // 全null参数调用startRunning, 主要作用是设置`mStartRunning`标志, 因为此时`mSystemReady`还是默认值`false`, 走不到后面的`systemReady`逻辑</div><div class="line">        </div><div class="line">        return context;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    static class AThread extends Thread &#123;</div><div class="line">        ActivityManagerService mService;</div><div class="line">        boolean mReady = false;</div><div class="line"></div><div class="line">        public AThread() &#123;</div><div class="line">            super(&quot;ActivityManager&quot;); // 设置线程名字</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        public void run() &#123;</div><div class="line">            Looper.prepare(); // 准备Looper, 估计是要用消息队列来处理消息</div><div class="line"></div><div class="line">            android.os.Process.setThreadPriority(</div><div class="line">                    android.os.Process.THREAD_PRIORITY_FOREGROUND); // 设置线程优先级</div><div class="line">            android.os.Process.setCanSelfBackground(false);</div><div class="line"></div><div class="line">            ActivityManagerService m = new ActivityManagerService(); // 创建AMS对象</div><div class="line"></div><div class="line">            synchronized (this) &#123;</div><div class="line">                mService = m; // AMS对象赋值给成员mService</div><div class="line">                notifyAll(); // #7 通知其他以本线程为锁的线程, 可以获取本线程来做锁了</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            synchronized (this) &#123;</div><div class="line">                ...// #8 等待mReady被外部(也就是main所在线程)设置为true</div><div class="line">            &#125;</div><div class="line">            ...</div><div class="line"></div><div class="line">            Looper.loop(); // 开始消息循环</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">  ```  </div><div class="line">  老大让我开始`main`之后, 我就分配一个小弟`AThread thr`, 等他向我汇报(#2), 小弟汇报完(#7)就等我把老大这边交代的工作做完(#3~#6), 然后他再继续剩下的工作(#8), 并处于待命状态, 随时准备处理后面的消息.  </div><div class="line">  </div><div class="line">- 好像越来越复杂了, 又是`ActivityThread`又是`SystemServer`的, 看来我又多了几个采访对象. 想问一下`AMS`, 我注意到刚刚在你`AThread`中有一步是`new ActivityManagerService()`, 这里面做了什么能让我看一下吗?  </div><div class="line">  不能╭(╯^╰)╮. `Java`类的构造函数就像女孩子的闺房, 允许你看才能看. 我可以大概跟你说里面做了什么. 大概就是下面这样:  </div><div class="line">  </div><div class="line">  ```  </div><div class="line">  private ActivityManagerService() &#123;</div><div class="line">      Slog.i(TAG, &quot;Memory class: &quot; + ActivityManager.staticGetMemoryClass()); // 日志</div><div class="line">      </div><div class="line">      File dataDir = Environment.getDataDirectory(); // /data/目录</div><div class="line">      File systemDir = new File(dataDir, &quot;system&quot;); // /data/system</div><div class="line">      systemDir.mkdirs();</div><div class="line">      // 创建BatteryStatsService, BSS</div><div class="line">      mBatteryStatsService = new BatteryStatsService(new File(</div><div class="line">              systemDir, &quot;batterystats.bin&quot;).toString());</div><div class="line">      mBatteryStatsService.getActiveStatistics().readLocked();</div><div class="line">      mBatteryStatsService.getActiveStatistics().writeAsyncLocked();</div><div class="line">      mOnBattery = DEBUG_POWER ? true</div><div class="line">              : mBatteryStatsService.getActiveStatistics().getIsOnBattery();</div><div class="line">      mBatteryStatsService.getActiveStatistics().setCallback(this);</div><div class="line">      </div><div class="line">      // 创建UsageStatsService, USS</div><div class="line">      mUsageStatsService = new UsageStatsService(new File(</div><div class="line">              systemDir, &quot;usagestats&quot;).toString());</div><div class="line"></div><div class="line">      GL_ES_VERSION = SystemProperties.getInt(&quot;ro.opengles.version&quot;,</div><div class="line">          ConfigurationInfo.GL_ES_VERSION_UNDEFINED); // OpenGL_ES版本</div><div class="line"></div><div class="line">      mConfiguration.setToDefaults();</div><div class="line">      mConfiguration.locale = Locale.getDefault();</div><div class="line">      mProcessStats.init(); // ProcessStats, 用于统计CPU/内存信息, 解析/proc/stat文件的内容</div><div class="line">      </div><div class="line">      // 解析/data/system/packages-compat.xml文件, 获得APK的屏幕尺寸要求.  </div><div class="line">      mCompatModePackages = new CompatModePackages(this, systemDir);</div><div class="line"></div><div class="line">      // Add ourself to the Watchdog monitors.</div><div class="line">      Watchdog.getInstance().addMonitor(this);</div><div class="line"></div><div class="line">      // 新线程用于定时更新系统信息</div><div class="line">      mProcessStatsThread = new Thread(&quot;ProcessStats&quot;) &#123;</div><div class="line">          public void run() &#123;</div><div class="line">              while (true) &#123;</div><div class="line">                  try &#123;</div><div class="line">                      try &#123;</div><div class="line">                          synchronized(this) &#123;</div><div class="line">                              final long now = SystemClock.uptimeMillis();</div><div class="line">                              long nextCpuDelay = (mLastCpuTime.get()+MONITOR_CPU_MAX_TIME)-now;</div><div class="line">                              long nextWriteDelay = (mLastWriteTime+BATTERY_STATS_TIME)-now;</div><div class="line">                              //Slog.i(TAG, &quot;Cpu delay=&quot; + nextCpuDelay</div><div class="line">                              //        + &quot;, write delay=&quot; + nextWriteDelay);</div><div class="line">                              if (nextWriteDelay &lt; nextCpuDelay) &#123;</div><div class="line">                                  nextCpuDelay = nextWriteDelay;</div><div class="line">                              &#125;</div><div class="line">                              if (nextCpuDelay &gt; 0) &#123;</div><div class="line">                                  mProcessStatsMutexFree.set(true);</div><div class="line">                                  this.wait(nextCpuDelay);</div><div class="line">                              &#125;</div><div class="line">                          &#125;</div><div class="line">                      &#125; catch (InterruptedException e) &#123;</div><div class="line">                      &#125;</div><div class="line">                      updateCpuStatsNow();</div><div class="line">                  &#125; catch (Exception e) &#123;</div><div class="line">                      Slog.e(TAG, &quot;Unexpected exception collecting process stats&quot;, e);</div><div class="line">                  &#125;</div><div class="line">              &#125;</div><div class="line">          &#125;</div><div class="line">      &#125;;</div><div class="line">      mProcessStatsThread.start();</div><div class="line">  &#125;</div><div class="line">  ```  </div><div class="line">  </div><div class="line">  总的来说就是创建了`/data/system`目录, 实例化了BSS和USS两个服务, 创建了`ProcessStats`的实例及其运行线程, 这些都是用来监控系统状况的. 另外初始化了`mCompatModePackages`和`mConfiguration`.  </div><div class="line">  </div><div class="line">- 那`ActivityThread.systemMain()`和`ActivityManagerService.startRunning()`又做了什么呢?  </div><div class="line">  `ActivityThread.systemMain()`先禁用硬件渲染, 然后实例化了一个`ActivityThread`对象并调用了它的`attach(true)`方法, 然后把这个对象丢回来. `attach(true)`传入的参数表示调用者是否系统进程. 在系统进程下它做了以下工作:  </div><div class="line"></div><div class="line">  ```  </div><div class="line">  </div><div class="line">      private void attach(boolean system) &#123;</div><div class="line">          sThreadLocal.set(this);</div><div class="line">          mSystemThread = system;</div><div class="line">          if (!system) &#123;// 非系统进程时的处理</div><div class="line">          &#125; else &#123;</div><div class="line">              // Don&apos;t set application object here -- if the system crashes,</div><div class="line">              // we can&apos;t display an alert, we just want to die die die.</div><div class="line">              // 以上是源码中的注释, 绝不是我在卖萌</div><div class="line">              // 设置显示的进程名称为system_process</div><div class="line">              android.ddm.DdmHandleAppName.setAppName(&quot;system_process&quot;);</div><div class="line">              try &#123;</div><div class="line">                  // 构造Instrumentation, Context, Application, 并调用Applicaiton.onCreate()</div><div class="line">                  mInstrumentation = new Instrumentation();</div><div class="line">                  ContextImpl context = new ContextImpl();</div><div class="line">                  // 调用init时第一个参数是getSystemContext().mPackageInfo</div><div class="line">                  context.init(getSystemContext().mPackageInfo, null, this);</div><div class="line">                  Application app = Instrumentation.newApplication(Application.class, context);</div><div class="line">                  mAllApplications.add(app);</div><div class="line">                  mInitialApplication = app;</div><div class="line">                  app.onCreate();</div><div class="line">              &#125; catch (Exception e) &#123;</div><div class="line">                  ...</div><div class="line">              &#125;</div><div class="line">          &#125;</div><div class="line">          </div><div class="line">          // 添加Configuration回调</div><div class="line">          ViewRootImpl.addConfigCallback(new ComponentCallbacks2() &#123;</div><div class="line">              public void onConfigurationChanged(Configuration newConfig) &#123;</div><div class="line">                  synchronized (mPackages) &#123;</div><div class="line">                      // We need to apply this change to the resources</div><div class="line">                      // immediately, because upon returning the view</div><div class="line">                      // hierarchy will be informed about it.</div><div class="line">                      if (applyConfigurationToResourcesLocked(newConfig, null)) &#123;</div><div class="line">                          // This actually changed the resources!  Tell</div><div class="line">                          // everyone about it.</div><div class="line">                          ...</div><div class="line">                      &#125;</div><div class="line">                  &#125;</div><div class="line">              &#125;</div><div class="line">              public void onLowMemory() &#123;</div><div class="line">              &#125;</div><div class="line">              public void onTrimMemory(int level) &#123;</div><div class="line">              &#125;</div><div class="line">          &#125;);</div><div class="line">      &#125;</div><div class="line">  ```  </div><div class="line">  </div><div class="line">  可见, 在系统初始化的时候以系统的身份借助了`ActivityThread`的功能, 去获取系统资源`framework-res.apk`(应用名`android`). 从这个角度来说, `SystemServer`进程实际上也是一个特殊的应用进程, 在其上运行的应用都是仅供给系统使用的. 在`systemMain`调用结束后, 就可以通过返回的`ActivityThread`实例像操作普通应用一样操作系统应用以及和`Android`环境交互了. 相当于`SystemServer`也运行在跟应用进程相似的`Android`运行环境中.  </div><div class="line">  然后`startRunning()`做的事:  </div><div class="line">  </div><div class="line">  ```  </div><div class="line">  // 以全null参数调用</div><div class="line">  public final void startRunning(String pkg, String cls, String action,</div><div class="line">          String data) &#123;</div><div class="line">      synchronized(this) &#123;</div><div class="line">          if (mStartRunning) &#123;</div><div class="line">              return;</div><div class="line">          &#125;</div><div class="line">          mStartRunning = true; // 设置标记, 如果已经设置过了直接返回</div><div class="line">          mTopComponent = pkg != null &amp;&amp; cls != null</div><div class="line">                  ? new ComponentName(pkg, cls) : null;</div><div class="line">          mTopAction = action != null ? action : Intent.ACTION_MAIN;</div><div class="line">          mTopData = data; // 由于传入的参数全null, 所以这里几个成员变量也是null, action则是Intent.ACTION_MAIN</div><div class="line">          if (!mSystemReady) &#123; // 此时mSystemReady仍为默认值false, 直接返回</div><div class="line">              return;</div><div class="line">          &#125;</div><div class="line">      &#125;</div><div class="line"></div><div class="line">      systemReady(null); // 重要函数, 执行完后意味着系统已经启动完毕. 代码非常长, 而且在本次调用startRunning时并不会走到这里.</div><div class="line">  &#125;</div><div class="line">  ```  </div><div class="line">  </div><div class="line">- 好的, 我大概更糊涂了. 我总结一下, AMS的`main()`总共做了三点主要的工作:</div><div class="line">    1. 新启`AThread`线程创建`AMS`实例, 在`AMS`构造函数里面, 创建BSS/USS/mProcessStats: ProcessStats/mProcessStatsThread, 用于统计系统运行状况,</div><div class="line">还创建了`/data/system`目录,</div><div class="line">并为mCompatModePackages: CompatModePackages 和 mConfiguration: Configuration 等成员变量赋值;</div><div class="line">    2. 通过`ActivityThread.systemMain()`函数得到了一个`ActivityThread`实例, 代表了`framework-res.apk`应用所在的应用进程,</div><div class="line">为`SystemServer`创建了与Android环境交互的条件. 普通的应用则是应用的主线程调用`ActivityThread.main()`来获得`ActivityThread`实例;</div><div class="line">    3. 调用`startRunning()`, 并返回第2步创建好的`Context`实例, 完成`AMS.main()`的最后一步.</div><div class="line"></div><div class="line">    到这里为止都是`Activity`和`Application`啥的, 你前面说过跟四大金刚打交道, 那么其他几位你又是怎么跟他们打交道的呢?</div><div class="line"></div><div class="line">    嗯, 下次有空再说吧.</div><div class="line"></div><div class="line">- 好的, 距离上次(2017-03-05)已经过去了一个月, 咱们继续采访吧.</div><div class="line"></div><div class="line">    上次说到, `SystemServer::ServerThread`调用了`AMS.main()`从而为`SystemServer`创建了`Android`环境, 为`AMS`的工作做了准备.</div><div class="line">    然而上次在`startRunning()`时留了一个悬念, 即`SystemReady()`这个函数并没有在此时被调用. `main()`执行完之后返回了`Context`实例. 那么后面发生了什么呢?</div><div class="line">其实, 在`SystemServer::ServerThread::run()`中可以看到, 在`main()`方法调用之后, 经过了其他一些必要的初始化(例如调用`PackageManagerService.main()`),</div><div class="line">然后该线程调用了`ActivityManagerService.setSystemProcess()`, 该函数定义如下:</div></pre></td></tr></table></figure>
+<p>  public static void setSystemProcess() {</p>
+<pre><code>try {
+    ActivityManagerService m = mSelf;
+    // 向ServiceManager注册服务
+    ServiceManager.addService(&quot;activity&quot;, m);// 注册本服务, 服务名activity
+    ServiceManager.addService(&quot;meminfo&quot;, new MemBinder(m));// 监控内存信息
+    ServiceManager.addService(&quot;gfxinfo&quot;, new GraphicsBinder(m));// 监控硬件加速信息, 可通过adb shell dumpsys gfxinfo查看,
+    4.0新增
+    if (MONITOR_CPU_USAGE) {
+        ServiceManager.addService(&quot;cpuinfo&quot;, new CpuBinder(m));// 监控CPU使用, MONITOR_CPU_USAGE默认为true
     }
+    ServiceManager.addService(&quot;permission&quot;, new PermissionController(m));// 权限管理服务
 
-    ActivityManagerService m = thr.mService;
-    mSelf = m;
-    ActivityThread at = ActivityThread.systemMain(); // #3 调用ActivityThread.systemMain函数
-    mSystemThread = at;
-    Context context = at.getSystemContext(); // #4 获得SystemContext
-    context.setTheme(android.R.style.Theme_Holo);
-    m.mContext = context;
-    m.mFactoryTest = factoryTest;
-    m.mMainStack = new ActivityStack(m, context, true); // #5 使用m和context新建ActivityStack对象
+    //#1 通过AMS的Context获取到PackageManagerService, 查询名为&quot;android&quot;的ApplicationInfo
+    ApplicationInfo info =
+        mSelf.mContext.getPackageManager().getApplicationInfo(
+                &quot;android&quot;, STOCK_PM_FLAGS);
+    //#2 调用ActivityThread.installSystemApplicationInfo()函数
+    mSystemThread.installSystemApplicationInfo(info);
 
-    m.mBatteryStatsService.publish(context); // 调用BSS和USS的publish方法
-    m.mUsageStatsService.publish(context);
-
-    synchronized (thr) {
-        thr.mReady = true; // #6 设置thr为已准备, 并通知thr可以开始他的表演
-        thr.notifyAll();
-    }
-
-    m.startRunning(null, null, null, null); // 全null参数调用startRunning, 主要作用是设置`mStartRunning`标志, 因为此时`mSystemReady`还是默认值`false`, 走不到后面的`systemReady`逻辑
-
-    return context;
-}
-
-static class AThread extends Thread {
-    ActivityManagerService mService;
-    boolean mReady = false;
-
-    public AThread() {
-        super(&quot;ActivityManager&quot;); // 设置线程名字
-    }
-
-    public void run() {
-        Looper.prepare(); // 准备Looper, 估计是要用消息队列来处理消息
-
-        android.os.Process.setThreadPriority(
-                android.os.Process.THREAD_PRIORITY_FOREGROUND); // 设置线程优先级
-        android.os.Process.setCanSelfBackground(false);
-
-        ActivityManagerService m = new ActivityManagerService(); // 创建AMS对象
-
-        synchronized (this) {
-            mService = m; // AMS对象赋值给成员mService
-            notifyAll(); // #7 通知其他以本线程为锁的线程, 可以获取本线程来做锁了
+    synchronized (mSelf) {
+        //#3 使用info新建并保存ProcessRecord对象
+        ProcessRecord app = mSelf.newProcessRecordLocked(
+                mSystemThread.getApplicationThread(), info,
+                info.processName);// info.processName == &quot;system&quot;
+        app.persistent = true;
+        app.pid = MY_PID;
+        app.maxAdj = ProcessList.SYSTEM_ADJ;
+        mSelf.mProcessNames.put(app.processName, app.info.uid, app);
+        synchronized (mSelf.mPidsSelfLocked) {
+            mSelf.mPidsSelfLocked.put(app.pid, app);
         }
-
-        synchronized (this) {
-            ...// #8 等待mReady被外部(也就是main所在线程)设置为true
-        }
-        ...
-
-        Looper.loop(); // 开始消息循环
+        //#4 更新LruProcess中存储的进程的顺序
+        mSelf.updateLruProcessLocked(app, true, true);
     }
+} catch (PackageManager.NameNotFoundException e) {
+    throw new RuntimeException(
+            &quot;Unable to find android system package&quot;, e);
 }
-</code></pre><p>老大让我开始<code>main</code>之后, 我就分配一个小弟<code>AThread thr</code>, 等他向我汇报(#2), 小弟汇报完(#7)就等我把老大这边交代的工作做完(#3~#6), 然后他再继续剩下的工作(#8), 并处于待命状态, 随时准备处理后面的消息.  </p>
-</li>
-<li><p>好像越来越复杂了, 又是<code>ActivityThread</code>又是<code>SystemServer</code>的, 看来我又多了几个采访对象. 想问一下<code>AMS</code>, 我注意到刚刚在你<code>AThread</code>中有一步是<code>new ActivityManagerService()</code>, 这里面做了什么能让我看一下吗?<br>不能╭(╯^╰)╮. <code>Java</code>类的构造函数就像女孩子的闺房, 允许你看才能看. 我可以大概跟你说里面做了什么. 大概就是下面这样:  </p>
-<pre><code>private ActivityManagerService() {
-    Slog.i(TAG, &quot;Memory class: &quot; + ActivityManager.staticGetMemoryClass()); // 日志
+</code></pre><p>  }</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">从以上代码可以看到, AMS通过PMS(PackageManagerService)查询名为&quot;android&quot;的ApplicationInfo, 尽管他们实质上都是在`ServerThread`同一个进程上运行,</div><div class="line">完全可以以本地调用的方式互相调用, 但统一通过Context来进行交互的话, 保持了与其他服务相同的交互接口, 未来对交互方式的扩展也可以直接作用到这里, 使得代码更加灵活.</div><div class="line">现在来看看#2. 该函数以`ApplicationInfo`为参数, 根据前面的内容, 我们知道&quot;android&quot;这个名字对应的package就是&quot;framework-res.apk&quot;,</div><div class="line">猜测`ApplicationInfo`是其代码模型. 我们来看看这个方法的代码:</div></pre></td></tr></table></figure>
+<p>  // frameworks/core/java/android/app/ActivityThread.java<br>  public void installSystemApplicationInfo(ApplicationInfo info) {</p>
+<pre><code>synchronized (this) {
+    // 返回的ContextImpl对象就是前面在AMS的main中创建的对象
+    ContextImpl context = getSystemContext();
+    //#1 oops!又一次调用了init, 是不是重复了?
+    context.init(new LoadedApk(this, &quot;android&quot;, context, info,
+            CompatibilityInfo.DEFAULT_COMPATIBILITY_INFO), null, this);
 
-    File dataDir = Environment.getDataDirectory(); // /data/目录
-    File systemDir = new File(dataDir, &quot;system&quot;); // /data/system
-    systemDir.mkdirs();
-    // 创建BatteryStatsService, BSS
-    mBatteryStatsService = new BatteryStatsService(new File(
-            systemDir, &quot;batterystats.bin&quot;).toString());
-    mBatteryStatsService.getActiveStatistics().readLocked();
-    mBatteryStatsService.getActiveStatistics().writeAsyncLocked();
-    mOnBattery = DEBUG_POWER ? true
-            : mBatteryStatsService.getActiveStatistics().getIsOnBattery();
-    mBatteryStatsService.getActiveStatistics().setCallback(this);
+    // give ourselves a default profiler
+    // 用于性能统计
+    mProfiler = new Profiler();
+}
+</code></pre><p>  }</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">看#1再次调用了`ContextImpl.init`, 似乎跟`AMS.main`中`ActivityThread.getSystemContext()`时调用的`ContextImpl.init`重复了? 仔细看看,</div><div class="line">原来后者虽然给`LoadedApk`的名字也是&quot;android&quot;, 但是传入的第四个参数是`null`, 而前者#1中传入的第四个参数是指向&quot;framework-res.apk&quot;的`ApplicationInfo`实例.</div><div class="line">这就相当于`LoadedApk`指向了实际的apk包. 那么, 为什么要这样做呢? 实际上, 前面创建`ContextImpl`的时候, 并不需要用到&quot;framework-res.apk&quot;的东西,</div><div class="line">而只是希望创建一个android运行环境, 所以不需要绑定实际的包, 而此时往后需要用到&quot;framework-res.apk&quot;的东西了, 它的正确运行需要一个正确初始化的android运行环境,</div><div class="line">所以需要将代表它的`ApplicationInfo`绑定到`ContextImpl`上, 这也就是这个方法名字的含义. 由此看来接下来要做的事情就比较清晰了: 为&quot;framework-res.apk&quot;的运行创建或分配一个进程,</div><div class="line">并管理这个进程. 这些工作也是AMS完成的.</div><div class="line">于是我们可以看到 #3 #4 这两步就是在做进程管理. `ProcessRecord`是用于进程管理的数据结构. 通过`AMS.newProcessRecordLocked()`来创建`ProcessRecord`实例.</div><div class="line">到这里我们可以思考一个问题: 进程创建之后, AMS怎么跟进程进行交互? 我们想一下, AMS自己有一个进程, 这里又新建了一个进程, 那么AMS要跟新建的进程交互, 就需要进行跨进程交互. 这是不是意味着要借助Binder?</div><div class="line">原因可以看我以前写的Binder解析. 事实是确实如此, AMS通过Binder对其他进程进行管理, 充当桥梁的是`ActivityThread.ApplicationThread`这个类及其相关类和接口,</div><div class="line">这些都是Binder的标准套路, 其中`IApplicationThread`提供了操作接口, 用于启动/暂停/停止Activity.</div><div class="line">`ApplicationThread`的服务端实现就位于AMS要控制的那个进程的`ActivityThread`中, 具体来说就是客户端调用接口后,</div><div class="line">服务端`ActivityThread`会对应往自己线程的handler中发送一个消息, 而服务端`ActivityThread`自身运行在主线程中, 所以最终就是将消息发送到了服务端的主线程中处理.</div><div class="line">思考完这个问题, 我们来看`newProcessRecordLocked()`的代码:</div></pre></td></tr></table></figure>
+<p>  final ProcessRecord newProcessRecordLocked(IApplicationThread thread,</p>
+<pre><code>    ApplicationInfo info, String customProcess) {
+String proc = customProcess != null ? customProcess : info.processName;
+BatteryStatsImpl.Uid.Proc ps = null;
+BatteryStatsImpl stats = mBatteryStatsService.getActiveStatistics();
+synchronized (stats) {
+    ps = stats.getProcessStatsLocked(info.uid, proc);// 为本进程创建一个耗电量统计项
+}
+// 创建一个ProcessRecord对象, 第二个参数就是用来和其他进程进行通信的thread
+return new ProcessRecord(ps, thread, info, proc);
+</code></pre><p>  }</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">看到没有, 第一个参数就是`IApplicationThread`. 除此之外, AMS还需要更多的进程信息来管理进程, 这些信息就放在`ProcessRecord`这个数据结构中. 我们有空可以看一看这个类的实现, 它位于`frameworks/base/services/java/com/android/server/am/ProcessRecord.java`, 有一丢丢大. 我们这里只要知道,</div><div class="line">在构造函数中不经保存了和应用进程进行通信的`IApplicationThread`对象, 还保存了进程名, 不同状态对应的OOM_Adj值, 以及一个`ApplicationInfo`.</div><div class="line">一个进程虽然可以运行多个Application, 但`ProcessRecord`一般只保存该进程中最先运行的那个`Application`的`ApplicationInfo`.</div><div class="line">到此为止, 已经创建了一个`ProcessRecord`对象. 创建应用进程时的过程也与此类似. 和其他应用进程不同的是, 现在创建的这个对象所对应的进程是`SystemServer`. 它既然这么特殊,</div><div class="line">自然有一些与众不同的地方, 从上面的代码也可以看到, AMS为这个特殊的进程记录的一部分成员变量设定了特殊的值:</div></pre></td></tr></table></figure>
+<p>  // 前一步已以ApplicationInfo.processName初始化ProcessRecord, 该值为”system”<br>  app.persistent = true; // 该值为true表示本进程常驻内存, 即使被杀掉也会被系统重启<br>  app.pid = MY_PID; // 设置pid为SystemServer的pid<br>  app.maxAdj = ProcessList.SYSTEM_ADJ; // 设置最大OOM_Adj为系统进程默认值, -16</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">    至此, 一个`SystemServer`对应的`ProcessRecord`就创建完毕, 紧接着AMS将它纳入自己的管理之中. AMS通过以下几个数据结构来管理包括这个进程记录在内的进程记录:</div><div class="line">    ![process_names](/images/blogs/process_names.png)</div><div class="line"></div><div class="line">    总结一下, `setSystemProcess()`这个方法正如其名, 它主要完成了代表`SystemServer`进程的`ProcessRecord`对象的创建, 从此将系统进程也纳入AMS管理范围. 除此之外,</div><div class="line">    它还将AMS/meminfo/gfxinfo等服务注册到了`ServiceManager`中.</div><div class="line"></div><div class="line">- 好的, 你高兴就好, 你请继续.</div><div class="line"></div><div class="line">    好, 我们再回到`SystemServer::ServerThread::run`看接下来的内容.</div></pre></td></tr></table></figure>
+<p>  try {<br>  // 其他内容都省略</p>
+<pre><code>Slog.i(TAG, &quot;Entropy Service&quot;);
+Slog.i(TAG, &quot;Power Manager&quot;);
+Slog.i(TAG, &quot;Activity Manager&quot;);
+Slog.i(TAG, &quot;Telephony Registry&quot;);
+Slog.i(TAG, &quot;Package Manager&quot;);
 
-    // 创建UsageStatsService, USS
-    mUsageStatsService = new UsageStatsService(new File(
-            systemDir, &quot;usagestats&quot;).toString());
+ActivityManagerService.setSystemProcess();
 
-    GL_ES_VERSION = SystemProperties.getInt(&quot;ro.opengles.version&quot;,
-        ConfigurationInfo.GL_ES_VERSION_UNDEFINED); // OpenGL_ES版本
+// The AccountManager must come before the ContentService
+try {
+    Slog.i(TAG, &quot;Account Manager&quot;);
+} catch (Throwable e) {
+    Slog.e(TAG, &quot;Failure starting Account Manager&quot;, e);
+}
+Slog.i(TAG, &quot;Content Manager&quot;);
 
-    mConfiguration.setToDefaults();
-    mConfiguration.locale = Locale.getDefault();
-    mProcessStats.init(); // ProcessStats, 用于统计CPU/内存信息, 解析/proc/stat文件的内容
+Slog.i(TAG, &quot;System Content Providers&quot;);
+ActivityManagerService.installSystemProviders();// #1
 
-    // 解析/data/system/packages-compat.xml文件, 获得APK的屏幕尺寸要求.  
-    mCompatModePackages = new CompatModePackages(this, systemDir);
+Slog.i(TAG, &quot;Vibrator Service&quot;);
+Slog.i(TAG, &quot;Alarm Manager&quot;);
+Slog.i(TAG, &quot;Init Watchdog&quot;);
+Slog.i(TAG, &quot;Window Manager&quot;);
 
-    // Add ourself to the Watchdog monitors.
-    Watchdog.getInstance().addMonitor(this);
+ActivityManagerService.self().setWindowManager(wm);// #2
 
-    // 新线程用于定时更新系统信息
-    mProcessStatsThread = new Thread(&quot;ProcessStats&quot;) {
-        public void run() {
-            while (true) {
-                try {
-                    try {
-                        synchronized(this) {
-                            final long now = SystemClock.uptimeMillis();
-                            long nextCpuDelay = (mLastCpuTime.get()+MONITOR_CPU_MAX_TIME)-now;
-                            long nextWriteDelay = (mLastWriteTime+BATTERY_STATS_TIME)-now;
-                            //Slog.i(TAG, &quot;Cpu delay=&quot; + nextCpuDelay
-                            //        + &quot;, write delay=&quot; + nextWriteDelay);
-                            if (nextWriteDelay &lt; nextCpuDelay) {
-                                nextCpuDelay = nextWriteDelay;
-                            }
-                            if (nextCpuDelay &gt; 0) {
-                                mProcessStatsMutexFree.set(true);
-                                this.wait(nextCpuDelay);
-                            }
-                        }
-                    } catch (InterruptedException e) {
-                    }
-                    updateCpuStatsNow();
-                } catch (Exception e) {
-                    Slog.e(TAG, &quot;Unexpected exception collecting process stats&quot;, e);
-                }
+// Skip Bluetooth if we have an emulator kernel
+if (SystemProperties.get(&quot;ro.kernel.qemu&quot;).equals(&quot;1&quot;)) {
+    Slog.i(TAG, &quot;No Bluetooh Service (emulator)&quot;);
+} else if (factoryTest == SystemServer.FACTORY_TEST_LOW_LEVEL) {
+    Slog.i(TAG, &quot;No Bluetooth Service (factory test)&quot;);
+} else {
+    Slog.i(TAG, &quot;Bluetooth Service&quot;);
+}
+</code></pre><p>  } catch (RuntimeException e) {<br>  }</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">接下来跟AMS有关的就#1 #2两步了. #2比较好理解, 我们重点来看#1, 即`AMS.installSystemProviders()`. 代码如下:</div></pre></td></tr></table></figure>
+<p>  public static final void installSystemProviders() {</p>
+<pre><code>List&lt;ProviderInfo&gt; providers;
+synchronized (mSelf) {
+    ProcessRecord app = mSelf.mProcessNames.get(&quot;system&quot;, Process.SYSTEM_UID); // 通过名字和PID获取system对应的进程记录
+    providers = mSelf.generateApplicationProvidersLocked(app); // #1
+    if (providers != null) {
+        for (int i=providers.size()-1; i&gt;=0; i--) {
+            ProviderInfo pi = (ProviderInfo)providers.get(i);
+            if ((pi.applicationInfo.flags&amp;ApplicationInfo.FLAG_SYSTEM) == 0) { // 移除非系统Provider
+                Slog.w(TAG, &quot;Not installing system proc provider &quot; + pi.name
+                        + &quot;: not system .apk&quot;);
+                providers.remove(i);
             }
         }
-    };
-    mProcessStatsThread.start();
+    }
 }
-</code></pre><p>总的来说就是创建了<code>/data/system</code>目录, 实例化了BSS和USS两个服务, 创建了<code>ProcessStats</code>的实例及其运行线程, 这些都是用来监控系统状况的. 另外初始化了<code>mCompatModePackages</code>和<code>mConfiguration</code>.  </p>
-</li>
-<li><p>那<code>ActivityThread.systemMain()</code>和<code>ActivityManagerService.startRunning()</code>又做了什么呢?<br><code>ActivityThread.systemMain()</code>先禁用硬件渲染, 然后实例化了一个<code>ActivityThread</code>对象并调用了它的<code>attach(true)</code>方法, 然后把这个对象丢回来. <code>attach(true)</code>传入的参数表示调用者是否系统进程. 在系统进程下它做了以下工作:  </p>
-<pre><code>
-private void attach(boolean system) {
-    sThreadLocal.set(this);
-    mSystemThread = system;
-    if (!system) {// 非系统进程时的处理
-    } else {
-        // Don&apos;t set application object here -- if the system crashes,
-        // we can&apos;t display an alert, we just want to die die die.
-        // 以上是源码中的注释, 绝不是我在卖萌
-        // 设置显示的进程名称为system_process
-        android.ddm.DdmHandleAppName.setAppName(&quot;system_process&quot;);
-        try {
-            // 构造Instrumentation, Context, Application, 并调用Applicaiton.onCreate()
-            mInstrumentation = new Instrumentation();
-            ContextImpl context = new ContextImpl();
-            // 调用init时第一个参数是getSystemContext().mPackageInfo
-            context.init(getSystemContext().mPackageInfo, null, this);
-            Application app = Instrumentation.newApplication(Application.class, context);
-            mAllApplications.add(app);
-            mInitialApplication = app;
-            app.onCreate();
-        } catch (Exception e) {
-            ...
+if (providers != null) {
+    mSystemThread.installSystemProviders(providers); // #2
+}
+
+mSelf.mCoreSettingsObserver = new CoreSettingsObserver(mSelf); // #3
+
+mSelf.mUsageStatsService.monitorPackages(); // #4
+</code></pre><p>  }</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">在分析代码前, 我们先说明一下为什么会有这么个方法. 在Android中SystemServer上很多Service都需要通过Settings数据库查询配置信息,</div><div class="line">而这个Settings数据库是Android通过agiel特殊的Provider `SettingsProvider`提供给开发者的. 该Provider位于`SettingsProvider.apk`中,</div><div class="line">这个apk跟`framework-re.apk`类似, 也是在`SystemServer`进程上运行. 以上代码就是加载这个Provider. 加载完毕后`SystemServer`上就同时存在两个`apk`了.</div><div class="line">以上步骤#3和#4我们暂且不分析, 前者是监视Settings数据库的观察者, 后者是`UsageStatsService`的工作. #1可以看出是生成Provider列表的, 而#2则是调用`ActivityThread</div><div class="line">.installSystemProvider()`将系统Provider装载在进程上.</div><div class="line"></div><div class="line">#1 里面, 首先通过`AppGlobals.getPackageManager().queryContentProviders(app.processName, app.info.uid,</div><div class="line">STOCK_PM_FLAGS|PackageManager.GET_URI_PERMISSION_PATTERNS)`获取到满足进程名和进程id条件的`ProviderInfo`列表.</div><div class="line">遍历该列表并获取或构造`ContentProviderRecord`对象(这些对象都会保存在`AMS.mProvidersByClass`中, 一看这个名字我们差不多能猜到它就是代表ContentProvider的信息了),</div><div class="line">然后将这个对象以名字为键放到`app.pubProviders`中,并将它对应的包名放到`app.addPackage()`中, 最后看看能否对这个Provider包进行Dex优化. 别忘记这里的`app`就是上文中的`ProcessRecord`对象.</div><div class="line">至此, 查询到的Provider就纳入了当前进程`SystemServer`中了. 至于怎么通过进程名和pid查找的Provider, 这里我们就暂且不说了, 会放在`PackageManager`文章中来说.</div><div class="line">思考题: 为什么AMS和ProcessRecord都需要保存ContentProviderRecord?</div><div class="line"></div><div class="line">#2 里面做剩下的工作. #1之后实际上只是保存了`ContentProvider`的信息, 并没有产生`ContentProvider`对象, #2就能产生`ContentProvider`对象.</div><div class="line">实际上跟标准的`ContentProvider`产生过程并无两样. 代码如下:</div></pre></td></tr></table></figure>
+<p>  public final void installSystemProviders(List<providerinfo> providers) {</providerinfo></p>
+<pre><code>if (providers != null) {
+    installContentProviders(mInitialApplication, providers);// 第一个参数实际类型是Application
+}
+</code></pre><p>  }</p>
+<p>  private void installContentProviders( // 产生ContentProvider的必经之路, 标准的产生ContentProvider的方法</p>
+<pre><code>    Context context, List&lt;ProviderInfo&gt; providers) {
+final ArrayList&lt;IActivityManager.ContentProviderHolder&gt; results =
+    new ArrayList&lt;IActivityManager.ContentProviderHolder&gt;();
+
+Iterator&lt;ProviderInfo&gt; i = providers.iterator();
+while (i.hasNext()) {
+    ProviderInfo cpi = i.next();
+    ...
+    // 调用installProvider获得一个IContentProvider对象
+    IContentProvider cp = installProvider(context, null, cpi, false);
+    if (cp != null) {
+        IActivityManager.ContentProviderHolder cph =
+            new IActivityManager.ContentProviderHolder(cpi);
+        cph.provider = cp;// IContentProvider对象与ProviderInfo对象绑定
+        results.add(cph);
+        // Don&apos;t ever unload this provider from the process.
+        synchronized(mProviderMap) {
+            mProviderRefCountMap.put(cp.asBinder(), new ProviderRefCount(10000));//引用计数
         }
     }
+}
 
-    // 添加Configuration回调
-    ViewRootImpl.addConfigCallback(new ComponentCallbacks2() {
-        public void onConfigurationChanged(Configuration newConfig) {
-            synchronized (mPackages) {
-                // We need to apply this change to the resources
-                // immediately, because upon returning the view
-                // hierarchy will be informed about it.
-                if (applyConfigurationToResourcesLocked(newConfig, null)) {
-                    // This actually changed the resources!  Tell
-                    // everyone about it.
-                    ...
+try {
+// 向AMS注册所有的ContentProvider, 第一个参数是ApplicationThread
+    ActivityManagerNative.getDefault().publishContentProviders(
+        getApplicationThread(), results);
+} catch (RemoteException ex) {
+}
+</code></pre><p>  }</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">总结一下, 以上代码做了两件事: 1. 通过`ActivityThread.installProvider`获得`ContentProvider`实例; 2. 向AMS发布所有`ContentProvider`实例.</div><div class="line">其实这跟`Binder Service`类似: 创建`Binder Service`实例, 向`ServiceManager`注册实例.</div><div class="line">`ActivityThread`和`ContentProvider`的关系如图:</div><div class="line">![contentProvider](/images/blogs/activity_manager_service_content_provider.png)</div><div class="line"></div><div class="line">我们这里不去深入分析`ActivityThread.installProvider()`, 这个内容放到分析`ActivityThread`的时候来讲. 我们来看`AMS.publishContentProviders()`. 代码如下:</div></pre></td></tr></table></figure>
+<p>  // 此时传入的参数是caller=getApplicationThread(),即<code>framework-res.apk</code>所在的<code>SystemServer</code>进程中, 用于进程间通信的<code>ApplicationThread</code>客户端实例<br>  public final void publishContentProviders(IApplicationThread caller,</p>
+<pre><code>    List&lt;ContentProviderHolder&gt; providers) {
+if (providers == null) {
+    return;
+}
+
+synchronized(this) {
+    final ProcessRecord r = getRecordForAppLocked(caller);//根据调用者Binder对象找到调用者所在的进程信息
+    ...
+    final long origId = Binder.clearCallingIdentity();
+
+    final int N = providers.size();
+    for (int i=0; i&lt;N; i++) {
+        ContentProviderHolder src = providers.get(i);
+        if (src == null || src.info == null || src.provider == null) {
+            continue;
+        }
+        ContentProviderRecord dst = r.pubProviders.get(src.info.name);// 从调用者进程信息中找到对应的ContentProviderRecord
+        if (dst != null) {
+            ComponentName comp = new ComponentName(dst.info.packageName, dst.info.name);
+            mProvidersByClass.put(comp, dst);//以ComponentName为键, 保存ContentProviderRecord. 这是寻找ContentProvider的方式之一
+            String names[] = dst.info.authority.split(&quot;;&quot;);
+            for (int j = 0; j &lt; names.length; j++) {
+                mProvidersByName.put(names[j], dst);// 以authority为键, 保存ContentProviderRecord. 这是寻找ContentProvider的方式之一
+            }
+
+            int NL = mLaunchingProviders.size();// 处于启动状态的ContentProvider
+            int j;
+            for (j=0; j&lt;NL; j++) {
+                if (mLaunchingProviders.get(j) == dst) {
+                    mLaunchingProviders.remove(j);
+                    j--;
+                    NL--;
                 }
             }
-        }
-        public void onLowMemory() {
-        }
-        public void onTrimMemory(int level) {
-        }
-    });
-}
-</code></pre><p>可见, 在系统初始化的时候以系统的身份借助了<code>ActivityThread</code>的功能, 去获取系统资源<code>framework-res.apk</code>(应用名<code>android</code>). 从这个角度来说, <code>SystemServer</code>进程实际上也是一个特殊的应用进程, 在其上运行的应用都是仅供给系统使用的. 在<code>systemMain</code>调用结束后, 就可以通过返回的<code>ActivityThread</code>实例像操作普通应用一样操作系统应用以及和<code>Android</code>环境交互了. 相当于<code>SystemServer</code>也运行在跟应用进程相似的<code>Android</code>运行环境中.<br>然后<code>startRunning()</code>做的事:  </p>
-<pre><code>// 以全null参数调用
-public final void startRunning(String pkg, String cls, String action,
-        String data) {
-    synchronized(this) {
-        if (mStartRunning) {
-            return;
-        }
-        mStartRunning = true; // 设置标记, 如果已经设置过了直接返回
-        mTopComponent = pkg != null &amp;&amp; cls != null
-                ? new ComponentName(pkg, cls) : null;
-        mTopAction = action != null ? action : Intent.ACTION_MAIN;
-        mTopData = data; // 由于传入的参数全null, 所以这里几个成员变量也是null
-        if (!mSystemReady) { // 此时mSystemReady仍为默认值false, 直接返回
-            return;
+            synchronized (dst) {
+                dst.provider = src.provider;
+                dst.proc = r;
+                dst.notifyAll();//通知所有等待中的进程, 本ContentProvider已经发布, 可供使用
+            }
+            updateOomAdjLocked(r);// 每发布一个ContentProvider, 调整一次调用者进程的oom_adj
         }
     }
 
-    systemReady(null); // 重要函数, 执行完后意味着系统已经启动完毕. 代码非常长, 本文不表.
+    Binder.restoreCallingIdentity(origId);
 }
-</code></pre></li>
-<li><p>好的, 我大概更糊涂了. 到这里为止都是<code>Activity</code>和<code>Application</code>啥的, 你前面说过跟四大金刚打交道, 那么其他几位你又是怎么跟他们打交道的呢?<br>嗯, 下次有空再说吧  </p>
+</code></pre><p>  }</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">总结一下, `SettingsProvider.apk`作为一个系统级的`ContentProvider`,</div><div class="line">通过`installSystemProvider`由`SystemServer`进程走普通的`ContentProvider`创建和发布流程完成发布.</div><div class="line">接着我们再回到`SystemServer::ServerThread::run`, 走余下的流程:</div></pre></td></tr></table></figure>
+<p>  // in file SystemServer.java<br>  …<br>  // We now tell the activity manager it is okay to run third party<br>  // code.  It will call back into us once it has gotten to the state<br>  // where third party code can really run (but before it has actually<br>  // started launching the initial applications), for us to complete our<br>  // initialization.<br>  ActivityManagerService.self().systemReady(new Runnable() {</p>
+<pre><code>public void run() {
+    Slog.i(TAG, &quot;Making services ready&quot;);
+
+    startSystemUi(contextF);
+    try {
+        if (batteryF != null) batteryF.systemReady();
+    } catch (Throwable e) {
+        reportWtf(&quot;making Battery Service ready&quot;, e);
+    }
+    try {
+        if (networkManagementF != null) networkManagementF.systemReady();
+    } catch (Throwable e) {
+        reportWtf(&quot;making Network Managment Service ready&quot;, e);
+    }
+    try {
+        if (networkStatsF != null) networkStatsF.systemReady();
+    } catch (Throwable e) {
+        reportWtf(&quot;making Network Stats Service ready&quot;, e);
+    }
+    try {
+        if (networkPolicyF != null) networkPolicyF.systemReady();
+    } catch (Throwable e) {
+        reportWtf(&quot;making Network Policy Service ready&quot;, e);
+    }
+    try {
+        if (connectivityF != null) connectivityF.systemReady();
+    } catch (Throwable e) {
+        reportWtf(&quot;making Connectivity Service ready&quot;, e);
+    }
+    try {
+        if (dockF != null) dockF.systemReady();
+    } catch (Throwable e) {
+        reportWtf(&quot;making Dock Service ready&quot;, e);
+    }
+    try {
+        if (usbF != null) usbF.systemReady();
+    } catch (Throwable e) {
+        reportWtf(&quot;making USB Service ready&quot;, e);
+    }
+    try {
+        if (uiModeF != null) uiModeF.systemReady();
+    } catch (Throwable e) {
+        reportWtf(&quot;making UI Mode Service ready&quot;, e);
+    }
+    try {
+        if (recognitionF != null) recognitionF.systemReady();
+    } catch (Throwable e) {
+        reportWtf(&quot;making Recognition Service ready&quot;, e);
+    }
+    Watchdog.getInstance().start();
+
+    // It is now okay to let the various system services start their
+    // third party code...
+
+    try {
+        if (appWidgetF != null) appWidgetF.systemReady(safeMode);
+    } catch (Throwable e) {
+        reportWtf(&quot;making App Widget Service ready&quot;, e);
+    }
+    try {
+        if (wallpaperF != null) wallpaperF.systemReady();
+    } catch (Throwable e) {
+        reportWtf(&quot;making Wallpaper Service ready&quot;, e);
+    }
+    try {
+        if (immF != null) immF.systemReady(statusBarF);
+    } catch (Throwable e) {
+        reportWtf(&quot;making Input Method Service ready&quot;, e);
+    }
+    try {
+        if (locationF != null) locationF.systemReady();
+    } catch (Throwable e) {
+        reportWtf(&quot;making Location Service ready&quot;, e);
+    }
+    try {
+        if (countryDetectorF != null) countryDetectorF.systemReady();
+    } catch (Throwable e) {
+        reportWtf(&quot;making Country Detector Service ready&quot;, e);
+    }
+    try {
+        if (throttleF != null) throttleF.systemReady();
+    } catch (Throwable e) {
+        reportWtf(&quot;making Throttle Service ready&quot;, e);
+    }
+    try {
+        if (networkTimeUpdaterF != null) networkTimeUpdaterF.systemReady();
+    } catch (Throwable e) {
+        reportWtf(&quot;making Network Time Service ready&quot;, e);
+    }
+    try {
+        if (textServiceManagerServiceF != null) textServiceManagerServiceF.systemReady();
+    } catch (Throwable e) {
+        reportWtf(&quot;making Text Services Manager Service ready&quot;, e);
+    }
+}
+</code></pre><p>  });</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">可以看到传给了`AMS.systemReady()`一个`Runnable`的回调. 是时候打开`ActivityManagerService.systemReady()`看一看了. 源码如下:</div></pre></td></tr></table></figure>
+<p>  // todo 添加源码<br>  ```</p>
 </li>
 </ul>
-<p><img src="/images/blogs/activity_manager_service_content_provider.png" alt="ContentProvider">  </p>
 <h2 id="ActivityManagerNative-ActivityManagerProxy与ActivityManager"><a href="#ActivityManagerNative-ActivityManagerProxy与ActivityManager" class="headerlink" title="ActivityManagerNative, ActivityManagerProxy与ActivityManager"></a>ActivityManagerNative, ActivityManagerProxy与ActivityManager</h2>]]></content>
     
     <summary type="html">
     
-      又叫【花样劝退教程】。本文讲ActivityManagerService系统服务.(未完)
+      又叫【花样劝退教程】。本文讲ActivityManagerService系统服务-由于这个东西涉及的面实在广, 前面我又没有写过其他的相关内容, 所以这个话题我分5个部分来介绍.
     
     </summary>
     
@@ -1241,6 +1414,45 @@ FrameLayout.dispatchTouchEvent
   </entry>
   
   <entry>
+    <title>【Android教程】Context全解</title>
+    <link href="https://hjhjw1991.github.io/android/2017/01/23/%5BAndroid%E6%95%99%E7%A8%8B%5DContext%E5%85%A8%E8%A7%A3/"/>
+    <id>https://hjhjw1991.github.io/android/2017/01/23/[Android教程]Context全解/</id>
+    <published>2017-01-22T16:00:00.000Z</published>
+    <updated>2017-03-05T08:29:43.703Z</updated>
+    
+    <content type="html"><![CDATA[<p>我们在开发过程中会遇到很多场景需要Context, 包括但不限于: 获取资源, 创建View, 显示UI元素… 稍微追踪一下知道Context是一个接口, 当然从名字知道它是提供环境信息的接口, 今天我们就来看看, Context以及它的衍生类.  </p>
+<h2 id="Context接口和作用"><a href="#Context接口和作用" class="headerlink" title="Context接口和作用"></a>Context接口和作用</h2><p>位于<code>frameworks/base/core/java/android/content/Context.java</code>, 是一个抽象类, 它定义了所有可用的接口, 在AS中查看它的类继承关系, 可以发现它有<code>MockContext</code>和<code>ContextWrapper</code>两个直接子类, 继续追下去会发现它有数量不少的间接子类, <code>Application</code> <code>Activity</code> <code>Service</code>都是它的子类, 这也正是在这些类中用到Context参数时可以直接传<code>this</code>的原因. 我们来看Context定义了哪些接口, 接口及其说明在官网Context页都有说明, 我这里只是相当于翻译一下. 大致上可以分为两类:  </p>
+<ol>
+<li><p>全局信息资源接口及其配套常量. 包括但不限于以下接口:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">getResources 返回Resources实例, 提供应用包的资源管理接口.  </div><div class="line">getAssets 返回AssetManager实例, 它提供资源管理接口. 它管理的资源应当和getResources管理的资源保持一致, 即它们维护同一套资源.  </div><div class="line">getPackageManager 返回PackageManager实例, 提供全局包信息.  </div><div class="line">getContentResolver 返回ContentResolver实例, 提供内容解析接口.  </div><div class="line">getText 封装Resources.getText  </div><div class="line">getString 封装Resources.getString</div><div class="line">getClassLoader 获取ClassLoader实例, 可以由此获取包内所有类</div><div class="line">getPackageName 获取应用包的包名  </div><div class="line">getSystemService 获取系统服务, 系统服务的名字以常量形式存在Context类中</div></pre></td></tr></table></figure>
+</li>
+<li><p>公共方法及其配套常量. 包括但不限于:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">getMainLooper 返回当前Context的Looper实例  </div><div class="line">getApplicationContext 获取应用的Context实例, 它不同于当前Context实例, 而是一个属于当前进程的, 全局的, 单例的, Application对象, 这意味着它的生命周期不同于当前Context, 而是跟当前进程捆绑  </div><div class="line">registerComponentCallbacks 注册组件回调  </div><div class="line">unregisterComponentCallbacks 注销组件回调  </div><div class="line">deleteFile 删除与当前应用包关联的私有文件  </div><div class="line">deleteDatabase 删除与当前应用包关联的私有SQLiteDatabase数据库  </div><div class="line">startActivity 开始一个Activity  </div><div class="line">registerReceiver 注册广播接收器  </div><div class="line">unregisterReceiver 注销广播接收器</div><div class="line">bindService 绑定服务  </div><div class="line">unbindService 解绑服务  </div><div class="line">startService 开始服务  </div><div class="line">stopService 停止服务  </div><div class="line">createPackageContext 以给定应用包名创建该应用的Context</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<h2 id="Context默认实现"><a href="#Context默认实现" class="headerlink" title="Context默认实现"></a>Context默认实现</h2><p><img src="./images/blogs/context.png" alt="context关系"><br>前文说了, <code>Activity</code>和<code>Application</code>都是<code>Context</code>的间接子类. 但是他们处于不同层级, 拥有不同的继承链, <code>Application</code>继承了<code>ContextWrapper</code>(<code>Service</code>也继承了它), 而<code>Activity</code>继承了<code>ContextThemeWrapper</code>(它是<code>ContextWrapper</code>的直接子类). 在<code>ContextWrapper</code>中提供了大多数方法的默认实现, 正如其名, 它只是包装了一个<code>Context</code>实现, 这个实现就是它的<code>mBase</code>成员变量, 是通过构造函数或者<code>attachBaseContext</code>传入的<code>Context</code>实例. 在应用启动过程中, <code>performLaunchActivity</code>会将一个<code>ContextImpl</code>实例作为参数传入<code>Activity.attach</code>方法, 该方法就用这个实例调用<code>attachBaseContext</code>设置好<code>Context</code>. 换句话说, <code>Activity</code>所拥有的<code>Context</code>就是一个随<code>Activity</code>生命周期的<code>ContextImpl</code>实例, <code>Activity</code>中对<code>Context</code>接口的调用, 中途经过<code>ContextThemeWrapper</code>和<code>ContextWrapper</code>, 最终到达这个<code>mBase</code>指向的<code>ContextImpl</code>的相应接口调用. 也就是说, 它就是我们要找的Activity Context默认实现.<br>那么Application Context呢? 它调用Context接口时最终同样会传达到mBase上, 它的mBase对象又是什么呢? 我们考察应用启动过程, 发现在<code>performLaunchActivity</code>中, 有一步是<code>makeApplication</code>, 返回一个<code>Application</code>对象. 该方法属于<code>LoadedApk</code>类, 打开该类查看, 发现它维护了一个<code>Application mApplication</code>成员变量, <code>makeApplication</code>方法在该变量非空时直接返回该变量(意味着无论调用多少次, 都返回同一个Application实例), 否则新建一个<code>ContextImpl</code>对象, 并以它为参数之一, 调用<code>mActivityThread.mInstrumentation.newApplication</code>返回一个<code>Application</code>对象. 再查看<code>newApplication</code>方法, 它位于<code>frameworks/base/core/java/android/app/Instrumentation.java</code>中, 其行为是使用给定的<code>ClassLoader</code>先装载给定的类(这里是<code>LoadedApk.makeApplication</code>中字符串<code>appClass</code>代表的<code>Application</code>类, 如果没有指定或强制使用默认appClass, 则该值为”android.app.Application”), 再用该类对象的<code>newInstance</code>创建实例并调用<code>attach</code>方法绑定Context实例. 可见, <code>Application</code>的Context仍然是<code>ContextImpl</code>实例, 不同的是它的生命周期与<code>Application</code>一致.<br><code>ContextImpl</code>类中对Context大多数接口方法都有了默认实现, 我们重点只看<code>getApplicationContext</code>:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">// in file ContextImpl.java</div><div class="line"></div><div class="line">@Override</div><div class="line">public Context getApplicationContext() &#123;</div><div class="line">    return (mPackageInfo != null) ?</div><div class="line">            mPackageInfo.getApplication() : mMainThread.getApplication();</div><div class="line">&#125;// mPackageInfo是LoadedApk类型</div></pre></td></tr></table></figure></p>
+<p>方法<code>Activity.getApplication</code>返回的是成员变量<code>mApplication</code>, 根据其构造过程, 是在<code>attach</code>时赋值的<code>Application</code>实例, 换句话说, 在同一个应用中时, <code>Activity</code>中调用<code>getApplication</code>跟调用<code>getApplicationContext</code>返回的是同一个对象, 这可以很方便地验证.  </p>
+<h2 id="Context使用中需要注意的问题"><a href="#Context使用中需要注意的问题" class="headerlink" title="Context使用中需要注意的问题"></a>Context使用中需要注意的问题</h2><p>前文中我们曾特地指出, <code>Activity</code>的Context跟<code>Application</code>的Context生命周期不同, 细心的同学可能要问了, 强调这个是因为有什么坑吗? 是的, 这里有坑.<br>原因就在于我们在创建组件的时候经常会用到Context这个参数, 有时为了图方便就直接传<code>this</code>, 大多数情况下也挺好使, 但其实这里存在很大的内存泄漏风险.<br>举个例子, 我们假设在<code>Activity</code>中创建了一个<code>Bitmap</code>, 为了在手机横竖屏切换的时候不至于重新装载这个资源, 我们将它写成<code>static</code>, 这样它的生命周期也就跟<code>Activity.class</code>相同了. 然后我们通过<code>setBackgroundDrawable</code>将它设置成了某个<code>View</code>(该<code>View</code>是通过<code>new View(this)</code>方法构造的实例)的背景. 我们知道, 在手机横竖屏切换的时候, 当前Activity会被销毁再重新创建, 因此此间会有一个gc标记过程. 这里存在什么问题呢? <code>setBackgroundDrawable</code>之后, 静态变量<code>Bitmap</code>会持有一个该<code>View</code>的引用, 而这个<code>View</code>持有一个<code>Activity</code>的引用, 这就导致<code>Activity</code>的引用计数不为0, gc过程无法回收该对象内存, 但是该对象已经不被任何过程使用, 于是就泄露了. 归根到底是因为创建<code>View</code>的时候使用了<code>Activity</code>作为Context, 但是该<code>View</code>由于存在被静态变量<code>Bitmap</code>引用的情况, 其实际生命周期要长于<code>Activity</code>.<br>解决这种泄露的方法是, 保证在<code>Activity</code>中使用<code>Activity</code>或<code>this</code>作为Context的任何对象, 其生命周期都不长于<code>Activity</code>本身, 否则应该考虑使用<code>Application Context</code>.<br>另外, 如果定义了非静态内部类, 那么对非静态内部类实例的引用也有可能导致外部类实例内存泄漏, 解决这种内存泄漏的方法是控制内部类的引用, 对于生命周期长于外部类的内部类, 应定义为静态内部类.  </p>
+]]></content>
+    
+    <summary type="html">
+    
+      又叫【花样劝退教程】。本文讲Android中的Context
+    
+    </summary>
+    
+      <category term="android" scheme="https://hjhjw1991.github.io/categories/android/"/>
+    
+    
+      <category term="教程" scheme="https://hjhjw1991.github.io/tags/%E6%95%99%E7%A8%8B/"/>
+    
+      <category term="android" scheme="https://hjhjw1991.github.io/tags/android/"/>
+    
+      <category term="面试" scheme="https://hjhjw1991.github.io/tags/%E9%9D%A2%E8%AF%95/"/>
+    
+  </entry>
+  
+  <entry>
     <title>【Android教程】SharedPreference详解</title>
     <link href="https://hjhjw1991.github.io/android/2017/01/23/%5BAndroid%E6%95%99%E7%A8%8B%5DSharedPreference%E8%AF%A6%E8%A7%A3/"/>
     <id>https://hjhjw1991.github.io/android/2017/01/23/[Android教程]SharedPreference详解/</id>
@@ -1275,45 +1487,6 @@ FrameLayout.dispatchTouchEvent
     <summary type="html">
     
       又叫【花样劝退教程】。本文讲SharedPreference共享设置
-    
-    </summary>
-    
-      <category term="android" scheme="https://hjhjw1991.github.io/categories/android/"/>
-    
-    
-      <category term="教程" scheme="https://hjhjw1991.github.io/tags/%E6%95%99%E7%A8%8B/"/>
-    
-      <category term="android" scheme="https://hjhjw1991.github.io/tags/android/"/>
-    
-      <category term="面试" scheme="https://hjhjw1991.github.io/tags/%E9%9D%A2%E8%AF%95/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>【Android教程】Context全解</title>
-    <link href="https://hjhjw1991.github.io/android/2017/01/23/%5BAndroid%E6%95%99%E7%A8%8B%5DContext%E5%85%A8%E8%A7%A3/"/>
-    <id>https://hjhjw1991.github.io/android/2017/01/23/[Android教程]Context全解/</id>
-    <published>2017-01-22T16:00:00.000Z</published>
-    <updated>2017-03-05T08:29:43.703Z</updated>
-    
-    <content type="html"><![CDATA[<p>我们在开发过程中会遇到很多场景需要Context, 包括但不限于: 获取资源, 创建View, 显示UI元素… 稍微追踪一下知道Context是一个接口, 当然从名字知道它是提供环境信息的接口, 今天我们就来看看, Context以及它的衍生类.  </p>
-<h2 id="Context接口和作用"><a href="#Context接口和作用" class="headerlink" title="Context接口和作用"></a>Context接口和作用</h2><p>位于<code>frameworks/base/core/java/android/content/Context.java</code>, 是一个抽象类, 它定义了所有可用的接口, 在AS中查看它的类继承关系, 可以发现它有<code>MockContext</code>和<code>ContextWrapper</code>两个直接子类, 继续追下去会发现它有数量不少的间接子类, <code>Application</code> <code>Activity</code> <code>Service</code>都是它的子类, 这也正是在这些类中用到Context参数时可以直接传<code>this</code>的原因. 我们来看Context定义了哪些接口, 接口及其说明在官网Context页都有说明, 我这里只是相当于翻译一下. 大致上可以分为两类:  </p>
-<ol>
-<li><p>全局信息资源接口及其配套常量. 包括但不限于以下接口:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">getResources 返回Resources实例, 提供应用包的资源管理接口.  </div><div class="line">getAssets 返回AssetManager实例, 它提供资源管理接口. 它管理的资源应当和getResources管理的资源保持一致, 即它们维护同一套资源.  </div><div class="line">getPackageManager 返回PackageManager实例, 提供全局包信息.  </div><div class="line">getContentResolver 返回ContentResolver实例, 提供内容解析接口.  </div><div class="line">getText 封装Resources.getText  </div><div class="line">getString 封装Resources.getString</div><div class="line">getClassLoader 获取ClassLoader实例, 可以由此获取包内所有类</div><div class="line">getPackageName 获取应用包的包名  </div><div class="line">getSystemService 获取系统服务, 系统服务的名字以常量形式存在Context类中</div></pre></td></tr></table></figure>
-</li>
-<li><p>公共方法及其配套常量. 包括但不限于:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">getMainLooper 返回当前Context的Looper实例  </div><div class="line">getApplicationContext 获取应用的Context实例, 它不同于当前Context实例, 而是一个属于当前进程的, 全局的, 单例的, Application对象, 这意味着它的生命周期不同于当前Context, 而是跟当前进程捆绑  </div><div class="line">registerComponentCallbacks 注册组件回调  </div><div class="line">unregisterComponentCallbacks 注销组件回调  </div><div class="line">deleteFile 删除与当前应用包关联的私有文件  </div><div class="line">deleteDatabase 删除与当前应用包关联的私有SQLiteDatabase数据库  </div><div class="line">startActivity 开始一个Activity  </div><div class="line">registerReceiver 注册广播接收器  </div><div class="line">unregisterReceiver 注销广播接收器</div><div class="line">bindService 绑定服务  </div><div class="line">unbindService 解绑服务  </div><div class="line">startService 开始服务  </div><div class="line">stopService 停止服务  </div><div class="line">createPackageContext 以给定应用包名创建该应用的Context</div></pre></td></tr></table></figure>
-</li>
-</ol>
-<h2 id="Context默认实现"><a href="#Context默认实现" class="headerlink" title="Context默认实现"></a>Context默认实现</h2><p><img src="./images/blogs/context.png" alt="context关系"><br>前文说了, <code>Activity</code>和<code>Application</code>都是<code>Context</code>的间接子类. 但是他们处于不同层级, 拥有不同的继承链, <code>Application</code>继承了<code>ContextWrapper</code>(<code>Service</code>也继承了它), 而<code>Activity</code>继承了<code>ContextThemeWrapper</code>(它是<code>ContextWrapper</code>的直接子类). 在<code>ContextWrapper</code>中提供了大多数方法的默认实现, 正如其名, 它只是包装了一个<code>Context</code>实现, 这个实现就是它的<code>mBase</code>成员变量, 是通过构造函数或者<code>attachBaseContext</code>传入的<code>Context</code>实例. 在应用启动过程中, <code>performLaunchActivity</code>会将一个<code>ContextImpl</code>实例作为参数传入<code>Activity.attach</code>方法, 该方法就用这个实例调用<code>attachBaseContext</code>设置好<code>Context</code>. 换句话说, <code>Activity</code>所拥有的<code>Context</code>就是一个随<code>Activity</code>生命周期的<code>ContextImpl</code>实例, <code>Activity</code>中对<code>Context</code>接口的调用, 中途经过<code>ContextThemeWrapper</code>和<code>ContextWrapper</code>, 最终到达这个<code>mBase</code>指向的<code>ContextImpl</code>的相应接口调用. 也就是说, 它就是我们要找的Activity Context默认实现.<br>那么Application Context呢? 它调用Context接口时最终同样会传达到mBase上, 它的mBase对象又是什么呢? 我们考察应用启动过程, 发现在<code>performLaunchActivity</code>中, 有一步是<code>makeApplication</code>, 返回一个<code>Application</code>对象. 该方法属于<code>LoadedApk</code>类, 打开该类查看, 发现它维护了一个<code>Application mApplication</code>成员变量, <code>makeApplication</code>方法在该变量非空时直接返回该变量(意味着无论调用多少次, 都返回同一个Application实例), 否则新建一个<code>ContextImpl</code>对象, 并以它为参数之一, 调用<code>mActivityThread.mInstrumentation.newApplication</code>返回一个<code>Application</code>对象. 再查看<code>newApplication</code>方法, 它位于<code>frameworks/base/core/java/android/app/Instrumentation.java</code>中, 其行为是使用给定的<code>ClassLoader</code>先装载给定的类(这里是<code>LoadedApk.makeApplication</code>中字符串<code>appClass</code>代表的<code>Application</code>类, 如果没有指定或强制使用默认appClass, 则该值为”android.app.Application”), 再用该类对象的<code>newInstance</code>创建实例并调用<code>attach</code>方法绑定Context实例. 可见, <code>Application</code>的Context仍然是<code>ContextImpl</code>实例, 不同的是它的生命周期与<code>Application</code>一致.<br><code>ContextImpl</code>类中对Context大多数接口方法都有了默认实现, 我们重点只看<code>getApplicationContext</code>:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">// in file ContextImpl.java</div><div class="line"></div><div class="line">@Override</div><div class="line">public Context getApplicationContext() &#123;</div><div class="line">    return (mPackageInfo != null) ?</div><div class="line">            mPackageInfo.getApplication() : mMainThread.getApplication();</div><div class="line">&#125;// mPackageInfo是LoadedApk类型</div></pre></td></tr></table></figure></p>
-<p>方法<code>Activity.getApplication</code>返回的是成员变量<code>mApplication</code>, 根据其构造过程, 是在<code>attach</code>时赋值的<code>Application</code>实例, 换句话说, 在同一个应用中时, <code>Activity</code>中调用<code>getApplication</code>跟调用<code>getApplicationContext</code>返回的是同一个对象, 这可以很方便地验证.  </p>
-<h2 id="Context使用中需要注意的问题"><a href="#Context使用中需要注意的问题" class="headerlink" title="Context使用中需要注意的问题"></a>Context使用中需要注意的问题</h2><p>前文中我们曾特地指出, <code>Activity</code>的Context跟<code>Application</code>的Context生命周期不同, 细心的同学可能要问了, 强调这个是因为有什么坑吗? 是的, 这里有坑.<br>原因就在于我们在创建组件的时候经常会用到Context这个参数, 有时为了图方便就直接传<code>this</code>, 大多数情况下也挺好使, 但其实这里存在很大的内存泄漏风险.<br>举个例子, 我们假设在<code>Activity</code>中创建了一个<code>Bitmap</code>, 为了在手机横竖屏切换的时候不至于重新装载这个资源, 我们将它写成<code>static</code>, 这样它的生命周期也就跟<code>Activity.class</code>相同了. 然后我们通过<code>setBackgroundDrawable</code>将它设置成了某个<code>View</code>(该<code>View</code>是通过<code>new View(this)</code>方法构造的实例)的背景. 我们知道, 在手机横竖屏切换的时候, 当前Activity会被销毁再重新创建, 因此此间会有一个gc标记过程. 这里存在什么问题呢? <code>setBackgroundDrawable</code>之后, 静态变量<code>Bitmap</code>会持有一个该<code>View</code>的引用, 而这个<code>View</code>持有一个<code>Activity</code>的引用, 这就导致<code>Activity</code>的引用计数不为0, gc过程无法回收该对象内存, 但是该对象已经不被任何过程使用, 于是就泄露了. 归根到底是因为创建<code>View</code>的时候使用了<code>Activity</code>作为Context, 但是该<code>View</code>由于存在被静态变量<code>Bitmap</code>引用的情况, 其实际生命周期要长于<code>Activity</code>.<br>解决这种泄露的方法是, 保证在<code>Activity</code>中使用<code>Activity</code>或<code>this</code>作为Context的任何对象, 其生命周期都不长于<code>Activity</code>本身, 否则应该考虑使用<code>Application Context</code>.<br>另外, 如果定义了非静态内部类, 那么对非静态内部类实例的引用也有可能导致外部类实例内存泄漏, 解决这种内存泄漏的方法是控制内部类的引用, 对于生命周期长于外部类的内部类, 应定义为静态内部类.  </p>
-]]></content>
-    
-    <summary type="html">
-    
-      又叫【花样劝退教程】。本文讲Android中的Context
     
     </summary>
     
@@ -2898,45 +3071,6 @@ static int binder_open(struct inode *nodp, struct file *filp)
   </entry>
   
   <entry>
-    <title>Android源码结构</title>
-    <link href="https://hjhjw1991.github.io/android/2016/08/01/Android%E6%BA%90%E7%A0%81%E7%BB%93%E6%9E%84/"/>
-    <id>https://hjhjw1991.github.io/android/2016/08/01/Android源码结构/</id>
-    <published>2016-07-31T16:00:00.000Z</published>
-    <updated>2017-02-07T09:18:02.211Z</updated>
-    
-    <content type="html"><![CDATA[<p>相信各位对于Android系统架构图的三层或四层结构已经了然于胸，迫不及待想要膜拜一下源码，但是可能好不容易下载好源码打开一看就懵逼了：这目录是啥？这又是啥？其实Android源码目录名字已经很浅显地表明了目录的内容和功能，但对于初学者特别是背景知识不够宽宏的初学者而言还是有点摸不着头脑。本文简单介绍Android系统源码目录结构，好让读者对Android源码有一个整体的概念，这样当深入到某一模块研究的时候能够同时心中有全局。<br>首先要了解一个理念：Android源码以什么样的原则来分包和存放。从目录看，Android很自然地将源码分为Core、External和Package三种，其中Core是核心工程，在根目录的各个文件夹中，External是扩展工程，使用其他开源项目扩展的功能，在external文件夹中，Package是提供应用程序和服务的，在package中，平时用到的各种系统应用就是在这里面写就的。<br>以下按层次结构依次标注目录功能（源码版本：android_4.4.1-r1）：  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line">.</div><div class="line">├── abi                application binary interface，应用程序二进制接口</div><div class="line">├── art                art虚拟机</div><div class="line">├── bionic             [Build] bionic C运行时支持：libc、libm、libdl、动态linker</div><div class="line">├── bootable           启动引导相关代码</div><div class="line">├── build              [Build]存放系统编译规则及generic等基础开发配置</div><div class="line">├── cts                Android兼容性测试套件标准</div><div class="line">├── dalvik             dalvik虚拟机</div><div class="line">├── developers         开发者相关</div><div class="line">├── development        应用程序开发相关</div><div class="line">├── device             设备相关代码（厂商定制代码就放在这里）</div><div class="line">├── docs               开源相关文档</div><div class="line">├── external           Android使用的开源模块</div><div class="line">├── frameworks         核心框架，包含Java source和C++ source</div><div class="line">├── hardware           主要是硬件适配层HAL</div><div class="line">├── libcore            核心库相关</div><div class="line">├── libnativehelper    动态库，是实现JNI的基础</div><div class="line">├── Makefile           [Build]make的入口点，其内容只有一句话即include build/core/main.mk</div><div class="line">├── ndk                ndk相关代码</div><div class="line">├── out                编译输出文件夹，默认编译完成后的结果输出到此目录</div><div class="line">├── packages           应用程序包</div><div class="line">├── pdk                Plug Development Kit，本地开发套件</div><div class="line">├── prebuilts          预编译的资源（例如Linux-Kernel，分为x86和arm架构）</div><div class="line">├── sdk                sdk及模拟器相关代码</div><div class="line">├── system             文件系统和应用组件，c/c++代码</div><div class="line">├── tools              工具文件夹，如gradle等</div></pre></td></tr></table></figure>
-<p>作为开发者根据自己的需要可以对不同部分加以关注，我们主要关注packages和frameworks目录。我们打开frameworks，发现它的目录结构如下：  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div><div class="line">157</div><div class="line">158</div><div class="line">159</div><div class="line">160</div><div class="line">161</div><div class="line">162</div><div class="line">163</div><div class="line">164</div><div class="line">165</div><div class="line">166</div><div class="line">167</div><div class="line">168</div><div class="line">169</div><div class="line">170</div><div class="line">171</div><div class="line">172</div><div class="line">173</div><div class="line">174</div><div class="line">175</div><div class="line">176</div><div class="line">177</div><div class="line">178</div><div class="line">179</div><div class="line">180</div><div class="line">181</div><div class="line">182</div><div class="line">183</div><div class="line">184</div><div class="line">185</div><div class="line">186</div><div class="line">187</div><div class="line">188</div><div class="line">189</div><div class="line">190</div><div class="line">191</div><div class="line">192</div><div class="line">193</div><div class="line">194</div><div class="line">195</div><div class="line">196</div><div class="line">197</div><div class="line">198</div><div class="line">199</div><div class="line">200</div><div class="line">201</div><div class="line">202</div><div class="line">203</div><div class="line">204</div><div class="line">205</div><div class="line">206</div><div class="line">207</div><div class="line">208</div><div class="line">209</div><div class="line">210</div><div class="line">211</div><div class="line">212</div><div class="line">213</div><div class="line">214</div><div class="line">215</div><div class="line">216</div><div class="line">217</div><div class="line">218</div><div class="line">219</div><div class="line">220</div><div class="line">221</div><div class="line">222</div><div class="line">223</div><div class="line">224</div><div class="line">225</div><div class="line">226</div><div class="line">227</div><div class="line">228</div><div class="line">229</div><div class="line">230</div><div class="line">231</div><div class="line">232</div><div class="line">233</div><div class="line">234</div><div class="line">235</div><div class="line">236</div></pre></td><td class="code"><pre><div class="line">./frameworks/</div><div class="line">├── av                      Audio/Video</div><div class="line">│   ├── camera              相机</div><div class="line">│   ├── CleanSpec.mk        本模块的清除步骤，下同</div><div class="line">│   ├── cmds                command目录，包含录屏和stagefright两个子目录</div><div class="line">│   ├── drm                 digital rights management相关</div><div class="line">│   ├── include             头文件</div><div class="line">│   ├── libvideoeditor      视频编辑器库</div><div class="line">│   ├── media               媒体</div><div class="line">│   ├── MODULE_LICENSE_APACHE2    开源协议</div><div class="line">│   ├── NOTICE              声明</div><div class="line">│   ├── services            服务，包含audioflinger，camera和medialog</div><div class="line">│   └── tools               工具</div><div class="line">├── base                    基础定义，我们主要关注这个文件夹下的内容</div><div class="line">│   ├── Android.mk          本模块的编译步骤，下同</div><div class="line">│   ├── api                 当前api定义，如果api有变化这个文件会相应更新</div><div class="line">│   ├── CleanSpec.mk</div><div class="line">│   ├── cmds</div><div class="line">│   ├── core                framework核心代码，实现了几乎所有底层功能，包含java和c/c++代码，android.xx.xx/com.android.internal.xx/com.android.server的NetworkObserver代码位于这里</div><div class="line">│   ├── data                数据文件夹，包含字体、键盘定义、声音、视频等数据</div><div class="line">│   ├── docs                文档</div><div class="line">│   ├── drm                 版权保护</div><div class="line">│   ├── graphics            图形</div><div class="line">│   ├── include             ...</div><div class="line">│   ├── keystore</div><div class="line">│   ├── libs</div><div class="line">│   ├── location</div><div class="line">│   ├── media</div><div class="line">│   ├── MODULE_LICENSE_APACHE2</div><div class="line">│   ├── native</div><div class="line">│   ├── nfc-extras</div><div class="line">│   ├── NOTICE</div><div class="line">│   ├── obex</div><div class="line">│   ├── opengl</div><div class="line">│   ├── packages</div><div class="line">│   ├── policy</div><div class="line">│   ├── preloaded-classes</div><div class="line">│   ├── samples</div><div class="line">│   ├── sax</div><div class="line">│   ├── services            com.android.server的大部分代码位于这里</div><div class="line">│   ├── telephony</div><div class="line">│   ├── test-runner</div><div class="line">│   ├── tests</div><div class="line">│   ├── tools</div><div class="line">│   └── wifi</div><div class="line">├── compile                 下面的内容不再一一介绍，用到的时候再去详解也不迟</div><div class="line">│   ├── libbcc</div><div class="line">│   ├── mclinker</div><div class="line">│   └── slang</div><div class="line">├── ex</div><div class="line">│   ├── camera2</div><div class="line">│   ├── carousel</div><div class="line">│   ├── chips</div><div class="line">│   ├── CleanSpec.mk</div><div class="line">│   ├── common</div><div class="line">│   ├── photoviewer</div><div class="line">│   ├── variablespeed</div><div class="line">│   └── widget</div><div class="line">├── mff</div><div class="line">├── ml</div><div class="line">│   ├── Android.mk</div><div class="line">│   └── bordeaux</div><div class="line">├── native</div><div class="line">│   ├── build</div><div class="line">│   ├── cmds</div><div class="line">│   ├── data</div><div class="line">│   ├── include</div><div class="line">│   ├── libs</div><div class="line">│   ├── MODULE_LICENSE_APACHE2</div><div class="line">│   ├── NOTICE</div><div class="line">│   ├── opengl</div><div class="line">│   └── services</div><div class="line">├── opt</div><div class="line">│   ├── calendar</div><div class="line">│   ├── carddav</div><div class="line">│   ├── colorpicker</div><div class="line">│   ├── datetimepicker</div><div class="line">│   ├── emoji</div><div class="line">│   ├── inputmethodcommon</div><div class="line">│   ├── mailcommon</div><div class="line">│   ├── mms</div><div class="line">│   ├── net</div><div class="line">│   ├── photoviewer</div><div class="line">│   ├── telephony</div><div class="line">│   ├── timezonepicker</div><div class="line">│   └── vcard</div><div class="line">├── rs</div><div class="line">│   ├── Android.mk</div><div class="line">│   ├── CleanSpec.mk</div><div class="line">│   ├── cpp</div><div class="line">│   ├── cpu_ref</div><div class="line">│   ├── driver</div><div class="line">│   ├── java</div><div class="line">│   ├── rsAdapter.cpp</div><div class="line">│   ├── rsAdapter.h</div><div class="line">│   ├── rsAllocation.cpp</div><div class="line">│   ├── rsAllocation.h</div><div class="line">│   ├── rsAnimation.cpp</div><div class="line">│   ├── rsAnimation.h</div><div class="line">│   ├── rsCompatibilityLib.cpp</div><div class="line">│   ├── rsCompatibilityLib.h</div><div class="line">│   ├── rsComponent.cpp</div><div class="line">│   ├── rsComponent.h</div><div class="line">│   ├── rsContext.cpp</div><div class="line">│   ├── rsContext.h</div><div class="line">│   ├── rsCppUtils.cpp</div><div class="line">│   ├── rsCppUtils.h</div><div class="line">│   ├── rsDebugHelper.h</div><div class="line">│   ├── rsDefines.h</div><div class="line">│   ├── rsDevice.cpp</div><div class="line">│   ├── rsDevice.h</div><div class="line">│   ├── rsElement.cpp</div><div class="line">│   ├── rsElement.h</div><div class="line">│   ├── rsEnv.h</div><div class="line">│   ├── rsFBOCache.cpp</div><div class="line">│   ├── rsFBOCache.h</div><div class="line">│   ├── rsFifo.h</div><div class="line">│   ├── rsFifoSocket.cpp</div><div class="line">│   ├── rsFifoSocket.h</div><div class="line">│   ├── rsFileA3D.cpp</div><div class="line">│   ├── rsFileA3D.h</div><div class="line">│   ├── rsFont.cpp</div><div class="line">│   ├── rsFont.h</div><div class="line">│   ├── rsgApi.cpp.rsg</div><div class="line">│   ├── rsgApiFuncDecl.h.rsg</div><div class="line">│   ├── rsgApiReplay.cpp.rsg</div><div class="line">│   ├── rsgApiStructs.h.rsg</div><div class="line">│   ├── rsg_generator.c</div><div class="line">│   ├── rsGrallocConsumer.cpp</div><div class="line">│   ├── rsGrallocConsumer.h</div><div class="line">│   ├── rsg.spec</div><div class="line">│   ├── rs.h</div><div class="line">│   ├── rs_hal.h</div><div class="line">│   ├── rsMatrix2x2.cpp</div><div class="line">│   ├── rsMatrix2x2.h</div><div class="line">│   ├── rsMatrix3x3.cpp</div><div class="line">│   ├── rsMatrix3x3.h</div><div class="line">│   ├── rsMatrix4x4.cpp</div><div class="line">│   ├── rsMatrix4x4.h</div><div class="line">│   ├── rsMesh.cpp</div><div class="line">│   ├── rsMesh.h</div><div class="line">│   ├── rsMutex.cpp</div><div class="line">│   ├── rsMutex.h</div><div class="line">│   ├── rs_native.spec</div><div class="line">│   ├── rsObjectBase.cpp</div><div class="line">│   ├── rsObjectBase.h</div><div class="line">│   ├── rsPath.cpp</div><div class="line">│   ├── rsPath.h</div><div class="line">│   ├── rsProgramBase.h</div><div class="line">│   ├── rsProgram.cpp</div><div class="line">│   ├── rsProgramFragment.cpp</div><div class="line">│   ├── rsProgramFragment.h</div><div class="line">│   ├── rsProgram.h</div><div class="line">│   ├── rsProgramRaster.cpp</div><div class="line">│   ├── rsProgramRaster.h</div><div class="line">│   ├── rsProgramStore.cpp</div><div class="line">│   ├── rsProgramStore.h</div><div class="line">│   ├── rsProgramVertex.cpp</div><div class="line">│   ├── rsProgramVertex.h</div><div class="line">│   ├── rsRuntime.h</div><div class="line">│   ├── rsSampler.cpp</div><div class="line">│   ├── rsSampler.h</div><div class="line">│   ├── rsScriptC.cpp</div><div class="line">│   ├── rsScriptC.h</div><div class="line">│   ├── rsScriptC_Lib.cpp</div><div class="line">│   ├── rsScriptC_LibGL.cpp</div><div class="line">│   ├── rsScript.cpp</div><div class="line">│   ├── rsScriptGroup.cpp</div><div class="line">│   ├── rsScriptGroup.h</div><div class="line">│   ├── rsScript.h</div><div class="line">│   ├── rsScriptIntrinsic.cpp</div><div class="line">│   ├── rsScriptIntrinsic.h</div><div class="line">│   ├── rsSignal.cpp</div><div class="line">│   ├── rsSignal.h</div><div class="line">│   ├── rs.spec</div><div class="line">│   ├── rsStream.cpp</div><div class="line">│   ├── rsStream.h</div><div class="line">│   ├── rsThreadIO.cpp</div><div class="line">│   ├── rsThreadIO.h</div><div class="line">│   ├── rsType.cpp</div><div class="line">│   ├── rsType.h</div><div class="line">│   ├── rsUtils.h</div><div class="line">│   ├── scriptc</div><div class="line">│   ├── server</div><div class="line">│   ├── spec.h</div><div class="line">│   ├── spec.l</div><div class="line">│   └── tests</div><div class="line">├── support</div><div class="line">│   ├── build.gradle</div><div class="line">│   ├── CleanSpec.mk</div><div class="line">│   ├── local.properties</div><div class="line">│   ├── settings.gradle</div><div class="line">│   ├── tests</div><div class="line">│   ├── v13</div><div class="line">│   ├── v4</div><div class="line">│   ├── v7</div><div class="line">│   └── v8</div><div class="line">├── testing</div><div class="line">│   ├── Android.mk</div><div class="line">│   ├── androidtestlib</div><div class="line">│   ├── app-tests</div><div class="line">│   ├── MODULE_LICENSE_APACHE2</div><div class="line">│   ├── uiautomator</div><div class="line">│   └── uiautomator_test_libraries</div><div class="line">├── uiautomator</div><div class="line">│   ├── Android.mk</div><div class="line">│   ├── api</div><div class="line">│   ├── apicheck_msg_current.txt</div><div class="line">│   ├── apicheck_msg_last.txt</div><div class="line">│   ├── BuildConstants.java.in</div><div class="line">│   ├── cmds</div><div class="line">│   ├── MODULE_LICENSE_APACHE2</div><div class="line">│   ├── samples</div><div class="line">│   ├── src</div><div class="line">│   ├── tests</div><div class="line">│   └── utils</div><div class="line">├── volley</div><div class="line">│   ├── AndroidManifest.xml</div><div class="line">│   ├── Android.mk</div><div class="line">│   ├── build.gradle</div><div class="line">│   ├── build.xml</div><div class="line">│   ├── custom_rules.xml</div><div class="line">│   ├── proguard.cfg</div><div class="line">│   ├── proguard-project.txt</div><div class="line">│   ├── project.properties</div><div class="line">│   ├── src</div><div class="line">│   └── tests</div><div class="line">├── webview</div><div class="line">│   ├── Android.mk</div><div class="line">│   └── chromium</div><div class="line">└── wilhelm</div><div class="line">    ├── doc</div><div class="line">    ├── include</div><div class="line">    ├── src</div><div class="line">    ├── tests</div><div class="line">    └── tools</div></pre></td></tr></table></figure>
-<p>以上可以看出android系统的源码是非常庞大而复杂的，源码研究是一项艰苦而持久的任务。世上无难事, 只要肯放弃, 下面我们看点轻松的好理解的内容：  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">./packages/</div><div class="line">├── apps                    应用程序库</div><div class="line">├── experimental            实验性的库（打印服务，bug汇报，通知，RPC等）</div><div class="line">├── inputmethods            输入法</div><div class="line">├── providers               四大组建之一Provider的系统自带模块</div><div class="line">├── screensavers            屏保</div><div class="line">├── services                系统服务（电话服务）</div><div class="line">└── wallpapers              壁纸</div></pre></td></tr></table></figure>
-<p>有了以上的准备，阅读起源码来就心里有数，想要找什么代码也有了大致的搜索范围。<br>下面特别指出一些库的位置，有兴趣的可自行阅读：  </p>
-<ul>
-<li>系统C库 bionic</li>
-<li>媒体库  frameworks/av/media</li>
-<li>图形显示库  frameworks/native/services/surfaceflinger</li>
-<li>网络引擎库  external/webp, external/webrtc</li>
-<li>3D图形库  frameworks/native/opengl</li>
-<li>SQLite  Java layer framworks/base/core/java/android/database, C++ layer external/sqlite</li>
-</ul>
-]]></content>
-    
-    <summary type="html">
-    
-      本文讲述Android源码中目录的含义, 方便各位按图索骥
-    
-    </summary>
-    
-      <category term="android" scheme="https://hjhjw1991.github.io/categories/android/"/>
-    
-    
-      <category term="教程" scheme="https://hjhjw1991.github.io/tags/%E6%95%99%E7%A8%8B/"/>
-    
-      <category term="android" scheme="https://hjhjw1991.github.io/tags/android/"/>
-    
-  </entry>
-  
-  <entry>
     <title>在Ubuntu 16.04 64bit上下载、编译和安装Android源码</title>
     <link href="https://hjhjw1991.github.io/android/2016/08/01/build-android/"/>
     <id>https://hjhjw1991.github.io/android/2016/08/01/build-android/</id>
@@ -2989,6 +3123,45 @@ of java.</code>。比如我编译4.4源码用的JDK 1.8，就提示java版本错
     <summary type="html">
     
       从空系统开始如何下载和编译Android系统源码
+    
+    </summary>
+    
+      <category term="android" scheme="https://hjhjw1991.github.io/categories/android/"/>
+    
+    
+      <category term="教程" scheme="https://hjhjw1991.github.io/tags/%E6%95%99%E7%A8%8B/"/>
+    
+      <category term="android" scheme="https://hjhjw1991.github.io/tags/android/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Android源码结构</title>
+    <link href="https://hjhjw1991.github.io/android/2016/08/01/Android%E6%BA%90%E7%A0%81%E7%BB%93%E6%9E%84/"/>
+    <id>https://hjhjw1991.github.io/android/2016/08/01/Android源码结构/</id>
+    <published>2016-07-31T16:00:00.000Z</published>
+    <updated>2017-02-07T09:18:02.211Z</updated>
+    
+    <content type="html"><![CDATA[<p>相信各位对于Android系统架构图的三层或四层结构已经了然于胸，迫不及待想要膜拜一下源码，但是可能好不容易下载好源码打开一看就懵逼了：这目录是啥？这又是啥？其实Android源码目录名字已经很浅显地表明了目录的内容和功能，但对于初学者特别是背景知识不够宽宏的初学者而言还是有点摸不着头脑。本文简单介绍Android系统源码目录结构，好让读者对Android源码有一个整体的概念，这样当深入到某一模块研究的时候能够同时心中有全局。<br>首先要了解一个理念：Android源码以什么样的原则来分包和存放。从目录看，Android很自然地将源码分为Core、External和Package三种，其中Core是核心工程，在根目录的各个文件夹中，External是扩展工程，使用其他开源项目扩展的功能，在external文件夹中，Package是提供应用程序和服务的，在package中，平时用到的各种系统应用就是在这里面写就的。<br>以下按层次结构依次标注目录功能（源码版本：android_4.4.1-r1）：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line">.</div><div class="line">├── abi                application binary interface，应用程序二进制接口</div><div class="line">├── art                art虚拟机</div><div class="line">├── bionic             [Build] bionic C运行时支持：libc、libm、libdl、动态linker</div><div class="line">├── bootable           启动引导相关代码</div><div class="line">├── build              [Build]存放系统编译规则及generic等基础开发配置</div><div class="line">├── cts                Android兼容性测试套件标准</div><div class="line">├── dalvik             dalvik虚拟机</div><div class="line">├── developers         开发者相关</div><div class="line">├── development        应用程序开发相关</div><div class="line">├── device             设备相关代码（厂商定制代码就放在这里）</div><div class="line">├── docs               开源相关文档</div><div class="line">├── external           Android使用的开源模块</div><div class="line">├── frameworks         核心框架，包含Java source和C++ source</div><div class="line">├── hardware           主要是硬件适配层HAL</div><div class="line">├── libcore            核心库相关</div><div class="line">├── libnativehelper    动态库，是实现JNI的基础</div><div class="line">├── Makefile           [Build]make的入口点，其内容只有一句话即include build/core/main.mk</div><div class="line">├── ndk                ndk相关代码</div><div class="line">├── out                编译输出文件夹，默认编译完成后的结果输出到此目录</div><div class="line">├── packages           应用程序包</div><div class="line">├── pdk                Plug Development Kit，本地开发套件</div><div class="line">├── prebuilts          预编译的资源（例如Linux-Kernel，分为x86和arm架构）</div><div class="line">├── sdk                sdk及模拟器相关代码</div><div class="line">├── system             文件系统和应用组件，c/c++代码</div><div class="line">├── tools              工具文件夹，如gradle等</div></pre></td></tr></table></figure>
+<p>作为开发者根据自己的需要可以对不同部分加以关注，我们主要关注packages和frameworks目录。我们打开frameworks，发现它的目录结构如下：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div><div class="line">157</div><div class="line">158</div><div class="line">159</div><div class="line">160</div><div class="line">161</div><div class="line">162</div><div class="line">163</div><div class="line">164</div><div class="line">165</div><div class="line">166</div><div class="line">167</div><div class="line">168</div><div class="line">169</div><div class="line">170</div><div class="line">171</div><div class="line">172</div><div class="line">173</div><div class="line">174</div><div class="line">175</div><div class="line">176</div><div class="line">177</div><div class="line">178</div><div class="line">179</div><div class="line">180</div><div class="line">181</div><div class="line">182</div><div class="line">183</div><div class="line">184</div><div class="line">185</div><div class="line">186</div><div class="line">187</div><div class="line">188</div><div class="line">189</div><div class="line">190</div><div class="line">191</div><div class="line">192</div><div class="line">193</div><div class="line">194</div><div class="line">195</div><div class="line">196</div><div class="line">197</div><div class="line">198</div><div class="line">199</div><div class="line">200</div><div class="line">201</div><div class="line">202</div><div class="line">203</div><div class="line">204</div><div class="line">205</div><div class="line">206</div><div class="line">207</div><div class="line">208</div><div class="line">209</div><div class="line">210</div><div class="line">211</div><div class="line">212</div><div class="line">213</div><div class="line">214</div><div class="line">215</div><div class="line">216</div><div class="line">217</div><div class="line">218</div><div class="line">219</div><div class="line">220</div><div class="line">221</div><div class="line">222</div><div class="line">223</div><div class="line">224</div><div class="line">225</div><div class="line">226</div><div class="line">227</div><div class="line">228</div><div class="line">229</div><div class="line">230</div><div class="line">231</div><div class="line">232</div><div class="line">233</div><div class="line">234</div><div class="line">235</div><div class="line">236</div></pre></td><td class="code"><pre><div class="line">./frameworks/</div><div class="line">├── av                      Audio/Video</div><div class="line">│   ├── camera              相机</div><div class="line">│   ├── CleanSpec.mk        本模块的清除步骤，下同</div><div class="line">│   ├── cmds                command目录，包含录屏和stagefright两个子目录</div><div class="line">│   ├── drm                 digital rights management相关</div><div class="line">│   ├── include             头文件</div><div class="line">│   ├── libvideoeditor      视频编辑器库</div><div class="line">│   ├── media               媒体</div><div class="line">│   ├── MODULE_LICENSE_APACHE2    开源协议</div><div class="line">│   ├── NOTICE              声明</div><div class="line">│   ├── services            服务，包含audioflinger，camera和medialog</div><div class="line">│   └── tools               工具</div><div class="line">├── base                    基础定义，我们主要关注这个文件夹下的内容</div><div class="line">│   ├── Android.mk          本模块的编译步骤，下同</div><div class="line">│   ├── api                 当前api定义，如果api有变化这个文件会相应更新</div><div class="line">│   ├── CleanSpec.mk</div><div class="line">│   ├── cmds</div><div class="line">│   ├── core                framework核心代码，实现了几乎所有底层功能，包含java和c/c++代码，android.xx.xx/com.android.internal.xx/com.android.server的NetworkObserver代码位于这里</div><div class="line">│   ├── data                数据文件夹，包含字体、键盘定义、声音、视频等数据</div><div class="line">│   ├── docs                文档</div><div class="line">│   ├── drm                 版权保护</div><div class="line">│   ├── graphics            图形</div><div class="line">│   ├── include             ...</div><div class="line">│   ├── keystore</div><div class="line">│   ├── libs</div><div class="line">│   ├── location</div><div class="line">│   ├── media</div><div class="line">│   ├── MODULE_LICENSE_APACHE2</div><div class="line">│   ├── native</div><div class="line">│   ├── nfc-extras</div><div class="line">│   ├── NOTICE</div><div class="line">│   ├── obex</div><div class="line">│   ├── opengl</div><div class="line">│   ├── packages</div><div class="line">│   ├── policy</div><div class="line">│   ├── preloaded-classes</div><div class="line">│   ├── samples</div><div class="line">│   ├── sax</div><div class="line">│   ├── services            com.android.server的大部分代码位于这里</div><div class="line">│   ├── telephony</div><div class="line">│   ├── test-runner</div><div class="line">│   ├── tests</div><div class="line">│   ├── tools</div><div class="line">│   └── wifi</div><div class="line">├── compile                 下面的内容不再一一介绍，用到的时候再去详解也不迟</div><div class="line">│   ├── libbcc</div><div class="line">│   ├── mclinker</div><div class="line">│   └── slang</div><div class="line">├── ex</div><div class="line">│   ├── camera2</div><div class="line">│   ├── carousel</div><div class="line">│   ├── chips</div><div class="line">│   ├── CleanSpec.mk</div><div class="line">│   ├── common</div><div class="line">│   ├── photoviewer</div><div class="line">│   ├── variablespeed</div><div class="line">│   └── widget</div><div class="line">├── mff</div><div class="line">├── ml</div><div class="line">│   ├── Android.mk</div><div class="line">│   └── bordeaux</div><div class="line">├── native</div><div class="line">│   ├── build</div><div class="line">│   ├── cmds</div><div class="line">│   ├── data</div><div class="line">│   ├── include</div><div class="line">│   ├── libs</div><div class="line">│   ├── MODULE_LICENSE_APACHE2</div><div class="line">│   ├── NOTICE</div><div class="line">│   ├── opengl</div><div class="line">│   └── services</div><div class="line">├── opt</div><div class="line">│   ├── calendar</div><div class="line">│   ├── carddav</div><div class="line">│   ├── colorpicker</div><div class="line">│   ├── datetimepicker</div><div class="line">│   ├── emoji</div><div class="line">│   ├── inputmethodcommon</div><div class="line">│   ├── mailcommon</div><div class="line">│   ├── mms</div><div class="line">│   ├── net</div><div class="line">│   ├── photoviewer</div><div class="line">│   ├── telephony</div><div class="line">│   ├── timezonepicker</div><div class="line">│   └── vcard</div><div class="line">├── rs</div><div class="line">│   ├── Android.mk</div><div class="line">│   ├── CleanSpec.mk</div><div class="line">│   ├── cpp</div><div class="line">│   ├── cpu_ref</div><div class="line">│   ├── driver</div><div class="line">│   ├── java</div><div class="line">│   ├── rsAdapter.cpp</div><div class="line">│   ├── rsAdapter.h</div><div class="line">│   ├── rsAllocation.cpp</div><div class="line">│   ├── rsAllocation.h</div><div class="line">│   ├── rsAnimation.cpp</div><div class="line">│   ├── rsAnimation.h</div><div class="line">│   ├── rsCompatibilityLib.cpp</div><div class="line">│   ├── rsCompatibilityLib.h</div><div class="line">│   ├── rsComponent.cpp</div><div class="line">│   ├── rsComponent.h</div><div class="line">│   ├── rsContext.cpp</div><div class="line">│   ├── rsContext.h</div><div class="line">│   ├── rsCppUtils.cpp</div><div class="line">│   ├── rsCppUtils.h</div><div class="line">│   ├── rsDebugHelper.h</div><div class="line">│   ├── rsDefines.h</div><div class="line">│   ├── rsDevice.cpp</div><div class="line">│   ├── rsDevice.h</div><div class="line">│   ├── rsElement.cpp</div><div class="line">│   ├── rsElement.h</div><div class="line">│   ├── rsEnv.h</div><div class="line">│   ├── rsFBOCache.cpp</div><div class="line">│   ├── rsFBOCache.h</div><div class="line">│   ├── rsFifo.h</div><div class="line">│   ├── rsFifoSocket.cpp</div><div class="line">│   ├── rsFifoSocket.h</div><div class="line">│   ├── rsFileA3D.cpp</div><div class="line">│   ├── rsFileA3D.h</div><div class="line">│   ├── rsFont.cpp</div><div class="line">│   ├── rsFont.h</div><div class="line">│   ├── rsgApi.cpp.rsg</div><div class="line">│   ├── rsgApiFuncDecl.h.rsg</div><div class="line">│   ├── rsgApiReplay.cpp.rsg</div><div class="line">│   ├── rsgApiStructs.h.rsg</div><div class="line">│   ├── rsg_generator.c</div><div class="line">│   ├── rsGrallocConsumer.cpp</div><div class="line">│   ├── rsGrallocConsumer.h</div><div class="line">│   ├── rsg.spec</div><div class="line">│   ├── rs.h</div><div class="line">│   ├── rs_hal.h</div><div class="line">│   ├── rsMatrix2x2.cpp</div><div class="line">│   ├── rsMatrix2x2.h</div><div class="line">│   ├── rsMatrix3x3.cpp</div><div class="line">│   ├── rsMatrix3x3.h</div><div class="line">│   ├── rsMatrix4x4.cpp</div><div class="line">│   ├── rsMatrix4x4.h</div><div class="line">│   ├── rsMesh.cpp</div><div class="line">│   ├── rsMesh.h</div><div class="line">│   ├── rsMutex.cpp</div><div class="line">│   ├── rsMutex.h</div><div class="line">│   ├── rs_native.spec</div><div class="line">│   ├── rsObjectBase.cpp</div><div class="line">│   ├── rsObjectBase.h</div><div class="line">│   ├── rsPath.cpp</div><div class="line">│   ├── rsPath.h</div><div class="line">│   ├── rsProgramBase.h</div><div class="line">│   ├── rsProgram.cpp</div><div class="line">│   ├── rsProgramFragment.cpp</div><div class="line">│   ├── rsProgramFragment.h</div><div class="line">│   ├── rsProgram.h</div><div class="line">│   ├── rsProgramRaster.cpp</div><div class="line">│   ├── rsProgramRaster.h</div><div class="line">│   ├── rsProgramStore.cpp</div><div class="line">│   ├── rsProgramStore.h</div><div class="line">│   ├── rsProgramVertex.cpp</div><div class="line">│   ├── rsProgramVertex.h</div><div class="line">│   ├── rsRuntime.h</div><div class="line">│   ├── rsSampler.cpp</div><div class="line">│   ├── rsSampler.h</div><div class="line">│   ├── rsScriptC.cpp</div><div class="line">│   ├── rsScriptC.h</div><div class="line">│   ├── rsScriptC_Lib.cpp</div><div class="line">│   ├── rsScriptC_LibGL.cpp</div><div class="line">│   ├── rsScript.cpp</div><div class="line">│   ├── rsScriptGroup.cpp</div><div class="line">│   ├── rsScriptGroup.h</div><div class="line">│   ├── rsScript.h</div><div class="line">│   ├── rsScriptIntrinsic.cpp</div><div class="line">│   ├── rsScriptIntrinsic.h</div><div class="line">│   ├── rsSignal.cpp</div><div class="line">│   ├── rsSignal.h</div><div class="line">│   ├── rs.spec</div><div class="line">│   ├── rsStream.cpp</div><div class="line">│   ├── rsStream.h</div><div class="line">│   ├── rsThreadIO.cpp</div><div class="line">│   ├── rsThreadIO.h</div><div class="line">│   ├── rsType.cpp</div><div class="line">│   ├── rsType.h</div><div class="line">│   ├── rsUtils.h</div><div class="line">│   ├── scriptc</div><div class="line">│   ├── server</div><div class="line">│   ├── spec.h</div><div class="line">│   ├── spec.l</div><div class="line">│   └── tests</div><div class="line">├── support</div><div class="line">│   ├── build.gradle</div><div class="line">│   ├── CleanSpec.mk</div><div class="line">│   ├── local.properties</div><div class="line">│   ├── settings.gradle</div><div class="line">│   ├── tests</div><div class="line">│   ├── v13</div><div class="line">│   ├── v4</div><div class="line">│   ├── v7</div><div class="line">│   └── v8</div><div class="line">├── testing</div><div class="line">│   ├── Android.mk</div><div class="line">│   ├── androidtestlib</div><div class="line">│   ├── app-tests</div><div class="line">│   ├── MODULE_LICENSE_APACHE2</div><div class="line">│   ├── uiautomator</div><div class="line">│   └── uiautomator_test_libraries</div><div class="line">├── uiautomator</div><div class="line">│   ├── Android.mk</div><div class="line">│   ├── api</div><div class="line">│   ├── apicheck_msg_current.txt</div><div class="line">│   ├── apicheck_msg_last.txt</div><div class="line">│   ├── BuildConstants.java.in</div><div class="line">│   ├── cmds</div><div class="line">│   ├── MODULE_LICENSE_APACHE2</div><div class="line">│   ├── samples</div><div class="line">│   ├── src</div><div class="line">│   ├── tests</div><div class="line">│   └── utils</div><div class="line">├── volley</div><div class="line">│   ├── AndroidManifest.xml</div><div class="line">│   ├── Android.mk</div><div class="line">│   ├── build.gradle</div><div class="line">│   ├── build.xml</div><div class="line">│   ├── custom_rules.xml</div><div class="line">│   ├── proguard.cfg</div><div class="line">│   ├── proguard-project.txt</div><div class="line">│   ├── project.properties</div><div class="line">│   ├── src</div><div class="line">│   └── tests</div><div class="line">├── webview</div><div class="line">│   ├── Android.mk</div><div class="line">│   └── chromium</div><div class="line">└── wilhelm</div><div class="line">    ├── doc</div><div class="line">    ├── include</div><div class="line">    ├── src</div><div class="line">    ├── tests</div><div class="line">    └── tools</div></pre></td></tr></table></figure>
+<p>以上可以看出android系统的源码是非常庞大而复杂的，源码研究是一项艰苦而持久的任务。世上无难事, 只要肯放弃, 下面我们看点轻松的好理解的内容：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">./packages/</div><div class="line">├── apps                    应用程序库</div><div class="line">├── experimental            实验性的库（打印服务，bug汇报，通知，RPC等）</div><div class="line">├── inputmethods            输入法</div><div class="line">├── providers               四大组建之一Provider的系统自带模块</div><div class="line">├── screensavers            屏保</div><div class="line">├── services                系统服务（电话服务）</div><div class="line">└── wallpapers              壁纸</div></pre></td></tr></table></figure>
+<p>有了以上的准备，阅读起源码来就心里有数，想要找什么代码也有了大致的搜索范围。<br>下面特别指出一些库的位置，有兴趣的可自行阅读：  </p>
+<ul>
+<li>系统C库 bionic</li>
+<li>媒体库  frameworks/av/media</li>
+<li>图形显示库  frameworks/native/services/surfaceflinger</li>
+<li>网络引擎库  external/webp, external/webrtc</li>
+<li>3D图形库  frameworks/native/opengl</li>
+<li>SQLite  Java layer framworks/base/core/java/android/database, C++ layer external/sqlite</li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      本文讲述Android源码中目录的含义, 方便各位按图索骥
     
     </summary>
     
@@ -3096,6 +3269,33 @@ of java.</code>。比如我编译4.4源码用的JDK 1.8，就提示java版本错
   </entry>
   
   <entry>
+    <title>【Leetcode题解】3-Longest Substring Without Repeating Characters</title>
+    <link href="https://hjhjw1991.github.io/leetcode/2016/03/21/%5BLeetcode%E9%A2%98%E8%A7%A3%5D3-Longest%20Substring%20Without%20Repeating%20Characters/"/>
+    <id>https://hjhjw1991.github.io/leetcode/2016/03/21/[Leetcode题解]3-Longest Substring Without Repeating Characters/</id>
+    <published>2016-03-20T16:00:00.000Z</published>
+    <updated>2016-08-30T08:03:26.717Z</updated>
+    
+    <content type="html"><![CDATA[<blockquote>
+<p>本系列代码见<a href="https://github.com/hjhjw1991/leetcode" target="_blank" rel="external">我的Leetcode仓库</a></p>
+</blockquote>
+<p>tags: [Hash Table,Two Pointers]  </p>
+<p>在字符串中找到最长的无重复字符的子串，返回它的长度。<br>这个题的题设要求非常简单，只要出现重复的字符就不行，所以很容易可以想到Hash Table。<br>HashTable的做法是，从左到右扫描并存储见过的字符，如果遇到该字符已经见过了，则记录当前table容量并与当前最大长度求max，并从左到右删除到该字符为止的已经见过的字符。根据题意可以假设最大长度至少为1，且不会大于26.当原字符串为空时最大长度为0.  </p>
+<p>从上面HashTable的解法描述中可以提取Two Pointers解法，即设置同向指针left和right，并初始化boolean数组用以表示是否参与当前最长子串计算，boolean数组下标是字符，其作用可以用HashMap代替。<br>初始left和right指向字符串起点，如果boolean数组right所指向的字符没有参与，则设置为参与并右移，否则计算right-left获得当前长度，并与当前最大长度求max，这之后left左移恢复状态，直到left所指向的字符与right所指向的字符一致。  </p>
+<p>Two Pointers解法比HashTable解法好的一点是，用boolean数组代替了HashMap，这在运行性能上会好一些，但理论时间复杂度没变，都是O(N)。考虑到隐性假设字符为ASCII字符，范围可控，使用boolean数组做更合适。如果是任意字符，则应该使用HashTable。  </p>
+]]></content>
+    
+    <summary type="html">
+    
+      最长无重复字符的子串
+    
+    </summary>
+    
+      <category term="leetcode" scheme="https://hjhjw1991.github.io/categories/leetcode/"/>
+    
+    
+  </entry>
+  
+  <entry>
     <title>【Leetcode题解】2-Add Two Sum</title>
     <link href="https://hjhjw1991.github.io/leetcode/2016/03/21/%5BLeetcode%E9%A2%98%E8%A7%A3%5D2-Add-Two-Numbers/"/>
     <id>https://hjhjw1991.github.io/leetcode/2016/03/21/[Leetcode题解]2-Add-Two-Numbers/</id>
@@ -3115,33 +3315,6 @@ of java.</code>。比如我编译4.4源码用的JDK 1.8，就提示java版本错
     <summary type="html">
     
       填坑, 两数求和
-    
-    </summary>
-    
-      <category term="leetcode" scheme="https://hjhjw1991.github.io/categories/leetcode/"/>
-    
-    
-  </entry>
-  
-  <entry>
-    <title>【Leetcode题解】3-Longest Substring Without Repeating Characters</title>
-    <link href="https://hjhjw1991.github.io/leetcode/2016/03/21/%5BLeetcode%E9%A2%98%E8%A7%A3%5D3-Longest%20Substring%20Without%20Repeating%20Characters/"/>
-    <id>https://hjhjw1991.github.io/leetcode/2016/03/21/[Leetcode题解]3-Longest Substring Without Repeating Characters/</id>
-    <published>2016-03-20T16:00:00.000Z</published>
-    <updated>2016-08-30T08:03:26.717Z</updated>
-    
-    <content type="html"><![CDATA[<blockquote>
-<p>本系列代码见<a href="https://github.com/hjhjw1991/leetcode" target="_blank" rel="external">我的Leetcode仓库</a></p>
-</blockquote>
-<p>tags: [Hash Table,Two Pointers]  </p>
-<p>在字符串中找到最长的无重复字符的子串，返回它的长度。<br>这个题的题设要求非常简单，只要出现重复的字符就不行，所以很容易可以想到Hash Table。<br>HashTable的做法是，从左到右扫描并存储见过的字符，如果遇到该字符已经见过了，则记录当前table容量并与当前最大长度求max，并从左到右删除到该字符为止的已经见过的字符。根据题意可以假设最大长度至少为1，且不会大于26.当原字符串为空时最大长度为0.  </p>
-<p>从上面HashTable的解法描述中可以提取Two Pointers解法，即设置同向指针left和right，并初始化boolean数组用以表示是否参与当前最长子串计算，boolean数组下标是字符，其作用可以用HashMap代替。<br>初始left和right指向字符串起点，如果boolean数组right所指向的字符没有参与，则设置为参与并右移，否则计算right-left获得当前长度，并与当前最大长度求max，这之后left左移恢复状态，直到left所指向的字符与right所指向的字符一致。  </p>
-<p>Two Pointers解法比HashTable解法好的一点是，用boolean数组代替了HashMap，这在运行性能上会好一些，但理论时间复杂度没变，都是O(N)。考虑到隐性假设字符为ASCII字符，范围可控，使用boolean数组做更合适。如果是任意字符，则应该使用HashTable。  </p>
-]]></content>
-    
-    <summary type="html">
-    
-      最长无重复字符的子串
     
     </summary>
     
@@ -3267,54 +3440,6 @@ of java.</code>。比如我编译4.4源码用的JDK 1.8，就提示java版本错
     
     
       <category term="git" scheme="https://hjhjw1991.github.io/tags/git/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>记一次uwsgi故障排除</title>
-    <link href="https://hjhjw1991.github.io/blog/2016/03/02/%E8%AE%B0%E4%B8%80%E6%AC%A1uwsgi%E6%95%85%E9%9A%9C%E6%8E%92%E9%99%A4/"/>
-    <id>https://hjhjw1991.github.io/blog/2016/03/02/记一次uwsgi故障排除/</id>
-    <published>2016-03-01T16:00:00.000Z</published>
-    <updated>2016-08-30T08:03:26.717Z</updated>
-    
-    <content type="html"><![CDATA[<blockquote>
-<p>我在本地调试了一个flask应用，本地跑得好好的，部署到远程centos6 32位vps上就出了问题。<br>问题非常隐蔽，因此也走了不少弯路，甚至最后都不知道是哪一步起了关键作用。因此记一下。</p>
-</blockquote>
-<h2 id="应用升级使用sqlite3数据库，引起访问出错"><a href="#应用升级使用sqlite3数据库，引起访问出错" class="headerlink" title="应用升级使用sqlite3数据库，引起访问出错"></a>应用升级使用sqlite3数据库，引起访问出错</h2><p>应用采用nginx+uwsgi+flask的结构  </p>
-<p>应用最新版本中引入了sqlite3数据库，就这一步出了问题。在要访问数据库的时候返回<code>502  bad gateway</code>，查uwsgi日志，记录提示pysqlite中出了错，找不到symbol<code>sqlite3_stmt_readonly</code>什么的(对了这个信息需要在flask开启debug模式才会被记录下来)。查了vps的sqlite3，是3.6版本，我开发机是3.8版本，在以<code>undefined symbol sqlite3_stmt_readonly</code>为关键词反复搜索信息的过程中知道了这个标志是3.7以后的版本才有的，猜想是不是sqlite版本问题。找到了pysqlite的github仓库中一个<a href="https://github.com/ghaering/pysqlite/issues/85" target="_blank" rel="external">issue</a>，也是同样的错误。根据下面开发者的回答进行了操作，然而并没有什么用。  </p>
-<p>又有说没有安装uwsgi的python插件，我用pip和yum都装了一下，也没有用。(<code>pip install uwsgi</code>, <code>yum install uwsgi-plugin-python</code>)  </p>
-<p>最后还弄出新的问题: 包_sqlite找不到。显然是包管理出问题了。中间各种麻烦，一气之下将python2.7.11源码下载编译安装，然后编译安装了easy_setup和pip，幸好自己以前写过教程。然后重新安装了应用的requirements，幸好之前有更新requirements。  </p>
-<p>这下出现了新问题，所有的python位置和版本都是2.7.11了，但重启uwsgi后竟然直接找不到flask包，一看发现日志记录的python版本还是之前的2.7.8，这个锅看来uwsgi非背不可了。又是一阵折腾python更新和uwsgi配置未果(包括设置虚拟python环境)。  </p>
-<h2 id="解决问题的关键步骤-编译安装最新版uwsgi"><a href="#解决问题的关键步骤-编译安装最新版uwsgi" class="headerlink" title="解决问题的关键步骤:编译安装最新版uwsgi"></a>解决问题的关键步骤:编译安装最新版uwsgi</h2><p>后来想起来，特么这个uwsgi不是我装的啊，我当初下载的是2.0.10版本，这个运行的是2.0.12版本，这货好像是vps自带的！被vps坑过的我表示，这锅你就背了吧！而且当初还是在root下搞的uwsgi，正好一并改过来。  </p>
-<p>下载了uwsgi2.0.12版本的源码，进入源码目录，什么配置都不改<br><code>python uwsgiconfig.py --build</code><br>安装成功。(如果失败或者提示权限问题，就把涉及到的文件权限改成自己的)<br><code>python setup.py install</code><br>这一步是手动安装python uwsgi 包<br>然后设置bin，将<code>/usr/local/bin/uwsgi</code>软连接到python包里面那个uwsgi，别忘了把<code>/usr/local/bin</code>放在环境变量<code>$PATH</code>的最前面以优先载入  </p>
-<p>好了，试运行一下uwsgi，检查正常运行，版本号无误。  </p>
-<p>查看应用的config文件，没有变动，运行uwsgi，访问应用，可以访问，访问数据库，可以访问，查看uwsgi日志，没有错误。完美。感动哭。  </p>
-<p>一声不吭正常运行的nginx目睹了整个过程。谢天谢地幸好你一直正常运行。  </p>
-<h2 id="意外收获"><a href="#意外收获" class="headerlink" title="意外收获"></a>意外收获</h2><p>中间有些意外收获。  </p>
-<ol>
-<li><p>先是编译的uwsgi-2.0.10的源码，安装好之后，运行提示我找不到应用，找不到python，逗我呢？后来一想原先的版本好像是2.0.12，不管是不是vps自带的，我自己下载编译总可以吧？于是这么做之后就好了  </p>
-</li>
-<li><p>后来觉得<code>sudo nginx</code>有点危险，查看nginx发现普通用户有运行权限，切换普通用户运行结果提示我<code>bind() 0.0.0.0:80 permission denied</code>，确信没有应用在用那个端口，一查才知道linux要求1024以下的端口都必须以sudo级别才可以绑定。老老实实改回sudo。按理说conf里配置8080端口应该也可以，但还是以后再说吧，如果有多个应用了再来配置别的访问端口。  </p>
-</li>
-<li><p>nginx的conf里面可以直接配置uwsgi_param传给uwsgi，因此如果要配置多个应用，那么就要在<code>conf/nginx.conf</code>而不是单独的配置文件(对uwsgi来说,单独的配置文件就是用参数指定的xml或者ini格式的配置文件)中指定pythonpath和callable之类的参数。  </p>
-</li>
-<li><p>nginx和uwsgi都是服务端程序，不同的是nginx主要负责前端显示，uwsgi主要负责后端数据处理。  </p>
-</li>
-</ol>
-]]></content>
-    
-    <summary type="html">
-    
-      更新flask应用版本后，uwsgi运行出错提示sqlite3_stmt_readonly未知标志位
-    
-    </summary>
-    
-      <category term="blog" scheme="https://hjhjw1991.github.io/categories/blog/"/>
-    
-    
-      <category term="vps" scheme="https://hjhjw1991.github.io/tags/vps/"/>
-    
-      <category term="uwsgi" scheme="https://hjhjw1991.github.io/tags/uwsgi/"/>
     
   </entry>
   
