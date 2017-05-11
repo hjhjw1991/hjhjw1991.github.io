@@ -4,16 +4,16 @@
 
     
   <url>
-    <loc>https://hjhjw1991.github.io/android/2017/04/28/Activity%E4%B8%ADlaunchMode%E7%9A%84%E7%90%86%E8%A7%A3/</loc>
-    <lastmod>2017-05-02T02:20:44.491Z</lastmod>
+    <loc>https://hjhjw1991.github.io/android/2017/05/11/Animation%E8%AF%A6%E8%A7%A3/</loc>
+    <lastmod>2017-05-11T08:22:10.985Z</lastmod>
     <data>
         <display>
-        <title>Activity中launchMode的理解</title>
-        <pubTime>2017-04-27T16:00:00.000Z</pubTime>
+        <title>Animation详解</title>
+        <pubTime>2017-05-10T16:00:00.000Z</pubTime>
         
-        <tag>android</tag>
-         
         <tag>guide</tag>
+         
+        <tag>android</tag>
          
          
            
@@ -26,14 +26,406 @@
 
     
   <url>
-    <loc>https://hjhjw1991.github.io/android/2017/03/05/%5BAndroid%E6%95%99%E7%A8%8B%5DActivityManagerService%E5%85%A8%E8%A7%A3/</loc>
-    <lastmod>2017-04-07T03:12:54.948Z</lastmod>
+    <loc>https://hjhjw1991.github.io/blog/2015/06/08/Python%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/</loc>
+    <lastmod>2017-05-04T10:38:43.979Z</lastmod>
+    <data>
+        <display>
+        <title>Python正则表达式</title>
+        <pubTime>2015-06-07T16:00:00.000Z</pubTime>
+        
+        <tag>python</tag>
+         
+        <tag>regex</tag>
+         
+         
+           
+             
+              <breadCrumb title="blog" url="https://hjhjw1991.github.io/categories/blog/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://hjhjw1991.github.io/android/2016/08/01/Android%E6%BA%90%E7%A0%81%E7%BB%93%E6%9E%84/</loc>
+    <lastmod>2017-05-04T10:37:12.043Z</lastmod>
+    <data>
+        <display>
+        <title>Android源码结构</title>
+        <pubTime>2016-07-31T16:00:00.000Z</pubTime>
+        
+        <tag>guide</tag>
+         
+        <tag>android</tag>
+         
+         
+           
+             
+              <breadCrumb title="android" url="https://hjhjw1991.github.io/categories/android/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://hjhjw1991.github.io/blog/2015/05/19/%E6%90%AC%E7%93%A6%E5%B7%A5VPS%E6%9E%B6%E8%AE%BEVPN%E6%95%99%E7%A8%8B/</loc>
+    <lastmod>2017-05-04T10:36:11.723Z</lastmod>
+    <data>
+        <display>
+        <title>搬瓦工VPS架设VPN教程</title>
+        <pubTime>2015-05-18T16:00:00.000Z</pubTime>
+        
+        <tag>vpn</tag>
+         
+        <tag>vps</tag>
+         
+        <tag>guide</tag>
+         
+         
+           
+             
+              <breadCrumb title="blog" url="https://hjhjw1991.github.io/categories/blog/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://hjhjw1991.github.io/android/2017/03/05/%5BAndroid%E6%95%99%E7%A8%8B%5DActivityManagerService%E5%85%A8%E8%A7%A3-part1/</loc>
+    <lastmod>2017-05-04T10:36:03.195Z</lastmod>
     <data>
         <display>
         <title>【Android教程】ActivityManagerService全解(1/5)</title>
         <pubTime>2017-03-04T16:00:00.000Z</pubTime>
         
-        <tag>教程</tag>
+        <tag>guide</tag>
+         
+        <tag>android</tag>
+         
+         
+           
+             
+              <breadCrumb title="android" url="https://hjhjw1991.github.io/categories/android/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://hjhjw1991.github.io/blog/2015/06/19/CentOS-6.5%E4%B8%8B%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84Git%E6%9C%8D%E5%8A%A1%E5%99%A8/</loc>
+    <lastmod>2017-05-04T10:35:53.851Z</lastmod>
+    <data>
+        <display>
+        <title>CentOS 6.5下搭建自己的Git服务器</title>
+        <pubTime>2015-06-18T16:00:00.000Z</pubTime>
+        
+        <tag>git</tag>
+         
+        <tag>guide</tag>
+         
+         
+           
+             
+              <breadCrumb title="blog" url="https://hjhjw1991.github.io/categories/blog/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://hjhjw1991.github.io/android/2016/08/01/build-android/</loc>
+    <lastmod>2017-05-04T10:35:43.147Z</lastmod>
+    <data>
+        <display>
+        <title>在Ubuntu 16.04 64bit上下载、编译和安装Android源码</title>
+        <pubTime>2016-07-31T16:00:00.000Z</pubTime>
+        
+        <tag>guide</tag>
+         
+        <tag>android</tag>
+         
+         
+           
+             
+              <breadCrumb title="android" url="https://hjhjw1991.github.io/categories/android/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://hjhjw1991.github.io/android/2016/08/01/build-android-sdk/</loc>
+    <lastmod>2017-05-04T10:35:34.011Z</lastmod>
+    <data>
+        <display>
+        <title>从源码编译Android SDK</title>
+        <pubTime>2016-07-31T16:00:00.000Z</pubTime>
+        
+        <tag>guide</tag>
+         
+        <tag>android</tag>
+         
+         
+           
+             
+              <breadCrumb title="android" url="https://hjhjw1991.github.io/categories/android/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://hjhjw1991.github.io/blog/2015/08/30/Mac%E4%B8%8B%E9%85%8D%E7%BD%AEssh%E8%AE%BF%E9%97%AE%E8%BF%9C%E7%A8%8B%E7%A7%81%E6%9C%89git%E6%9C%8D%E5%8A%A1%E5%99%A8/</loc>
+    <lastmod>2017-05-04T10:35:26.059Z</lastmod>
+    <data>
+        <display>
+        <title>Mac下配置ssh访问远程私有git服务器</title>
+        <pubTime>2015-08-29T16:00:00.000Z</pubTime>
+        
+        <tag>git</tag>
+         
+        <tag>guide</tag>
+         
+        <tag>ssh</tag>
+         
+        <tag>mac</tag>
+         
+         
+           
+             
+              <breadCrumb title="blog" url="https://hjhjw1991.github.io/categories/blog/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://hjhjw1991.github.io/android/2017/02/24/%5BAndroid%E6%95%99%E7%A8%8B%5DView&ViewGroup%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/</loc>
+    <lastmod>2017-05-04T10:35:16.571Z</lastmod>
+    <data>
+        <display>
+        <title>【Android教程】View/ViewGroup源码阅读</title>
+        <pubTime>2017-02-23T16:00:00.000Z</pubTime>
+        
+        <tag>guide</tag>
+         
+        <tag>android</tag>
+         
+        <tag>interview</tag>
+         
+         
+           
+             
+              <breadCrumb title="android" url="https://hjhjw1991.github.io/categories/android/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://hjhjw1991.github.io/android/2016/04/01/%5BAndroid%E6%95%99%E7%A8%8B%5DAIDL%E5%85%A5%E9%97%A8/</loc>
+    <lastmod>2017-05-04T10:34:56.491Z</lastmod>
+    <data>
+        <display>
+        <title>【Android教程】AIDL入门</title>
+        <pubTime>2016-03-31T16:00:00.000Z</pubTime>
+        
+        <tag>guide</tag>
+         
+        <tag>android</tag>
+         
+        <tag>interview</tag>
+         
+         
+           
+             
+              <breadCrumb title="android" url="https://hjhjw1991.github.io/categories/android/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://hjhjw1991.github.io/android/2017/01/06/%5BAndroid%E6%95%99%E7%A8%8B%5DHandler%E5%85%A8%E8%A7%A3/</loc>
+    <lastmod>2017-05-04T10:32:16.091Z</lastmod>
+    <data>
+        <display>
+        <title>【Android教程】Handler全解</title>
+        <pubTime>2017-01-05T16:00:00.000Z</pubTime>
+        
+        <tag>guide</tag>
+         
+        <tag>android</tag>
+         
+        <tag>interview</tag>
+         
+         
+           
+             
+              <breadCrumb title="android" url="https://hjhjw1991.github.io/categories/android/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://hjhjw1991.github.io/android/2016/12/21/%5BAndroid%E6%95%99%E7%A8%8B%5Dndk&jni/</loc>
+    <lastmod>2017-05-04T10:31:59.115Z</lastmod>
+    <data>
+        <display>
+        <title>【Android教程】NDK&JNI入门</title>
+        <pubTime>2016-12-20T16:00:00.000Z</pubTime>
+        
+        <tag>guide</tag>
+         
+        <tag>android</tag>
+         
+        <tag>interview</tag>
+         
+         
+           
+             
+              <breadCrumb title="android" url="https://hjhjw1991.github.io/categories/android/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://hjhjw1991.github.io/android/2017/01/10/%5BAndroid%E6%95%99%E7%A8%8B%5DBinder%E5%85%A8%E8%A7%A3/</loc>
+    <lastmod>2017-05-04T10:31:43.295Z</lastmod>
+    <data>
+        <display>
+        <title>【Android教程】Binder全解</title>
+        <pubTime>2017-01-09T16:00:00.000Z</pubTime>
+        
+        <tag>guide</tag>
+         
+        <tag>android</tag>
+         
+        <tag>interview</tag>
+         
+         
+           
+             
+              <breadCrumb title="android" url="https://hjhjw1991.github.io/categories/android/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://hjhjw1991.github.io/android/2017/01/23/%5BAndroid%E6%95%99%E7%A8%8B%5DContext%E5%85%A8%E8%A7%A3/</loc>
+    <lastmod>2017-05-04T10:31:21.711Z</lastmod>
+    <data>
+        <display>
+        <title>【Android教程】Context全解</title>
+        <pubTime>2017-01-22T16:00:00.000Z</pubTime>
+        
+        <tag>guide</tag>
+         
+        <tag>android</tag>
+         
+        <tag>interview</tag>
+         
+         
+           
+             
+              <breadCrumb title="android" url="https://hjhjw1991.github.io/categories/android/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://hjhjw1991.github.io/android/2017/01/23/%5BAndroid%E6%95%99%E7%A8%8B%5DSharedPreference%E8%AF%A6%E8%A7%A3/</loc>
+    <lastmod>2017-05-04T10:29:27.359Z</lastmod>
+    <data>
+        <display>
+        <title>【Android教程】SharedPreference详解</title>
+        <pubTime>2017-01-22T16:00:00.000Z</pubTime>
+        
+        <tag>guide</tag>
+         
+        <tag>android</tag>
+         
+        <tag>interview</tag>
+         
+         
+           
+             
+              <breadCrumb title="android" url="https://hjhjw1991.github.io/categories/android/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://hjhjw1991.github.io/android/2017/02/28/%5BAndroid%E6%95%99%E7%A8%8B%5DAndroid%E7%BD%91%E7%BB%9C%E6%9E%B6%E6%9E%84/</loc>
+    <lastmod>2017-05-04T10:27:47.147Z</lastmod>
+    <data>
+        <display>
+        <title>【Android教程】Android网络架构</title>
+        <pubTime>2017-02-27T16:00:00.000Z</pubTime>
+        
+        <tag>guide</tag>
+         
+        <tag>android</tag>
+         
+         
+           
+             
+              <breadCrumb title="android" url="https://hjhjw1991.github.io/categories/android/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://hjhjw1991.github.io/android/2017/05/02/%E5%88%9D%E6%B6%89mmap/</loc>
+    <lastmod>2017-05-02T06:59:27.044Z</lastmod>
+    <data>
+        <display>
+        <title>初涉mmap</title>
+        <pubTime>2017-05-01T16:00:00.000Z</pubTime>
+        
+        <tag>android</tag>
+         
+         
+           
+             
+              <breadCrumb title="android" url="https://hjhjw1991.github.io/categories/android/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://hjhjw1991.github.io/android/2017/04/28/Activity%E4%B8%ADlaunchMode%E7%9A%84%E7%90%86%E8%A7%A3/</loc>
+    <lastmod>2017-05-02T02:20:44.491Z</lastmod>
+    <data>
+        <display>
+        <title>Activity中launchMode的理解</title>
+        <pubTime>2017-04-27T16:00:00.000Z</pubTime>
+        
+        <tag>guide</tag>
          
         <tag>android</tag>
          
@@ -68,28 +460,6 @@
 
     
   <url>
-    <loc>https://hjhjw1991.github.io/android/2017/02/28/%5BAndroid%E6%95%99%E7%A8%8B%5DAndroid%E7%BD%91%E7%BB%9C%E6%9E%B6%E6%9E%84/</loc>
-    <lastmod>2017-03-05T11:15:17.771Z</lastmod>
-    <data>
-        <display>
-        <title>【Android教程】Android网络架构</title>
-        <pubTime>2017-02-27T16:00:00.000Z</pubTime>
-        
-        <tag>教程</tag>
-         
-        <tag>android</tag>
-         
-         
-           
-             
-              <breadCrumb title="android" url="https://hjhjw1991.github.io/categories/android/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
     <loc>https://hjhjw1991.github.io/android/2017/02/27/%5BAndroid%E6%BA%90%E7%A0%81%E4%BC%B4%E8%AF%BB%5DOkHttp%E6%BA%90%E7%A0%81%E6%8E%A2%E7%B4%A2/</loc>
     <lastmod>2017-03-05T11:15:02.011Z</lastmod>
     <data>
@@ -103,172 +473,6 @@
            
              
               <breadCrumb title="android" url="https://hjhjw1991.github.io/categories/android/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>https://hjhjw1991.github.io/android/2017/02/24/%5BAndroid%E6%95%99%E7%A8%8B%5DView&ViewGroup%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/</loc>
-    <lastmod>2017-03-05T11:14:44.267Z</lastmod>
-    <data>
-        <display>
-        <title>【Android教程】View/ViewGroup源码阅读</title>
-        <pubTime>2017-02-23T16:00:00.000Z</pubTime>
-        
-        <tag>教程</tag>
-         
-        <tag>android</tag>
-         
-        <tag>面试</tag>
-         
-         
-           
-             
-              <breadCrumb title="android" url="https://hjhjw1991.github.io/categories/android/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>https://hjhjw1991.github.io/android/2017/01/10/%5BAndroid%E6%95%99%E7%A8%8B%5DBinder%E5%85%A8%E8%A7%A3/</loc>
-    <lastmod>2017-03-05T11:12:16.959Z</lastmod>
-    <data>
-        <display>
-        <title>【Android教程】Binder全解</title>
-        <pubTime>2017-01-09T16:00:00.000Z</pubTime>
-        
-        <tag>教程</tag>
-         
-        <tag>android</tag>
-         
-        <tag>面试</tag>
-         
-         
-           
-             
-              <breadCrumb title="android" url="https://hjhjw1991.github.io/categories/android/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>https://hjhjw1991.github.io/android/2017/01/23/%5BAndroid%E6%95%99%E7%A8%8B%5DContext%E5%85%A8%E8%A7%A3/</loc>
-    <lastmod>2017-03-05T08:29:43.703Z</lastmod>
-    <data>
-        <display>
-        <title>【Android教程】Context全解</title>
-        <pubTime>2017-01-22T16:00:00.000Z</pubTime>
-        
-        <tag>教程</tag>
-         
-        <tag>android</tag>
-         
-        <tag>面试</tag>
-         
-         
-           
-             
-              <breadCrumb title="android" url="https://hjhjw1991.github.io/categories/android/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>https://hjhjw1991.github.io/blog/2015/06/08/Python%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/</loc>
-    <lastmod>2017-02-16T04:09:34.781Z</lastmod>
-    <data>
-        <display>
-        <title>Python正则表达式</title>
-        <pubTime>2015-06-07T16:00:00.000Z</pubTime>
-        
-        <tag>python</tag>
-         
-        <tag>正则表达式</tag>
-         
-         
-           
-             
-              <breadCrumb title="blog" url="https://hjhjw1991.github.io/categories/blog/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>https://hjhjw1991.github.io/blog/2015/06/19/CentOS-6.5%E4%B8%8B%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84Git%E6%9C%8D%E5%8A%A1%E5%99%A8/</loc>
-    <lastmod>2017-02-07T09:54:19.919Z</lastmod>
-    <data>
-        <display>
-        <title>CentOS 6.5下搭建自己的Git服务器</title>
-        <pubTime>2015-06-18T16:00:00.000Z</pubTime>
-        
-        <tag>git</tag>
-         
-        <tag>教程</tag>
-         
-         
-           
-             
-              <breadCrumb title="blog" url="https://hjhjw1991.github.io/categories/blog/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>https://hjhjw1991.github.io/blog/2015/05/19/%E6%90%AC%E7%93%A6%E5%B7%A5VPS%E6%9E%B6%E8%AE%BEVPN%E6%95%99%E7%A8%8B/</loc>
-    <lastmod>2017-02-07T09:53:28.887Z</lastmod>
-    <data>
-        <display>
-        <title>搬瓦工VPS架设VPN教程</title>
-        <pubTime>2015-05-18T16:00:00.000Z</pubTime>
-        
-        <tag>vpn</tag>
-         
-        <tag>vps</tag>
-         
-        <tag>教程</tag>
-         
-         
-           
-             
-              <breadCrumb title="blog" url="https://hjhjw1991.github.io/categories/blog/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>https://hjhjw1991.github.io/blog/2015/08/30/Mac%E4%B8%8B%E9%85%8D%E7%BD%AEssh%E8%AE%BF%E9%97%AE%E8%BF%9C%E7%A8%8B%E7%A7%81%E6%9C%89git%E6%9C%8D%E5%8A%A1%E5%99%A8/</loc>
-    <lastmod>2017-02-07T09:52:03.151Z</lastmod>
-    <data>
-        <display>
-        <title>Mac下配置ssh访问远程私有git服务器</title>
-        <pubTime>2015-08-29T16:00:00.000Z</pubTime>
-        
-        <tag>git</tag>
-         
-        <tag>教程</tag>
-         
-        <tag>ssh</tag>
-         
-        <tag>mac</tag>
-         
-         
-           
-             
-              <breadCrumb title="blog" url="https://hjhjw1991.github.io/categories/blog/"/>
           
         </display>
     </data>
@@ -316,161 +520,21 @@
 
     
   <url>
-    <loc>https://hjhjw1991.github.io/android/2016/12/21/%5BAndroid%E6%95%99%E7%A8%8B%5Dndk&jni/</loc>
-    <lastmod>2017-02-07T09:48:01.195Z</lastmod>
+    <loc>https://hjhjw1991.github.io/tips/2016/02/23/utf-8%E9%A1%B9%E7%9B%AE%E7%94%9F%E6%88%90javadoc%E7%BC%96%E7%A0%81GBK%E7%9A%84%E4%B8%8D%E5%8F%AF%E6%98%A0%E5%B0%84%E5%AD%97%E7%AC%A6/</loc>
+    <lastmod>2016-08-30T08:03:26.717Z</lastmod>
     <data>
         <display>
-        <title>【Android教程】NDK&JNI入门</title>
-        <pubTime>2016-12-20T16:00:00.000Z</pubTime>
+        <title>utf-8项目生成javadoc编码GBK的不可映射字符</title>
+        <pubTime>2016-02-22T16:00:00.000Z</pubTime>
         
-        <tag>教程</tag>
+        <tag>windows</tag>
          
-        <tag>android</tag>
-         
-        <tag>面试</tag>
+        <tag>Java</tag>
          
          
            
              
-              <breadCrumb title="android" url="https://hjhjw1991.github.io/categories/android/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>https://hjhjw1991.github.io/android/2016/08/01/Android%E6%BA%90%E7%A0%81%E7%BB%93%E6%9E%84/</loc>
-    <lastmod>2017-02-07T09:18:02.211Z</lastmod>
-    <data>
-        <display>
-        <title>Android源码结构</title>
-        <pubTime>2016-07-31T16:00:00.000Z</pubTime>
-        
-        <tag>教程</tag>
-         
-        <tag>android</tag>
-         
-         
-           
-             
-              <breadCrumb title="android" url="https://hjhjw1991.github.io/categories/android/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>https://hjhjw1991.github.io/android/2017/01/23/%5BAndroid%E6%95%99%E7%A8%8B%5DSharedPreference%E8%AF%A6%E8%A7%A3/</loc>
-    <lastmod>2017-02-07T09:12:54.883Z</lastmod>
-    <data>
-        <display>
-        <title>【Android教程】SharedPreference详解</title>
-        <pubTime>2017-01-22T16:00:00.000Z</pubTime>
-        
-        <tag>教程</tag>
-         
-        <tag>android</tag>
-         
-        <tag>面试</tag>
-         
-         
-           
-             
-              <breadCrumb title="android" url="https://hjhjw1991.github.io/categories/android/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>https://hjhjw1991.github.io/android/2017/01/06/%5BAndroid%E6%95%99%E7%A8%8B%5DHandler%E5%85%A8%E8%A7%A3/</loc>
-    <lastmod>2017-02-07T09:11:13.923Z</lastmod>
-    <data>
-        <display>
-        <title>【Android教程】Handler全解</title>
-        <pubTime>2017-01-05T16:00:00.000Z</pubTime>
-        
-        <tag>教程</tag>
-         
-        <tag>android</tag>
-         
-        <tag>面试</tag>
-         
-         
-           
-             
-              <breadCrumb title="android" url="https://hjhjw1991.github.io/categories/android/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>https://hjhjw1991.github.io/android/2016/08/01/build-android/</loc>
-    <lastmod>2017-02-07T09:05:29.367Z</lastmod>
-    <data>
-        <display>
-        <title>在Ubuntu 16.04 64bit上下载、编译和安装Android源码</title>
-        <pubTime>2016-07-31T16:00:00.000Z</pubTime>
-        
-        <tag>教程</tag>
-         
-        <tag>android</tag>
-         
-         
-           
-             
-              <breadCrumb title="android" url="https://hjhjw1991.github.io/categories/android/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>https://hjhjw1991.github.io/android/2016/08/01/build-android-sdk/</loc>
-    <lastmod>2017-02-07T09:04:30.339Z</lastmod>
-    <data>
-        <display>
-        <title>从源码编译Android SDK</title>
-        <pubTime>2016-07-31T16:00:00.000Z</pubTime>
-        
-        <tag>教程</tag>
-         
-        <tag>android</tag>
-         
-         
-           
-             
-              <breadCrumb title="android" url="https://hjhjw1991.github.io/categories/android/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>https://hjhjw1991.github.io/android/2016/04/01/%5BAndroid%E6%95%99%E7%A8%8B%5DAIDL%E5%85%A5%E9%97%A8/</loc>
-    <lastmod>2017-02-07T09:01:57.299Z</lastmod>
-    <data>
-        <display>
-        <title>【Android教程】AIDL入门</title>
-        <pubTime>2016-03-31T16:00:00.000Z</pubTime>
-        
-        <tag>教程</tag>
-         
-        <tag>android</tag>
-         
-        <tag>面试</tag>
-         
-         
-           
-             
-              <breadCrumb title="android" url="https://hjhjw1991.github.io/categories/android/"/>
+              <breadCrumb title="tips" url="https://hjhjw1991.github.io/categories/tips/"/>
           
         </display>
     </data>
@@ -498,46 +562,6 @@
 
     
   <url>
-    <loc>https://hjhjw1991.github.io/blog/2015/11/14/git%20submodule%20vs%20subtree/</loc>
-    <lastmod>2016-08-30T08:03:26.717Z</lastmod>
-    <data>
-        <display>
-        <title>git submodule vs. subtree</title>
-        <pubTime>2015-11-13T16:00:00.000Z</pubTime>
-        
-        <tag>git</tag>
-         
-         
-           
-             
-              <breadCrumb title="blog" url="https://hjhjw1991.github.io/categories/blog/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>https://hjhjw1991.github.io/tips/2015/12/14/Windows%E4%B8%8B%E6%9F%A5%E7%9C%8Bdns%E7%BC%93%E5%AD%98%E5%92%8C%E7%BD%91%E7%BB%9C%E8%BF%9E%E6%8E%A5%E7%8A%B6%E6%80%81/</loc>
-    <lastmod>2016-08-30T08:03:26.717Z</lastmod>
-    <data>
-        <display>
-        <title>Windows 7下查看dns缓存和网络连接状态</title>
-        <pubTime>2015-12-13T16:00:00.000Z</pubTime>
-        
-        <tag>windows</tag>
-         
-         
-           
-             
-              <breadCrumb title="tips" url="https://hjhjw1991.github.io/categories/tips/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
     <loc>https://hjhjw1991.github.io/leetcode/2014/12/26/%5BLeetcode%E9%A2%98%E8%A7%A3%5D168-Excel-Sheet-Column-Title/</loc>
     <lastmod>2016-08-30T08:03:26.717Z</lastmod>
     <data>
@@ -549,28 +573,6 @@
            
              
               <breadCrumb title="leetcode" url="https://hjhjw1991.github.io/categories/leetcode/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>https://hjhjw1991.github.io/tips/2016/02/23/utf-8%E9%A1%B9%E7%9B%AE%E7%94%9F%E6%88%90javadoc%E7%BC%96%E7%A0%81GBK%E7%9A%84%E4%B8%8D%E5%8F%AF%E6%98%A0%E5%B0%84%E5%AD%97%E7%AC%A6/</loc>
-    <lastmod>2016-08-30T08:03:26.717Z</lastmod>
-    <data>
-        <display>
-        <title>utf-8项目生成javadoc编码GBK的不可映射字符</title>
-        <pubTime>2016-02-22T16:00:00.000Z</pubTime>
-        
-        <tag>windows</tag>
-         
-        <tag>Java</tag>
-         
-         
-           
-             
-              <breadCrumb title="tips" url="https://hjhjw1991.github.io/categories/tips/"/>
           
         </display>
     </data>
@@ -750,12 +752,12 @@
 
     
   <url>
-    <loc>https://hjhjw1991.github.io/leetcode/2015/06/17/%5BLeetcode%E9%A2%98%E8%A7%A3%5D6-ZigZag-Conversion/</loc>
+    <loc>https://hjhjw1991.github.io/leetcode/2014/12/26/%5BLeetcode%E9%A2%98%E8%A7%A3%5D65-Valid-Number/</loc>
     <lastmod>2016-08-30T08:03:26.717Z</lastmod>
     <data>
         <display>
-        <title>【Leetcode题解】6-ZigZag Conversion</title>
-        <pubTime>2015-06-16T16:00:00.000Z</pubTime>
+        <title>【Leetcode题解】65-Valid Number</title>
+        <pubTime>2014-12-25T16:00:00.000Z</pubTime>
         
          
            
@@ -768,12 +770,12 @@
 
     
   <url>
-    <loc>https://hjhjw1991.github.io/leetcode/2014/12/26/%5BLeetcode%E9%A2%98%E8%A7%A3%5D65-Valid-Number/</loc>
+    <loc>https://hjhjw1991.github.io/leetcode/2015/06/17/%5BLeetcode%E9%A2%98%E8%A7%A3%5D6-ZigZag-Conversion/</loc>
     <lastmod>2016-08-30T08:03:26.717Z</lastmod>
     <data>
         <display>
-        <title>【Leetcode题解】65-Valid Number</title>
-        <pubTime>2014-12-25T16:00:00.000Z</pubTime>
+        <title>【Leetcode题解】6-ZigZag Conversion</title>
+        <pubTime>2015-06-16T16:00:00.000Z</pubTime>
         
          
            
@@ -866,12 +868,12 @@
 
     
   <url>
-    <loc>https://hjhjw1991.github.io/opinion/2015/09/15/Leetcode%E6%88%90%E5%B0%B1%E8%A7%A3%E9%94%81/</loc>
+    <loc>https://hjhjw1991.github.io/opinion/2014/12/26/leetcode%E5%8A%A0%E4%BA%86%E6%96%B0%E9%A2%98%E7%9B%AE/</loc>
     <lastmod>2016-08-30T08:03:26.717Z</lastmod>
     <data>
         <display>
-        <title>Leetcode成就解锁</title>
-        <pubTime>2015-09-14T16:00:00.000Z</pubTime>
+        <title>leetcode加了新题目</title>
+        <pubTime>2014-12-25T16:00:00.000Z</pubTime>
         
          
            
@@ -884,12 +886,12 @@
 
     
   <url>
-    <loc>https://hjhjw1991.github.io/opinion/2014/12/26/leetcode%E5%8A%A0%E4%BA%86%E6%96%B0%E9%A2%98%E7%9B%AE/</loc>
+    <loc>https://hjhjw1991.github.io/opinion/2015/09/15/Leetcode%E6%88%90%E5%B0%B1%E8%A7%A3%E9%94%81/</loc>
     <lastmod>2016-08-30T08:03:26.717Z</lastmod>
     <data>
         <display>
-        <title>leetcode加了新题目</title>
-        <pubTime>2014-12-25T16:00:00.000Z</pubTime>
+        <title>Leetcode成就解锁</title>
+        <pubTime>2015-09-14T16:00:00.000Z</pubTime>
         
          
            
@@ -993,6 +995,46 @@
            
              
               <breadCrumb title="blog" url="https://hjhjw1991.github.io/categories/blog/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://hjhjw1991.github.io/blog/2015/11/14/git%20submodule%20vs%20subtree/</loc>
+    <lastmod>2016-08-30T08:03:26.717Z</lastmod>
+    <data>
+        <display>
+        <title>git submodule vs. subtree</title>
+        <pubTime>2015-11-13T16:00:00.000Z</pubTime>
+        
+        <tag>git</tag>
+         
+         
+           
+             
+              <breadCrumb title="blog" url="https://hjhjw1991.github.io/categories/blog/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://hjhjw1991.github.io/tips/2015/12/14/Windows%E4%B8%8B%E6%9F%A5%E7%9C%8Bdns%E7%BC%93%E5%AD%98%E5%92%8C%E7%BD%91%E7%BB%9C%E8%BF%9E%E6%8E%A5%E7%8A%B6%E6%80%81/</loc>
+    <lastmod>2016-08-30T08:03:26.717Z</lastmod>
+    <data>
+        <display>
+        <title>Windows 7下查看dns缓存和网络连接状态</title>
+        <pubTime>2015-12-13T16:00:00.000Z</pubTime>
+        
+        <tag>windows</tag>
+         
+         
+           
+             
+              <breadCrumb title="tips" url="https://hjhjw1991.github.io/categories/tips/"/>
           
         </display>
     </data>

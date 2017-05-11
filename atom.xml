@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://hjhjw1991.github.io/"/>
-  <updated>2017-05-02T02:20:44.491Z</updated>
+  <updated>2017-05-11T08:22:10.985Z</updated>
   <id>https://hjhjw1991.github.io/</id>
   
   <author>
@@ -14,6 +14,176 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Animation详解</title>
+    <link href="https://hjhjw1991.github.io/android/2017/05/11/Animation%E8%AF%A6%E8%A7%A3/"/>
+    <id>https://hjhjw1991.github.io/android/2017/05/11/Animation详解/</id>
+    <published>2017-05-10T16:00:00.000Z</published>
+    <updated>2017-05-11T08:22:10.985Z</updated>
+    
+    <content type="html"><![CDATA[<p>说来惭愧, 接触Android这么久可UI和Animation一直是涉足未深的盲点, 今天就来解决Animation这个盲点.  </p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本篇应该会涉及很多demo图片. 在Android开发中经常会碰到各种各样的动画, 有的是为了辅助实现功能, 例如进度条动画和Loading界面, 有的是为了帮助用户理解功能逻辑, 提升用户体验, 例如切入切出动画, 滑动效果, 而有的是纯粹为了看起来酷炫, 比如各种游戏特效. 一图胜千言, 一个动画有时候能起到的作用是用Toast所达不到的, 如果能用好动画, 则无论是开发过程还是成品都能够得到质的提升(没有动画的世界是多么乏味!).  </p>
+<p>众所周知, Android对界面的绘制速度是有要求的, 正常屏幕刷新频率是60Hz, 也就是60 frame/s, 故每一帧需要在1000ms/60即约16ms内完成, 否则就会造成能够感知到的掉帧, 俗称卡顿, 所以我们在做动画的时候也一定要考虑性能问题, 由动画引起严重卡顿就得不偿失了, 为了Android早就被黑得体无完肤的卡顿问题, 我们还要多多磨练自己的技术.  </p>
+<p>先抛出几个优秀的动画效果:<br><a href="https://github.com/daimajia/AndroidViewAnimations" target="_blank" rel="external"><img src="https://camo.githubusercontent.com/c41223966bdfed2260dbbabbcbae648e5db542c6/687474703a2f2f7777332e73696e61696d672e636e2f6d773639302f3631306463303334677731656a37356d69327737376732306333306a623471722e676966" alt="AndroidAnimations"></a>  </p>
+<p><a href="https://github.com/hujiaweibujidao/FabDialogMorph" target="_blank" rel="external"><img src="https://raw.githubusercontent.com/hujiaweibujidao/FabDialogMorph/master/fabdialog.gif" alt="FabDialogMorph"></a>  </p>
+<p><a href="https://github.com/hujiaweibujidao/wava" target="_blank" rel="external"><img src="https://github.com/hujiaweibujidao/wava/raw/master/wava.gif" alt="wava"></a>  </p>
+<p><a href="https://github.com/hujiaweibujidao/yava" target="_blank" rel="external"><img src="https://github.com/hujiaweibujidao/yava/raw/master/yava.gif" alt="yava"></a>  </p>
+<p><a href="https://github.com/yanbober/SlideLayout" target="_blank" rel="external"><img src="https://github.com/yanbober/SlideLayout/raw/master/art/demo.gif" alt="slidelayout"></a>  </p>
+<p>感谢<a href="http://blog.csdn.net/yanbober" target="_blank" rel="external">工匠若水</a> <a href="https://daimajia.com/" target="_blank" rel="external">代码家</a>和<a href="https://hujiaweibujidao.github.io/" target="_blank" rel="external">潇涧</a><br>特别感谢代码家的个人感悟博文, 让我知道用心运营一个产品也许没有想象中那样乏味, 我之所以不去做只是不愿意面对可能的失败, 是完全的不自信.  </p>
+<p>如果不满足于使用动画库, 想像他们一样为开源世界做出贡献, 那么了解代码背后的代码就十分必要. 以上开源库为我们提供了一个很好的切入点, 读者可以挑选一个感兴趣的效果深入探究.<br>当然也可以跟我一起(在Android动画方面, 我是一个完全的入门者), 跟这篇文章一起, 从底层, 从原理一步一步地走上来.<br>本文基于<strong>Android6.0源码</strong>, 从问题出发, 打算用一篇长文解决所有问题, 所以会在小节标题尽量提示本节内容.  </p>
+<h2 id="入门"><a href="#入门" class="headerlink" title="入门"></a>入门</h2><p>不同于理论研究, 程序开发的一切功能都是为实际需求而生的, 我们先来看需求:<br>最简单的情况, 我想让一段文本横向缓缓移动, 就像跑马灯一样的效果.<br>再进一步, 一段文本或者图片我希望把它放大和缩小, 但是不能是那种一点没有过渡的一步到位.<br>抑或我想让一个百变怪的图像变形成皮卡丘.<br>…<br>所有这些都是动画要解决的问题. 光凭直觉我们也能分辨出动画是有类别之分的, 比如形变/位移/镜像, 显然动画可以跟数学描述紧密结合. 可以这么说, 任何动画, 只要我们在有限维空间能够找到表达式来表达映射关系, 就可以实现, 这是动画背后坚实的数学基础.  </p>
+<p>先不扯数学(后面再扯), 来看看一个简单的位移动画, 我们在最上层怎么实现. 最先想到的当然是去找官方文档(以及顺手创建一个示例工程). 在<a href="https://developer.android.com/guide/topics/graphics/index.html" target="_blank" rel="external">Android官方文档</a>中, 把动画分为两个系统: 属性动画(property anima)和视图动画(view anima). 为了备忘和无网时回顾, 我这里对官方文档做一个简单翻译, 建议大家看原文.  </p>
+<p>Android系统框架提供以上两种动画系统, 都可以用, 但是一般来说属性动画比较好用, 因为它更灵活功能也更多. 除了这两种动画以外, 还有一种 Drawable Anima(有叫帧动画Frame Anima的, 我不翻译), 它允许你载入一堆drawable资源, 并一帧一帧挨个显示他们.  </p>
+<p>我们分别来看看这三种动画都是什么东西, 怎么用, 然后来看看我们要实现的效果怎么实现.<br>以下内容主要参考官方文档.  </p>
+<h3 id="View-Anima-Tween-Anima"><a href="#View-Anima-Tween-Anima" class="headerlink" title="View Anima / Tween Anima"></a>View Anima / Tween Anima</h3><p><a href="https://developer.android.com/guide/topics/graphics/view-animation.html" target="_blank" rel="external">视图动画(也叫补间动画)</a>允许在一个视图容器里执行一系列简单变换, 它只能用于视图. 顾名思义, 它是以整个视图为对象, 将帧与帧”之间”的过渡给”补齐”的动画. 它通过动画的起点/终点/尺寸/旋转以及其他常见方面来计算动画. 我们可以用一系列的动画指令(anima instruction)来定义补间动画, XML或者Android代码都可以. 官方推荐XML方式定义, 如果要以代码方式定义, 官方建议参考 <code>android.view.animation.AnimationSet</code>及其他的<code>android.view.animation.Animation</code>子类.  </p>
+<p>本质上, 补间动画就是给出两个关键帧, 通过一些方法计算中间过程, 并按顺序展示中间过程. 补间动画有<code>AlphaAnimation, RotateAnimation, ScaleAnimation, TranslateAnimation</code>这几种, 看名字大概也知道对应的效果了.<br>我们来看看怎么用. 先看XML官方示例:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line">&lt;!-- 以下代码用于拉伸和旋转一个View对象 --&gt;</div><div class="line">&lt;set android:shareInterpolator=&quot;false&quot;&gt;</div><div class="line">    &lt;scale</div><div class="line">        android:interpolator=&quot;@android:anim/accelerate_decelerate_interpolator&quot;</div><div class="line">        android:fromXScale=&quot;1.0&quot;</div><div class="line">        android:toXScale=&quot;1.4&quot;</div><div class="line">        android:fromYScale=&quot;1.0&quot;</div><div class="line">        android:toYScale=&quot;0.6&quot;</div><div class="line">        android:pivotX=&quot;50%&quot;</div><div class="line">        android:pivotY=&quot;50%&quot;</div><div class="line">        android:fillAfter=&quot;false&quot;</div><div class="line">        android:duration=&quot;700&quot; /&gt;</div><div class="line">    &lt;set android:interpolator=&quot;@android:anim/decelerate_interpolator&quot;&gt;</div><div class="line">        &lt;scale</div><div class="line">           android:fromXScale=&quot;1.4&quot;</div><div class="line">           android:toXScale=&quot;0.0&quot;</div><div class="line">           android:fromYScale=&quot;0.6&quot;</div><div class="line">           android:toYScale=&quot;0.0&quot;</div><div class="line">           android:pivotX=&quot;50%&quot;</div><div class="line">           android:pivotY=&quot;50%&quot;</div><div class="line">           android:startOffset=&quot;700&quot;</div><div class="line">           android:duration=&quot;400&quot;</div><div class="line">           android:fillBefore=&quot;false&quot; /&gt;</div><div class="line">        &lt;rotate</div><div class="line">           android:fromDegrees=&quot;0&quot;</div><div class="line">           android:toDegrees=&quot;-45&quot;</div><div class="line">           android:toYScale=&quot;0.0&quot;</div><div class="line">           android:pivotX=&quot;50%&quot;</div><div class="line">           android:pivotY=&quot;50%&quot;</div><div class="line">           android:startOffset=&quot;700&quot;</div><div class="line">           android:duration=&quot;400&quot; /&gt;</div><div class="line">    &lt;/set&gt;</div><div class="line">&lt;/set&gt;</div></pre></td></tr></table></figure>
+<p>看标签名不难理解每个动画元素都做了什么以及相互之间的关系.<br>XML中除了指定关键帧的属性以外, 有一个重要的属性<code>android:interpolator</code>, 该属性绑定一个<code>Interpolator</code>(有译”插值器”), 由它来控制动画转换过程如何完成, 例如<code>AccelerateInterpolator</code>就指示以越来越快的速度来展示动画. 每个<code>Interpolator</code>类都可以被配置在XML中.<br>特别要指出的是<code>android:pivotX</code>这类属性, 它的值指定的是一个百分比, 但是有带”%”符号和不带符号, 其含义是不同的: 带”%”符号, 表示相对于View自身, 而不带则表示相对于View的父元素.<br>假设以上XML以<code>hyperspace_jump.xml</code>的名字存在<code>res/anim/</code>目录下, 在代码中可以这样使用:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">ImageView spaceshipImage = (ImageView) findViewById(R.id.spaceshipImage); // 要应用动画的View对象</div><div class="line">Animation hyperspaceJumpAnimation = AnimationUtils.loadAnimation(this, R.anim.hyperspace_jump); // 使用AnimationUtils载入并实例化动画</div><div class="line">spaceshipImage.startAnimation(hyperspaceJumpAnimation); // startAnimation是View提供的方法, 你也可以用View.setAnimation()指定一个已通过Animation.setStartTime()设定了开始时间的定时动画</div></pre></td></tr></table></figure>
+<p>我们再来看代码如何定义一个动画:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">private TranslateAnimation mTranslateAnimation; // 一个位移动画</div><div class="line">//这四个参数含义分别是当前View x起点坐标、x终点坐标、y起点坐标、y终点坐标</div><div class="line">mTranslateAnimation = new TranslateAnimation(0, 200, 0, 0);</div><div class="line">//动画持续时间</div><div class="line">mTranslateAnimation.setDuration(2000);</div><div class="line">//重复次数</div><div class="line">mTranslateAnimation.setRepeatCount(1);</div><div class="line">//动画执行模式</div><div class="line">mTranslateAnimation.setRepeatMode(Animation.REVERSE);</div><div class="line">... // 后面就跟上文XML方式动画实例化之后一样了</div></pre></td></tr></table></figure>
+<p>四种补间动画的定义和使用都大同小异, 而且可以设置监听器<code>Animation.AnimationListener()</code>, 这里就不赘述.<br>需要注意的是两点: 1. 动画播放完成后, View会怎么样; 2. 动画指定的边界和View及View的父容器指定的边界发生冲突时, 例如动画放大到超出View父容器的边界, 会怎样.<br><!-- 这里可以直接给出答案: 1. 通过setFillAfter/setFillBefore/setFillEnabled可以控制动画播放完成后是保持最后的状态还是回到开始的状态; 2. 如果动画放大到超出View父容器边界, 那View会被裁减为只显示父容器范围内的部分. --></p>
+<h3 id="Drawable-Anima-Frame-Anima"><a href="#Drawable-Anima-Frame-Anima" class="headerlink" title="Drawable Anima/Frame Anima"></a>Drawable Anima/Frame Anima</h3><p>这种动画我不知道怎么翻译, 主要是Drawable不好翻译. 正如前文所述, 这种动画就是把一个个Drawable或者说Frame按顺序播放, 跟放电影一样. 它的定义和使用也特别简单:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">private AnimationDrawable mAnimationDrawable; // 定义帧动画对象</div><div class="line">mAnimationDrawable = new AnimationDrawable();</div><div class="line">// 添加帧及播放时间</div><div class="line">mAnimationDrawable.addFrame(getResources().getDrawable(R.drawable.australia), 500);</div><div class="line">mAnimationDrawable.addFrame(getResources().getDrawable(R.drawable.austria), 500);</div><div class="line">mAnimationDrawable.addFrame(getResources().getDrawable(R.drawable.china), 500);</div><div class="line">mAnimationDrawable.start(); // 开始动画</div></pre></td></tr></table></figure>
+<p>以下是XML的定义  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">&lt;!-- 等效XML --&gt;</div><div class="line">&lt;animation-list</div><div class="line">    xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;</div><div class="line">    android:oneshot=&quot;false&quot;&gt;</div><div class="line"></div><div class="line">    &lt;item android:drawable=&quot;@drawable/australia&quot; android:duration=&quot;500&quot;/&gt;</div><div class="line">    &lt;item android:drawable=&quot;@drawable/austria&quot; android:duration=&quot;500&quot;/&gt;</div><div class="line">    &lt;item android:drawable=&quot;@drawable/china&quot; android:duration=&quot;500&quot;/&gt;</div><div class="line">&lt;/animation-list&gt;</div><div class="line">&lt;!-- XML中设置 --&gt;</div><div class="line">&lt;ImageView</div><div class="line">        android:id=&quot;@+id/frame_iv&quot;</div><div class="line">        android:layout_width=&quot;wrap_content&quot;</div><div class="line">        android:layout_height=&quot;wrap_content&quot;</div><div class="line">        android:background=&quot;@anim/frame&quot;/&gt;</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">// java中调用</div><div class="line">private ImageView mFrameIv;</div><div class="line">private AnimationDrawable mAnimationDrawable;</div><div class="line">mFrameIv = (ImageView) findViewById(R.id.frame_iv);</div><div class="line">mAnimationDrawable = (AnimationDrawable) mFrameIv.getBackground();</div><div class="line">mAnimationDrawable.start();</div></pre></td></tr></table></figure>
+<p>这种动画本身就是在播放Drawable, 所以不能通过<code>setAnimation</code>或者类似的方式应用在别的对象上, 只能以普通图像的方式使用, 例如设置为背景图, 有点类似于gif.  </p>
+<h3 id="Property-Anima"><a href="#Property-Anima" class="headerlink" title="Property Anima"></a>Property Anima</h3><p><a href="https://developer.android.com/guide/topics/graphics/prop-animation.html" target="_blank" rel="external">属性动画</a>可以说是系统提供的最强大的动画框架了, 它可以改变<strong>任意对象</strong>的属性, 只要对象符合一定条件. 难怪官网说它几乎可以动画化一切(allows you to animate almost anything). 它是Android 3.0 (API 11)新加入的成员.<br>起先, 补间动画和帧动画似乎足够, 然而补间动画只能操作View, 而且不会改边View的属性, 帧动画又太过简单, 要实现复杂的动画效果需要大量的帧, 他们俩似乎并不足以撑起Android的动画天下, 于是谷歌增加了属性动画.  </p>
+<p>利用属性动画, 你可以指定对象所具有的某项属性随时间的变化情况, 比如, 你可以指定某个对象在300ms内从位置A移动到位置B, 其间分别位于位置AB1,AB2,AB3.<br>在属性动画中, 你可以指定动画持续时间(Duration), 属性值与执行时间的函数关系(Time interpolation), 重复模式和重复次数, 动画集合, 帧刷新频率等.  </p>
+<p>Property Anima有两个类可以使用: ValueAnimator, ObjectAnimator, 他们的共同祖先都是Animator.<br>以ObjectAnimator为例, 一个对象的属性动画可以这样定义:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line">private ObjectAnimator mObjectAnimator;</div><div class="line">//设置不透明度从1到0变化</div><div class="line">mObjectAnimator = ObjectAnimator</div><div class="line">                .ofFloat(mObjectAnimatorIv, &quot;alpha&quot;, 1, 0) // 以 mObjectAnimatorIv对象的float型alpha属性为动画对象, 值从1变到0. &quot;alpha&quot;必须是对象具有getter/setter的属性的名字, 否则无效果</div><div class="line">                .setDuration(1000); // 持续时间1000ms</div><div class="line">//设置插值器，先加速后减速</div><div class="line">mObjectAnimator.setInterpolator(new AccelerateDecelerateInterpolator());</div><div class="line">//动画重复执行一次</div><div class="line">mObjectAnimator.setRepeatCount(1);</div><div class="line">//设置执行模式</div><div class="line">mObjectAnimator.setRepeatMode(ValueAnimator.REVERSE);</div><div class="line">//设置在插值器所指定的每个动画更新时点的监听器</div><div class="line">mObjectAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() &#123;</div><div class="line">    @Override</div><div class="line">    public void onAnimationUpdate(ValueAnimator animation) &#123;</div><div class="line">        //获取当前的动画值</div><div class="line">        float cVal = (Float) animation.getAnimatedValue();</div><div class="line">        //根据动画值缩放当前View</div><div class="line">        mObjectAnimatorIv.setScaleX(cVal);</div><div class="line">        mObjectAnimatorIv.setScaleY(cVal);</div><div class="line">    &#125;</div><div class="line">&#125;);</div></pre></td></tr></table></figure>
+<p>上面代码的效果是让对象的alpha属性值按一定规律从1变到0, 即逐渐透明, 并通过监听器让对象同时缩小. 其中该目标属性alpha每个时点的具体值是通过TypeEvaluator根据插值器和初末值计算得到的. 不设置TypeEvaluator的情况下Property Animation会有一个默认的TypeEvaluator. 你可以自定义TypeEvaluator.  </p>
+<p>ValueAnimator与ObjectAnimator类似, 只是它不能直接指定目标属性和更新属性值, 需要在监听器中去设置.<br><img src="/images/blogs/valueanimator.png" alt="valueanimator">  </p>
+<p>属性动画也可以通过XML来定义, 这里不再贴代码了.  </p>
+<p>AnimationSet可以将多个动画组合到一起, 还可以设置集合中动画的播放顺序, 这在实现复杂的动画效果时很有用.  </p>
+<p>至此, 对属性动画的使用就只缺了解其XML属性集合/API这样繁琐而简单的操作.  </p>
+<p>扩展阅读: <a href="https://developer.android.com/guide/topics/graphics/prop-animation.html#keyframes" target="_blank" rel="external">Keyframe</a>与<a href="https://developer.android.com/reference/android/animation/PropertyValuesHolder.html" target="_blank" rel="external">PropertyValuesHolder</a>  </p>
+<h3 id="解决问题"><a href="#解决问题" class="headerlink" title="解决问题"></a>解决问题</h3><p>回顾一下本节开头提出的需求:  </p>
+<ul>
+<li>想让一段文本横向缓缓移动, 就像跑马灯一样的效果.  </li>
+<li>一段文本或者图片我希望把它放大和缩小, 但是不能是那种一点没有过渡的一步到位.  </li>
+<li>想让一个百变怪的图像变形成皮卡丘.  </li>
+</ul>
+<p>对以上问题我们应该可以给出解决方案了: 1. 位移动画TranslateAnimation; 2. ScaleAnimation; 3. DrawableAnimation.  </p>
+<p>以上几种动画效果, 我做了一个演示图片:  </p>
+<p><img src="/images/blogs/animation_demo.gif" alt="animation_demo">  </p>
+<h3 id="其他动画"><a href="#其他动画" class="headerlink" title="其他动画"></a>其他动画</h3><p>我们还可以为Layout和Activity指定使用的动画资源, 例如Layout可以定义LayoutAnimation, 它类似AnimationSet. Activity可以调用overridePendingTransition指定进入和退出时使用的动画资源.<br>自从Lollipop之后, Android加入了很多酷炫的动画效果, 例如水滴, 波纹等, 这一部分还有待扩展了解.<br>看到这里, 想必读者看见上面那些开源动画中”XXXAnimator”这样的名字, 心里也会对它背后的实现有所猜测了. 事实上打开源码一看, 果然如此, 这些开源项目终于看起来没那么神秘了. 我有一个大胆的想法…</p>
+<h2 id="深入源码"><a href="#深入源码" class="headerlink" title="深入源码"></a>深入源码</h2><p>咱们忽略简单的补间动画和帧动画, 直奔属性动画. 属性动画这么神奇, 它的内部是怎么实现的呢?<br>再看上文的示例代码:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">mObjectAnimator = ObjectAnimator</div><div class="line">                .ofFloat(mObjectAnimatorIv, &quot;alpha&quot;, 1, 0)</div><div class="line">                .setDuration(1000);</div><div class="line">                .setInterpolator(new AccelerateDecelerateInterpolator());</div><div class="line">                .setRepeatCount(1);</div><div class="line">                .setRepeatMode(ValueAnimator.REVERSE);</div><div class="line">                .addUpdateListener(new ValueAnimator.AnimatorUpdateListener() &#123;</div><div class="line">                        @Override</div><div class="line">                        public void onAnimationUpdate(ValueAnimator animation) &#123;</div><div class="line">                                float cVal = (Float) animation.getAnimatedValue();</div><div class="line">                                mObjectAnimatorIv.setScaleX(cVal);</div><div class="line">                                mObjectAnimatorIv.setScaleY(cVal);</div><div class="line">                        &#125;</div><div class="line">                &#125;)</div><div class="line">                .start();</div></pre></td></tr></table></figure>
+<p>这段代码做了什么事情很好理解. 我们考虑一下, 如果是让我们来实现这个ObjectAnimator类, 怎么做?<br>首先利用建造者模式设置各种属性/插值器/估值器/监听器. 在<code>start()</code>之后, 开启一个计时器线程, 每过一段特定的时间(该时间由插值器计算出), 就让插值器计算当前目标属性应该是什么值, 计算好后通过反射把值赋给目标属性, 然后检查生命周期并调用回调函数. 大致上应该就是这么个思路, 相信源码即便会复杂些, 基本原则也一样.  </p>
+<h3 id="分步解析ObjectAnimator"><a href="#分步解析ObjectAnimator" class="headerlink" title="分步解析ObjectAnimator"></a>分步解析ObjectAnimator</h3><p>源码是<code>android.animation.ObjectAnimator.java</code>我们就不贴大段代码了, 仅贴关键内容.  </p>
+<p>首先是<code>ofFloat</code>, 用前两个参数实例化<code>ObjectAnimator</code>并用第三个参数调用<code>setFloatValues()</code>, 最后返回实例化的<code>ObjectAnimator</code>. <code>setFloatValues</code>时, 如果mValues为空, 实际是调用<code>PropertyValuesHolder.ofFloat()</code>来得到值. 看<code>PropertyValuesHolder</code>源码得知它用来保存动画期间关键帧及各帧的值, 这好理解, 刚开始的时候初末帧就是关键帧, 初末值就是对应帧的值, 有了这两个再加上插值器就可以计算有多少个帧, 当然目前还只有两个.<br>一句话总结就是, <code>ofFloat</code>记录了要实施动画的对象及属性, 其中属性, 属性类型及关键帧集合都被封装到一个<code>PropertyValuesHolder</code>对象中, <code>ObjectAnimator</code>的<code>mValues</code>数组保存这个对象.  </p>
+<p>接着是<code>setDuration(),setRepeatCount(),setRepeatMode()</code>我觉得这三个应该差不多就一起看了. 果不其然, 里面直接调用的它的父类<code>ValueAnimator</code>的同名方法, 保存对应的值, 没什么好说的.  </p>
+<p>接着是<code>setInterpolator</code>. 调用的父类<code>ValueAnimator</code>的函数保存插值器, 默认是<code>LinearInterpolator</code>, 没什么好说的.<br>我们这里没有设置估值器, 但也一并看了吧. <code>setEvaluator</code>同样调用的父类方法, 往<code>mValues</code>数组第一个元素设置估值器, 调用<code>PropertyValuesHolder.setEvaluator</code>, 保存了估值器.  </p>
+<p>接着是<code>addUpdateListener</code>, 同样是父类方法, 添加监听器到成员变量<code>ArrayList&lt;&gt; mUpdateListeners</code>中, 类型是<code>AnimatorUpdateListener</code>. 可以料想后面某处会遍历这个列表, 逐个回调.  </p>
+<p>最后是<code>start</code>. 深呼吸一下, 这个方法显然是重头戏.<br>贴上完整代码以示尊重:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div></pre></td><td class="code"><pre><div class="line">// in ObjectAnimator</div><div class="line">@Override</div><div class="line">public void start() &#123;</div><div class="line">    // See if any of the current active/pending animators need to be canceled</div><div class="line">    AnimationHandler handler = sAnimationHandler.get(); // AnimationHandler是ValueAnimator的隐藏私有静态内部类, 5.0曾一度实现Runnable, 后来改用Runnable匿名内部类, 稍后我们会看它的源码. 在4.0版本它不是隐藏的, 并且是继承自Handler类, 这解释了它的名字. sAnimationHandler类型为 ThreadLocal&lt;AnimationHandler&gt;</div><div class="line">    if (handler != null) &#123;</div><div class="line">        int numAnims = handler.mAnimations.size();</div><div class="line">        for (int i = numAnims - 1; i &gt;= 0; i--) &#123;</div><div class="line">            if (handler.mAnimations.get(i) instanceof ObjectAnimator) &#123;</div><div class="line">                ObjectAnimator anim = (ObjectAnimator) handler.mAnimations.get(i);</div><div class="line">                if (anim.mAutoCancel &amp;&amp; hasSameTargetAndProperties(anim)) &#123;</div><div class="line">                    anim.cancel();</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        numAnims = handler.mPendingAnimations.size();</div><div class="line">        for (int i = numAnims - 1; i &gt;= 0; i--) &#123;</div><div class="line">            if (handler.mPendingAnimations.get(i) instanceof ObjectAnimator) &#123;</div><div class="line">                ObjectAnimator anim = (ObjectAnimator) handler.mPendingAnimations.get(i);</div><div class="line">                if (anim.mAutoCancel &amp;&amp; hasSameTargetAndProperties(anim)) &#123;</div><div class="line">                    anim.cancel();</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        numAnims = handler.mDelayedAnims.size();</div><div class="line">        for (int i = numAnims - 1; i &gt;= 0; i--) &#123;</div><div class="line">            if (handler.mDelayedAnims.get(i) instanceof ObjectAnimator) &#123;</div><div class="line">                ObjectAnimator anim = (ObjectAnimator) handler.mDelayedAnims.get(i);</div><div class="line">                if (anim.mAutoCancel &amp;&amp; hasSameTargetAndProperties(anim)) &#123;</div><div class="line">                    anim.cancel();</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125; // 以上用于判断队列中是否有需要取消的动画, 以下是真正的执行函数</div><div class="line">    ... // debug code</div><div class="line">    super.start();</div><div class="line">&#125;</div><div class="line"></div><div class="line">// in ValueAnimator</div><div class="line">@Override</div><div class="line">public void start() &#123;</div><div class="line">    start(false); // ObjectAnimator调用start()时, 均是以正向方式播放动画</div><div class="line">&#125;</div><div class="line"></div><div class="line">/**</div><div class="line"> * Start the animation playing. This version of start() takes a boolean flag that indicates</div><div class="line"> * whether the animation should play in reverse. The flag is usually false, but may be set</div><div class="line"> * to true if called from the reverse() method.</div><div class="line"> *</div><div class="line"> * &lt;p&gt;The animation started by calling this method will be run on the thread that called</div><div class="line"> * this method. This thread should have a Looper on it (a runtime exception will be thrown if</div><div class="line"> * this is not the case). Also, if the animation will animate</div><div class="line"> * properties of objects in the view hierarchy, then the calling thread should be the UI</div><div class="line"> * thread for that view hierarchy.&lt;/p&gt;</div><div class="line"> *</div><div class="line"> * @param playBackwards Whether the ValueAnimator should start playing in reverse.</div><div class="line"> */</div><div class="line">private void start(boolean playBackwards) &#123;</div><div class="line">    if (Looper.myLooper() == null) &#123;</div><div class="line">        throw new AndroidRuntimeException(&quot;Animators may only be run on Looper threads&quot;);</div><div class="line">    &#125;</div><div class="line">    mReversing = playBackwards;</div><div class="line">    mPlayingBackwards = playBackwards;</div><div class="line">    // 倒放时更新mSeekFraction</div><div class="line">    if (playBackwards &amp;&amp; mSeekFraction != -1) &#123;</div><div class="line">        if (mSeekFraction == 0 &amp;&amp; mCurrentIteration == 0) &#123;</div><div class="line">            // special case: reversing from seek-to-0 should act as if not seeked at all</div><div class="line">            mSeekFraction = 0;</div><div class="line">        &#125; else if (mRepeatCount == INFINITE) &#123;</div><div class="line">            mSeekFraction = 1 - (mSeekFraction % 1);</div><div class="line">        &#125; else &#123;</div><div class="line">            mSeekFraction = 1 + mRepeatCount - (mCurrentIteration + mSeekFraction);</div><div class="line">        &#125;</div><div class="line">        mCurrentIteration = (int) mSeekFraction;</div><div class="line">        mSeekFraction = mSeekFraction % 1;</div><div class="line">    &#125;</div><div class="line">    // 判断当前播放方向</div><div class="line">    if (mCurrentIteration &gt; 0 &amp;&amp; mRepeatMode == REVERSE &amp;&amp;</div><div class="line">            (mCurrentIteration &lt; (mRepeatCount + 1) || mRepeatCount == INFINITE)) &#123;</div><div class="line">        // if we were seeked to some other iteration in a reversing animator,</div><div class="line">        // figure out the correct direction to start playing based on the iteration</div><div class="line">        if (playBackwards) &#123;</div><div class="line">            mPlayingBackwards = (mCurrentIteration % 2) == 0;</div><div class="line">        &#125; else &#123;</div><div class="line">            mPlayingBackwards = (mCurrentIteration % 2) != 0;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    // 更新播放状态</div><div class="line">    int prevPlayingState = mPlayingState; // 保存上一个状态</div><div class="line">    mPlayingState = STOPPED;</div><div class="line">    mStarted = true;</div><div class="line">    mStartedDelay = false;</div><div class="line">    mPaused = false;</div><div class="line">    updateScaledDuration(); // in case the scale factor has changed since creation time</div><div class="line">    AnimationHandler animationHandler = getOrCreateAnimationHandler();</div><div class="line">    animationHandler.mPendingAnimations.add(this); // 当前动画添加进AnimationHandler等待队列</div><div class="line">    if (mStartDelay == 0) &#123; // 未设置时默认mStartDelay为0</div><div class="line">        // This sets the initial value of the animation, prior to actually starting it running</div><div class="line">        if (prevPlayingState != SEEKED) &#123;</div><div class="line">            setCurrentPlayTime(0); // 见下文解释</div><div class="line">        &#125;</div><div class="line">        mPlayingState = STOPPED;</div><div class="line">        mRunning = true;</div><div class="line">        notifyStartListeners(); // 通知监听器, 回调AnimatorListener.onAnimationStart方法. 注意, 早于动画真正开始</div><div class="line">    &#125;</div><div class="line">    animationHandler.start(); // 最终调用AnimationHandler.start()</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>以上有一些地方需要解释一下: <code>mCurrentIteration</code>指当前是第几次播放动画; <code>getOrCreateAnimationHandler</code>顾名思义是尝试从<code>ThreadLocal</code>中获取Handler, 为空的话就创建一个; <code>setCurrentPlayTime()</code>顾名思义是设置当前播放时间, 该时间必须在0到持续时间之间. 其内部调用<code>setCurrentFraction(fraction)</code>设置当前播放的片段, 比如<code>fraction==1.3</code>就表示当前在播放第2次的0.3这部分. 在上述代码中此时<code>fraction==0</code>. 内部最后再调用<code>animateValue</code>将片段动画化, 这个函数稍后我们还会看到. 该函数首先调用<code>fraction = mInterpolator.getInterpolation(fraction)</code>使用插值器获取计算后的当前<code>fraction</code>值, 然后遍历<code>mValues</code>调用<code>calculateValue(fraction)</code>(内部使用<code>mAnimatedValue = mKeyframeSet.getValue(fraction)</code>获取各帧的当前属性值, 估值器就是在这个<code>getValue</code>函数里调用的), 显然这就是在<strong>计算此时的属性值</strong>了, 紧接着通过<code>PropertyValuesHolder.setAnimatedValue(Object target)</code>以反射的方式把值写回目标属性. 再遍历<code>mUpdateListeners</code>调用<code>onAnimationUpdate(this)</code>.  </p>
+<p>最后来看<code>AnimationHandler.start()</code>.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div><div class="line">136</div><div class="line">137</div><div class="line">138</div><div class="line">139</div><div class="line">140</div><div class="line">141</div><div class="line">142</div><div class="line">143</div><div class="line">144</div><div class="line">145</div><div class="line">146</div><div class="line">147</div><div class="line">148</div><div class="line">149</div><div class="line">150</div><div class="line">151</div><div class="line">152</div><div class="line">153</div><div class="line">154</div><div class="line">155</div><div class="line">156</div><div class="line">157</div><div class="line">158</div><div class="line">159</div><div class="line">160</div><div class="line">161</div><div class="line">162</div><div class="line">163</div><div class="line">164</div><div class="line">165</div><div class="line">166</div><div class="line">167</div><div class="line">168</div><div class="line">169</div><div class="line">170</div><div class="line">171</div><div class="line">172</div><div class="line">173</div><div class="line">174</div><div class="line">175</div><div class="line">176</div><div class="line">177</div><div class="line">178</div><div class="line">179</div><div class="line">180</div><div class="line">181</div><div class="line">182</div><div class="line">183</div><div class="line">184</div><div class="line">185</div><div class="line">186</div><div class="line">187</div><div class="line">188</div><div class="line">189</div><div class="line">190</div><div class="line">191</div><div class="line">192</div><div class="line">193</div><div class="line">194</div><div class="line">195</div><div class="line">196</div><div class="line">197</div><div class="line">198</div><div class="line">199</div><div class="line">200</div><div class="line">201</div><div class="line">202</div><div class="line">203</div><div class="line">204</div><div class="line">205</div><div class="line">206</div><div class="line">207</div><div class="line">208</div><div class="line">209</div><div class="line">210</div><div class="line">211</div><div class="line">212</div><div class="line">213</div><div class="line">214</div><div class="line">215</div><div class="line">216</div><div class="line">217</div><div class="line">218</div><div class="line">219</div><div class="line">220</div><div class="line">221</div><div class="line">222</div><div class="line">223</div><div class="line">224</div><div class="line">225</div><div class="line">226</div><div class="line">227</div><div class="line">228</div><div class="line">229</div><div class="line">230</div><div class="line">231</div><div class="line">232</div><div class="line">233</div><div class="line">234</div><div class="line">235</div><div class="line">236</div><div class="line">237</div></pre></td><td class="code"><pre><div class="line">// in ValueAnimator</div><div class="line">    final boolean doAnimationFrame(long frameTime) &#123;</div><div class="line">        // 更新动画状态</div><div class="line">        if (mPlayingState == STOPPED) &#123;</div><div class="line">            mPlayingState = RUNNING;</div><div class="line">            if (mSeekFraction &lt; 0) &#123;</div><div class="line">                mStartTime = frameTime;</div><div class="line">            &#125; else &#123;</div><div class="line">                long seekTime = (long) (mDuration * mSeekFraction);</div><div class="line">                mStartTime = frameTime - seekTime;</div><div class="line">                mSeekFraction = -1;</div><div class="line">            &#125;</div><div class="line">            mStartTimeCommitted = false; // allow start time to be compensated for jank</div><div class="line">        &#125;</div><div class="line">        if (mPaused) &#123;</div><div class="line">            if (mPauseTime &lt; 0) &#123;</div><div class="line">                mPauseTime = frameTime;</div><div class="line">            &#125;</div><div class="line">            return false;</div><div class="line">        &#125; else if (mResumed) &#123;</div><div class="line">            mResumed = false;</div><div class="line">            if (mPauseTime &gt; 0) &#123;</div><div class="line">                // Offset by the duration that the animation was paused</div><div class="line">                mStartTime += (frameTime - mPauseTime);</div><div class="line">                mStartTimeCommitted = false; // allow start time to be compensated for jank</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        // The frame time might be before the start time during the first frame of</div><div class="line">        // an animation.  The &quot;current time&quot; must always be on or after the start</div><div class="line">        // time to avoid animating frames at negative time intervals.  In practice, this</div><div class="line">        // is very rare and only happens when seeking backwards.</div><div class="line">        final long currentTime = Math.max(frameTime, mStartTime);</div><div class="line">        return animationFrame(currentTime); // 真正的动画处理函数</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    boolean animationFrame(long currentTime) &#123; // 真正的动画处理函数</div><div class="line">        boolean done = false;</div><div class="line">        switch (mPlayingState) &#123;</div><div class="line">        case RUNNING:</div><div class="line">        case SEEKED:</div><div class="line">            // 计算当前fraction</div><div class="line">            float fraction = mDuration &gt; 0 ? (float)(currentTime - mStartTime) / mDuration : 1f;</div><div class="line">            if (mDuration == 0 &amp;&amp; mRepeatCount != INFINITE) &#123;</div><div class="line">                // Skip to the end</div><div class="line">                mCurrentIteration = mRepeatCount;</div><div class="line">                if (!mReversing) &#123;</div><div class="line">                    mPlayingBackwards = false;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">            if (fraction &gt;= 1f) &#123;</div><div class="line">                if (mCurrentIteration &lt; mRepeatCount || mRepeatCount == INFINITE) &#123;</div><div class="line">                    // Time to repeat</div><div class="line">                    if (mListeners != null) &#123;</div><div class="line">                        int numListeners = mListeners.size();</div><div class="line">                        for (int i = 0; i &lt; numListeners; ++i) &#123;</div><div class="line">                            mListeners.get(i).onAnimationRepeat(this); // 回调监听器的onAnimationRepeat()</div><div class="line">                        &#125;</div><div class="line">                    &#125;</div><div class="line">                    if (mRepeatMode == REVERSE) &#123;</div><div class="line">                        mPlayingBackwards = !mPlayingBackwards;</div><div class="line">                    &#125;</div><div class="line">                    mCurrentIteration += (int) fraction;</div><div class="line">                    fraction = fraction % 1f;</div><div class="line">                    mStartTime += mDuration;</div><div class="line">                    // Note: We do not need to update the value of mStartTimeCommitted here</div><div class="line">                    // since we just added a duration offset.</div><div class="line">                &#125; else &#123;</div><div class="line">                    done = true;</div><div class="line">                    fraction = Math.min(fraction, 1.0f);</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">            if (mPlayingBackwards) &#123;</div><div class="line">                fraction = 1f - fraction;</div><div class="line">            &#125;</div><div class="line">            </div><div class="line">            // 根据当前fraction将目标属性值动画化, 该函数的分析见上一段落.</div><div class="line">            animateValue(fraction);</div><div class="line">            break;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        return done;</div><div class="line">    &#125;</div><div class="line">    /**</div><div class="line">     * This custom, static handler handles the timing pulse that is shared by</div><div class="line">     * all active animations. This approach ensures that the setting of animation</div><div class="line">     * values will happen on the UI thread and that all animations will share</div><div class="line">     * the same times for calculating their values, which makes synchronizing</div><div class="line">     * animations possible.</div><div class="line">     *</div><div class="line">     * The handler uses the Choreographer for executing periodic callbacks.</div><div class="line">     *</div><div class="line">     * @hide</div><div class="line">     */</div><div class="line">    @SuppressWarnings(&quot;unchecked&quot;)</div><div class="line">    protected static class AnimationHandler &#123;</div><div class="line">        // The per-thread list of all active animations</div><div class="line">        /** @hide */</div><div class="line">        protected final ArrayList&lt;ValueAnimator&gt; mAnimations = new ArrayList&lt;ValueAnimator&gt;();</div><div class="line"></div><div class="line">        // Used in doAnimationFrame() to avoid concurrent modifications of mAnimations</div><div class="line">        private final ArrayList&lt;ValueAnimator&gt; mTmpAnimations = new ArrayList&lt;ValueAnimator&gt;();</div><div class="line"></div><div class="line">        // The per-thread set of animations to be started on the next animation frame</div><div class="line">        /** @hide */</div><div class="line">        protected final ArrayList&lt;ValueAnimator&gt; mPendingAnimations = new ArrayList&lt;ValueAnimator&gt;();</div><div class="line"></div><div class="line">        /**</div><div class="line">         * Internal per-thread collections used to avoid set collisions as animations start and end</div><div class="line">         * while being processed.</div><div class="line">         * @hide</div><div class="line">         */</div><div class="line">        protected final ArrayList&lt;ValueAnimator&gt; mDelayedAnims = new ArrayList&lt;ValueAnimator&gt;();</div><div class="line">        private final ArrayList&lt;ValueAnimator&gt; mEndingAnims = new ArrayList&lt;ValueAnimator&gt;();</div><div class="line">        private final ArrayList&lt;ValueAnimator&gt; mReadyAnims = new ArrayList&lt;ValueAnimator&gt;();</div><div class="line"></div><div class="line">        private final Choreographer mChoreographer;</div><div class="line">        private boolean mAnimationScheduled;</div><div class="line">        private long mLastFrameTime;</div><div class="line"></div><div class="line">        private AnimationHandler() &#123;</div><div class="line">            mChoreographer = Choreographer.getInstance();</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        /**</div><div class="line">         * Start animating on the next frame.</div><div class="line">         */</div><div class="line">        public void start() &#123;</div><div class="line">            scheduleAnimation(); // 入口函数</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        void doAnimationFrame(long frameTime) &#123;</div><div class="line">            mLastFrameTime = frameTime;</div><div class="line"></div><div class="line">            // mPendingAnimations holds any animations that have requested to be started</div><div class="line">            // We&apos;re going to clear mPendingAnimations, but starting animation may</div><div class="line">            // cause more to be added to the pending list (for example, if one animation</div><div class="line">            // starting triggers another starting). So we loop until mPendingAnimations</div><div class="line">            // is empty.</div><div class="line">            while (mPendingAnimations.size() &gt; 0) &#123; // 是一个宽度优先遍历动画队列</div><div class="line">                ArrayList&lt;ValueAnimator&gt; pendingCopy =</div><div class="line">                        (ArrayList&lt;ValueAnimator&gt;) mPendingAnimations.clone(); // 拷贝队列</div><div class="line">                mPendingAnimations.clear(); // 清空原队列</div><div class="line">                int count = pendingCopy.size();</div><div class="line">                for (int i = 0; i &lt; count; ++i) &#123;</div><div class="line">                    ValueAnimator anim = pendingCopy.get(i);</div><div class="line">                    // If the animation has a startDelay, place it on the delayed list</div><div class="line">                    if (anim.mStartDelay == 0) &#123;</div><div class="line">                        anim.startAnimation(this); // 调用ValueAnimator.startAnimation开始动画, 可能会导致向原等待队列添加动画</div><div class="line">                    &#125; else &#123;</div><div class="line">                        mDelayedAnims.add(anim); // 添加到延迟动画队列</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            // Next, process animations currently sitting on the delayed queue, adding</div><div class="line">            // them to the active animations if they are ready</div><div class="line">            int numDelayedAnims = mDelayedAnims.size();</div><div class="line">            for (int i = 0; i &lt; numDelayedAnims; ++i) &#123; // 遍历延迟动画队列, 将已到达时点的动画添加进就绪动画队列(注意没有从延迟队列移除)</div><div class="line">                ValueAnimator anim = mDelayedAnims.get(i);</div><div class="line">                if (anim.delayedAnimationFrame(frameTime)) &#123;</div><div class="line">                    mReadyAnims.add(anim);</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">            int numReadyAnims = mReadyAnims.size();</div><div class="line">            if (numReadyAnims &gt; 0) &#123; // 遍历就绪动画队列, 调用ValueAnimator.startAnimation开始动画, 并从延迟动画队列中移除</div><div class="line">                for (int i = 0; i &lt; numReadyAnims; ++i) &#123;</div><div class="line">                    ValueAnimator anim = mReadyAnims.get(i);</div><div class="line">                    anim.startAnimation(this);</div><div class="line">                    anim.mRunning = true;</div><div class="line">                    mDelayedAnims.remove(anim);</div><div class="line">                &#125;</div><div class="line">                mReadyAnims.clear();</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            // Now process all active animations. The return value from animationFrame()</div><div class="line">            // tells the handler whether it should now be ended</div><div class="line">            int numAnims = mAnimations.size();</div><div class="line">            for (int i = 0; i &lt; numAnims; ++i) &#123;</div><div class="line">                mTmpAnimations.add(mAnimations.get(i));</div><div class="line">            &#125;</div><div class="line">            for (int i = 0; i &lt; numAnims; ++i) &#123; // 遍历动画队列, 调用ValueAnimator.doAnimationFrame, 如动画已结束则添加进结束动画队列</div><div class="line">                ValueAnimator anim = mTmpAnimations.get(i);</div><div class="line">                if (mAnimations.contains(anim) &amp;&amp; anim.doAnimationFrame(frameTime)) &#123;</div><div class="line">                    mEndingAnims.add(anim);</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">            mTmpAnimations.clear();</div><div class="line">            if (mEndingAnims.size() &gt; 0) &#123; // 遍历结束动画队列, 回调endAnimation, 然后清空队列.</div><div class="line">                for (int i = 0; i &lt; mEndingAnims.size(); ++i) &#123;</div><div class="line">                    mEndingAnims.get(i).endAnimation(this);</div><div class="line">                &#125;</div><div class="line">                mEndingAnims.clear();</div><div class="line">            &#125;</div><div class="line"></div><div class="line">            // Schedule final commit for the frame.</div><div class="line">            mChoreographer.postCallback(Choreographer.CALLBACK_COMMIT, mCommit, null); // 发送mCommit回调. mCommit的定义见下面</div><div class="line"></div><div class="line">            // If there are still active or delayed animations, schedule a future call to</div><div class="line">            // onAnimate to process the next frame of the animations.</div><div class="line">            // 为还没有处理完的动画和延迟动画安排新一次的处理</div><div class="line">            if (!mAnimations.isEmpty() || !mDelayedAnims.isEmpty()) &#123;</div><div class="line">                scheduleAnimation();</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        void commitAnimationFrame(long frameTime) &#123; // 结束本帧</div><div class="line">            final long adjustment = frameTime - mLastFrameTime;</div><div class="line">            final int numAnims = mAnimations.size();</div><div class="line">            for (int i = 0; i &lt; numAnims; ++i) &#123;</div><div class="line">                mAnimations.get(i).commitAnimationFrame(adjustment);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        private void scheduleAnimation() &#123;</div><div class="line">            if (!mAnimationScheduled) &#123;</div><div class="line">                mChoreographer.postCallback(Choreographer.CALLBACK_ANIMATION, mAnimate, null);</div><div class="line">                mAnimationScheduled = true;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        // Called by the Choreographer.</div><div class="line">        final Runnable mAnimate = new Runnable() &#123; // 匿名内部类, 调用真正的动画函数</div><div class="line">            @Override</div><div class="line">            public void run() &#123;</div><div class="line">                mAnimationScheduled = false;</div><div class="line">                doAnimationFrame(mChoreographer.getFrameTime()); // 这里调用的是AnimationHandler.doAnimationFrame</div><div class="line">            &#125;</div><div class="line">        &#125;;</div><div class="line"></div><div class="line">        // Called by the Choreographer.</div><div class="line">        final Runnable mCommit = new Runnable() &#123; // 匿名内部类, 结束本帧动画后调用</div><div class="line">            @Override</div><div class="line">            public void run() &#123;</div><div class="line">                commitAnimationFrame(mChoreographer.getFrameTime());</div><div class="line">            &#125;</div><div class="line">        &#125;;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>调用路径: <code>start -&gt; scheduleAnimation -&gt; Choreographer.postCallback(Choreographer.CALLBACK_ANIMATION, mAnimate, null) -&gt; run -&gt; doAnimationFrame</code>, 中间大概能猜到是一些消息发送和处理机制, 暂时我们按下不看, 细看<code>doAnimationFrame</code>. 传入的参数是<code>mChoreographer.getFrameTime()</code>, 也就是当前帧时间. 在该方法中, 依次处理了 立即执行动画/延迟动画/就绪动画/正在处理的动画/结束动画 这种情况的动画或动画列表, 最后对于还没处理完的动画则发起新的<code>scheduleAnimation</code>调用, 开始新一轮循环.  </p>
+<p>到此, 整个动画的执行过程就清清楚楚了. 回想一下, 是不是跟我们预先设想的其实差不多?  </p>
+<p>总结一下, <code>ObjectAnimator</code>动画的工作流程大致如下:  </p>
+<ol>
+<li>通过<code>ofXXX</code>实例化一个<code>ObjectAnimator</code>对象, 设置它的目标/属性名/mValues: PropertyValuesHolder[], 设置持续时间和插值器/估值器. PropertyValuesHolder用于保存动画过程每一帧的信息.  </li>
+<li>在调用<code>start()</code>开始动画之后, 首先更新当前动画状态, 根据当前执行时间/总持续时间, 得到当前执行的比例(fraction), 把这个fraction交给插值器得到新的fraction, 再给估值器, 计算目标属性的当前值, 并通过反射把这个值赋给目标属性.  </li>
+<li>完成赋值之后, 调用<code>AnimationHandler.start</code>开始更新动画. 利用<code>Choreographer</code>发送任务, 在执行任务时对于立即执行的动画, 调用<code>ValueAnimator.doAnimationFrame</code>完成真正的动画操作, 对于延迟动画/就绪动画/已结束动画则更新它们的状态. 如此反复直到所有动画处理完毕.  </li>
+</ol>
+<h3 id="动画的灵魂-数学"><a href="#动画的灵魂-数学" class="headerlink" title="动画的灵魂: 数学"></a>动画的灵魂: 数学</h3><p>这里我们讲解动画另一方面重要的内容: 数学.  </p>
+<p>诚然, 即便我们对数学不是那么精通, 也能够在知道效果的情况下反推出实现效果需要的数学运算, 这应该也是大多数工程师的第一反应. 然而在数学或者说算法基础扎实的情况下, 我们往往能够很快找到更快更好的实现方式, 也能更容易去理解别人代码中的本质和嗅到可以优化的地方. 有时候一些复杂的动画效果, 我们也可以通过数学方法将之分解为简单的部分从而让问题迎刃而解.<br>(为什么我们这里没有说”算法”? 因为动画是非常具体的形象, 它需要的往往不止”算法”, 还要借用”几何”甚至”数论”的思想和工具, 而这些都可以算在数学的范畴内.)  </p>
+<p>为了让模拟真实世界的动画效果显得更真实, 我们需要知道真实世界中的运动规律. 众多数学家和物理学家, 已经为我们总结出了很多宏观世界的运动规律, 我们这些麻瓜只要活学活用就好.  </p>
+<p>举个例子, 弹跳效果. 不考虑介质阻力的情况下, 弹跳轨迹与初速度/质量/落点高度/重力加速度等相关, 所以我们如果要让动画中的弹球像真实世界一样弹跳, 就需要定义它的各项属性按照真实世界中弹跳的过程来变化, 而这个变化规律就需要数学描述.<br>于是我们只要描述各个属性值的时间函数, 就可以知道在任一时点各个属性的值. 这个描述是不是很耳熟? 没错, 这就是插值器<code>Interpolator</code>做的事.<br>事实上, 插值器也可以看做是对”时间”这一维度做了映射, 前面说过在不设置<code>TypeEvaluator</code>的情况下, 就会直接按照比例分配属性的值了, 相当于是一个”线性映射”: <code>x_new = x + x_total_delta * (time_now - time_start) / time_duration</code>. 这么个函数别看简单, 其实是<code>TypeEvaluator(Interpolator())</code>两个函数的复合函数呢.<br>回到弹跳效果. 我们可以定义一个<code>BounceInterpolator</code>和一个<code>BounceEvaluator</code>, 分别完成对弹球过程中各个时点和各时点下的位移值的描述, 这样就能够实现弹球动画了. 事实上, <code>Android</code>源码中已经为我们预定义了弹跳插值器, 诶, 名字还就叫<code>BounceInterpolator</code>, 感兴趣的同学可以打开源码看看它里面定义的函数.  </p>
+<p><strong>插值器和估值器, 两个函数复合成一个动画函数, 这就是属性动画的数学本质.</strong> 以我们对数学的理解, 当然知道在某些情况下, 这个复合函数可以退化成一个简单函数, 什么情况呢? 插值器或估值器其中一个是完全线性映射, 也就是说, 什么都不做, 喂什么吐什么. 在简单函数时, 从效果上来说, 无论我们用插值器还是估值器, 都可以将描述函数转化为动画效果, 他们两个是等价的. 只是从逻辑上我还是希望大家能将这两种概念分清楚, 这样有助于理解源码中所定义的那些插值器和估值器.  </p>
+<p>关于从数学角度理解动画, 以及更多的跟动画有关的函数, <a href="https://hujiaweibujidao.github.io/blog/2016/05/28/when-math-meets-android-animation-3/" target="_blank" rel="external">潇湘同学的博客</a>有详细阐述.  </p>
+<h2 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h2><p>使用动画时要特别注意动画的生命周期处理, 播放完成的动画应及时<code>clear</code>, 否则容易引起OOM/内存泄漏/视图显示和事件响应不按预计的方式进行等问题.  </p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a href="https://developer.android.com/guide/topics/graphics/index.html" target="_blank" rel="external">官网 Animation Guide</a>  </li>
+<li><a href="http://www.jianshu.com/p/b7aa2a4a9787" target="_blank" rel="external">Android动画，一篇就够</a>  </li>
+<li><a href="http://blog.csdn.net/yanbober/article/details/46481171" target="_blank" rel="external">Android应用开发之所有动画使用详解</a>  </li>
+<li><a href="http://blog.csdn.net/singwhatiwanna/article/details/17841165" target="_blank" rel="external">Android属性动画深入分析：让你成为动画牛人</a>  </li>
+<li><p><a href="http://androidxref.com" target="_blank" rel="external">AndroidXRef</a>  </p>
+</li>
+<li><p><a href="https://github.com/daimajia/AndroidViewAnimations" target="_blank" rel="external">github/daimajia/AndroidViewAnimations</a>  </p>
+</li>
+<li><a href="https://github.com/hujiaweibujidao/FabDialogMorph" target="_blank" rel="external">github/hujiaweibujidao/FabDialogMorph</a>  </li>
+<li><a href="https://github.com/hujiaweibujidao/wava" target="_blank" rel="external">github/hujiaweibujidao/wava</a>  </li>
+<li><a href="https://github.com/hujiaweibujidao/yava" target="_blank" rel="external">github/hujiaweibujidao/yava</a>  </li>
+<li><a href="https://github.com/yanbober/SlideLayout" target="_blank" rel="external">github/yanbober/SlideLayout</a>  </li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      说来惭愧, 接触Android这么久可UI和Animation一直是涉足未深的盲点, 今天就来解...
+    
+    </summary>
+    
+      <category term="android" scheme="https://hjhjw1991.github.io/categories/android/"/>
+    
+    
+      <category term="guide" scheme="https://hjhjw1991.github.io/tags/guide/"/>
+    
+      <category term="android" scheme="https://hjhjw1991.github.io/tags/android/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>初涉mmap</title>
+    <link href="https://hjhjw1991.github.io/android/2017/05/02/%E5%88%9D%E6%B6%89mmap/"/>
+    <id>https://hjhjw1991.github.io/android/2017/05/02/初涉mmap/</id>
+    <published>2017-05-01T16:00:00.000Z</published>
+    <updated>2017-05-02T06:59:27.044Z</updated>
+    
+    <content type="html"><![CDATA[<blockquote>
+<p>在Native开发中遇到mmap, 于是有了这篇文章.  </p>
+</blockquote>
+<p>目录:  </p>
+<ul>
+<li>是什么  </li>
+<li>为什么  </li>
+<li>怎么用  </li>
+</ul>
+<h2 id="是什么"><a href="#是什么" class="headerlink" title="是什么"></a>是什么</h2><p>mmap: Memory-map. 可翻译成内存映射, 这是一种文件I/O操作, 它将文件(linux世界中, 设备也是文件)映射到内存中, 用户可以像操作内存一样操作文件.<br>mmap以及相关系统调用包含在Unix的BSD(Berkeley Software Distribution)4.2版本的设计中, 然而最先实现mmap接口的是Sun公司, BSD开发者向Sun要代码没要到, 最后BSD上的实现是基于虚拟内存系统Mach中的版本.  </p>
+<h2 id="为什么"><a href="#为什么" class="headerlink" title="为什么"></a>为什么</h2><h3 id="mmap原理"><a href="#mmap原理" class="headerlink" title="mmap原理"></a>mmap原理</h3><p>mmap将文件映射到连续的内存区域, 使进程的地址空间中某一段与被映射的文件(或共享内存)的地址一一对应.<br>无论内核态还是用户态都只是进程所处的一种状态, 进程拥有自己的虚拟地址空间, 但是物理区块是只有一份的, 只是这一份物理区块在不同进程中的地址不同而已. 基于这个事实, 我们只要让自己进程的一段虚拟地址, 指向我们想要载入的物理文件所在的位置, 那么对这段虚拟地址的操作, 就可以直接反映在物理文件上, 看起来就像我们已经载入(从内核空间拷贝内容到用户空间内存)了文件一样.<br>具体来说, 可以分为三个阶段:  </p>
+<ol>
+<li>在用户空间调用mmap函数, 分配一块连续的满足要求的虚拟地址空间, 并将代表该空间的数据结构初始化后插入进程的虚拟地址区域链表中.  </li>
+<li>根据mmap参数, 找到待映射文件的文件描述符, 标记为已打开, 调用内核mmap函数, 定位到文件磁盘物理地址, 建立页表实现文件地址和虚拟地址区域的映射关系. 至此地址映射完成, 但尚未拷贝数据到内存.  </li>
+<li>进程访问虚拟地址空间中该文件所在地址, 引发缺页异常使文件拷贝到主存, 然后就可以对这片区域进行读写操作了.<br>虽然原理很简单, 但实际实现的时候有许多问题需要注意, 比如多个进程访问同一个文件的时候, 如果有进程写文件怎么处理. 根据参数的不同, 可能有不同的处理方式. 例如共享内存<code>MAP_SHARED</code>方式下, 写操作会立即对其他进程可见, 但实际将脏数据写回到文件却是经过一定时间或在msync系统调用之后. 而如果是<code>MAP_PRIVATE</code>方式, 则任何写操作都会引起第二次内存拷贝, 文件数据被拷贝到进程内存空间, 对其他进程不可见, 并且也不会写回文件.  </li>
+</ol>
+<h3 id="mmap与文件操作的区别"><a href="#mmap与文件操作的区别" class="headerlink" title="mmap与文件操作的区别"></a>mmap与文件操作的区别</h3><p>linux还有一套文件操作的系统调用, 即<code>open read write</code>, mmap与他们区别在哪儿呢?<br>最大的区别就在于, 普通文件读写操作, 需要借助处于内核空间的页缓存作为中转, 将数据载入主存, 而mmap却是逻辑映射到物理文件, 直接载入数据到主存.<br>前者总是向页缓存索取数据, 内核通过查找页缓存来判断能否立即返回数据, 在未缓存的情况下, 先从物理磁盘拷贝数据到页缓存, 再从页缓存拷贝数据到用户空间中, 写回时也是同样, 需要先将用户空间的文件缓存拷贝到内核空间, 再由内核写回到磁盘, 都需要经过<strong>两次拷贝</strong>.<br>后者则是在发现需要载入数据时, 通过事先建立的页表映射关系, 直接由内核将数据拷贝到用户空间, <strong>一次拷贝</strong>.<br>因此, mmap理论上来说效率更高.  </p>
+<h3 id="mmap优势"><a href="#mmap优势" class="headerlink" title="mmap优势"></a>mmap优势</h3><ol>
+<li>不使用页缓存机制, 减少一次拷贝.  </li>
+<li>用户空间和内核空间对同一片区域的修改都可以直接反映在对方映射区域内, 提高了交互效率.  </li>
+<li>为共享内存和IPC通信提供一种方式.  </li>
+</ol>
+<h2 id="怎么用"><a href="#怎么用" class="headerlink" title="怎么用"></a>怎么用</h2><p>mmap尽管有些优势, 但并不是万能药, 例如如果你要处理的文件大到很难为之分配一个连续的虚拟地址空间, 或者你想要访问的地址的偏移量不是物理页大小(page_size)的整数倍(此时你需要自己解决偏移量问题), 甚至有些情况下, read/write是与目标文件交互的唯一方式, 见<a href="http://stackoverflow.com/a/258097/3996521" target="_blank" rel="external">SOF: when-should-use-mmap</a>.<br>mmap可以用于实现共享内存, 如上问所述.<br>Binder的底层使用mmap, 所以Binder才能做到只拷贝一次数据.<br>在使用mmap时有些要点需要注意:  </p>
+<ol>
+<li>由于mmap的映射是基于页大小的, 所以它一定会映射整数个页面, 哪怕你用不到那么多. 比如5000 byte数据需要2*4k(2个页)空间, 但5000~8191读写不报错但不会反映到文件中, 读为0, 写丢失.  </li>
+<li>无论你声明要使用多大空间, mmap都只会映射刚好够用的页面数量, 所以访问已映射的页面之外的地址, 会报错. 比如原始文件大小5000 byte, 声明要映射15000 byte, 那么仅前5000 byte可正常读写, 5000~8191同上, 不报错但读为0写丢失. 8192~14999无法读写, 报SIGBUS错误. 15000及以上无法读写, 报SIGSEGV错误. 如果确实需要写5000以上的位置, 那么需要在写之前增加文件大小.  </li>
+</ol>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a href="https://en.wikipedia.org/wiki/Mmap" target="_blank" rel="external">wikipedia-mmap</a>  </li>
+<li><a href="http://www.cnblogs.com/huxiao-tee/p/4660352.html" target="_blank" rel="external">认真分析mmap：是什么 为什么 怎么用</a>  </li>
+<li><a href="http://stackoverflow.com/a/258097/3996521" target="_blank" rel="external">SOF: when-should-use-mmap</a>  </li>
+<li><a href="http://blog.csdn.net/yusiguyuan/article/details/23388771" target="_blank" rel="external">linux内存映射mmap原理分析</a>  </li>
+<li><a href="http://blog.csdn.net/yinjiabin/article/details/7575653" target="_blank" rel="external">linux中mmap系统调用原理分析与实现</a>  </li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      在Native开发中遇到mmap, 于是有了这篇文章.
+    
+    </summary>
+    
+      <category term="android" scheme="https://hjhjw1991.github.io/categories/android/"/>
+    
+    
+      <category term="android" scheme="https://hjhjw1991.github.io/tags/android/"/>
+    
+  </entry>
   
   <entry>
     <title>Activity中launchMode的理解</title>
@@ -79,18 +249,18 @@
       <category term="android" scheme="https://hjhjw1991.github.io/categories/android/"/>
     
     
-      <category term="android" scheme="https://hjhjw1991.github.io/tags/android/"/>
-    
       <category term="guide" scheme="https://hjhjw1991.github.io/tags/guide/"/>
+    
+      <category term="android" scheme="https://hjhjw1991.github.io/tags/android/"/>
     
   </entry>
   
   <entry>
     <title>【Android教程】ActivityManagerService全解(1/5)</title>
-    <link href="https://hjhjw1991.github.io/android/2017/03/05/%5BAndroid%E6%95%99%E7%A8%8B%5DActivityManagerService%E5%85%A8%E8%A7%A3/"/>
-    <id>https://hjhjw1991.github.io/android/2017/03/05/[Android教程]ActivityManagerService全解/</id>
+    <link href="https://hjhjw1991.github.io/android/2017/03/05/%5BAndroid%E6%95%99%E7%A8%8B%5DActivityManagerService%E5%85%A8%E8%A7%A3-part1/"/>
+    <id>https://hjhjw1991.github.io/android/2017/03/05/[Android教程]ActivityManagerService全解-part1/</id>
     <published>2017-03-04T16:00:00.000Z</published>
-    <updated>2017-04-07T03:12:54.948Z</updated>
+    <updated>2017-05-04T10:36:03.195Z</updated>
     
     <content type="html"><![CDATA[<blockquote>
 <p>在<code>Android</code>操作系统中, 有许多个默默维护<code>Android</code>系统稳定正常流畅运行的幕后工作者, 对于上层App开发者来说这些工作者的名字可能是不太熟悉甚至完全陌生的, 就像电影散场时的演职人员表, 人人都知道没有他们电影完不成, 也都知道他们各有分工, 各有名谓, 但少有人清楚他们具体做了什么. 其中为人所熟知的几大系统服务之一就是<code>ActivityManagerService</code>, 今天我们来访谈一下这位幕后工作者.  </p>
@@ -432,7 +602,7 @@ synchronized(this) {
       <category term="android" scheme="https://hjhjw1991.github.io/categories/android/"/>
     
     
-      <category term="教程" scheme="https://hjhjw1991.github.io/tags/%E6%95%99%E7%A8%8B/"/>
+      <category term="guide" scheme="https://hjhjw1991.github.io/tags/guide/"/>
     
       <category term="android" scheme="https://hjhjw1991.github.io/tags/android/"/>
     
@@ -864,7 +1034,7 @@ ServiceMethod(Builder&lt;R, T&gt; builder) {
     <link href="https://hjhjw1991.github.io/android/2017/02/28/%5BAndroid%E6%95%99%E7%A8%8B%5DAndroid%E7%BD%91%E7%BB%9C%E6%9E%B6%E6%9E%84/"/>
     <id>https://hjhjw1991.github.io/android/2017/02/28/[Android教程]Android网络架构/</id>
     <published>2017-02-27T16:00:00.000Z</published>
-    <updated>2017-03-05T11:15:17.771Z</updated>
+    <updated>2017-05-04T10:27:47.147Z</updated>
     
     <content type="html"><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>为方便初学者, 也为知识体系能够脉络清晰, 本文分为两个部分:  </p>
 <ul>
@@ -974,7 +1144,7 @@ mQueue.start();
       <category term="android" scheme="https://hjhjw1991.github.io/categories/android/"/>
     
     
-      <category term="教程" scheme="https://hjhjw1991.github.io/tags/%E6%95%99%E7%A8%8B/"/>
+      <category term="guide" scheme="https://hjhjw1991.github.io/tags/guide/"/>
     
       <category term="android" scheme="https://hjhjw1991.github.io/tags/android/"/>
     
@@ -1305,7 +1475,7 @@ public Builder cache(Cache cache) {
     <link href="https://hjhjw1991.github.io/android/2017/02/24/%5BAndroid%E6%95%99%E7%A8%8B%5DView&amp;ViewGroup%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/"/>
     <id>https://hjhjw1991.github.io/android/2017/02/24/[Android教程]View&amp;ViewGroup源码阅读/</id>
     <published>2017-02-23T16:00:00.000Z</published>
-    <updated>2017-03-05T11:14:44.267Z</updated>
+    <updated>2017-05-04T10:35:16.571Z</updated>
     
     <content type="html"><![CDATA[<blockquote>
 <p>本文基于Android 4.0 源码</p>
@@ -1405,50 +1575,11 @@ FrameLayout.dispatchTouchEvent
       <category term="android" scheme="https://hjhjw1991.github.io/categories/android/"/>
     
     
-      <category term="教程" scheme="https://hjhjw1991.github.io/tags/%E6%95%99%E7%A8%8B/"/>
+      <category term="guide" scheme="https://hjhjw1991.github.io/tags/guide/"/>
     
       <category term="android" scheme="https://hjhjw1991.github.io/tags/android/"/>
     
-      <category term="面试" scheme="https://hjhjw1991.github.io/tags/%E9%9D%A2%E8%AF%95/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>【Android教程】Context全解</title>
-    <link href="https://hjhjw1991.github.io/android/2017/01/23/%5BAndroid%E6%95%99%E7%A8%8B%5DContext%E5%85%A8%E8%A7%A3/"/>
-    <id>https://hjhjw1991.github.io/android/2017/01/23/[Android教程]Context全解/</id>
-    <published>2017-01-22T16:00:00.000Z</published>
-    <updated>2017-03-05T08:29:43.703Z</updated>
-    
-    <content type="html"><![CDATA[<p>我们在开发过程中会遇到很多场景需要Context, 包括但不限于: 获取资源, 创建View, 显示UI元素… 稍微追踪一下知道Context是一个接口, 当然从名字知道它是提供环境信息的接口, 今天我们就来看看, Context以及它的衍生类.  </p>
-<h2 id="Context接口和作用"><a href="#Context接口和作用" class="headerlink" title="Context接口和作用"></a>Context接口和作用</h2><p>位于<code>frameworks/base/core/java/android/content/Context.java</code>, 是一个抽象类, 它定义了所有可用的接口, 在AS中查看它的类继承关系, 可以发现它有<code>MockContext</code>和<code>ContextWrapper</code>两个直接子类, 继续追下去会发现它有数量不少的间接子类, <code>Application</code> <code>Activity</code> <code>Service</code>都是它的子类, 这也正是在这些类中用到Context参数时可以直接传<code>this</code>的原因. 我们来看Context定义了哪些接口, 接口及其说明在官网Context页都有说明, 我这里只是相当于翻译一下. 大致上可以分为两类:  </p>
-<ol>
-<li><p>全局信息资源接口及其配套常量. 包括但不限于以下接口:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">getResources 返回Resources实例, 提供应用包的资源管理接口.  </div><div class="line">getAssets 返回AssetManager实例, 它提供资源管理接口. 它管理的资源应当和getResources管理的资源保持一致, 即它们维护同一套资源.  </div><div class="line">getPackageManager 返回PackageManager实例, 提供全局包信息.  </div><div class="line">getContentResolver 返回ContentResolver实例, 提供内容解析接口.  </div><div class="line">getText 封装Resources.getText  </div><div class="line">getString 封装Resources.getString</div><div class="line">getClassLoader 获取ClassLoader实例, 可以由此获取包内所有类</div><div class="line">getPackageName 获取应用包的包名  </div><div class="line">getSystemService 获取系统服务, 系统服务的名字以常量形式存在Context类中</div></pre></td></tr></table></figure>
-</li>
-<li><p>公共方法及其配套常量. 包括但不限于:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">getMainLooper 返回当前Context的Looper实例  </div><div class="line">getApplicationContext 获取应用的Context实例, 它不同于当前Context实例, 而是一个属于当前进程的, 全局的, 单例的, Application对象, 这意味着它的生命周期不同于当前Context, 而是跟当前进程捆绑  </div><div class="line">registerComponentCallbacks 注册组件回调  </div><div class="line">unregisterComponentCallbacks 注销组件回调  </div><div class="line">deleteFile 删除与当前应用包关联的私有文件  </div><div class="line">deleteDatabase 删除与当前应用包关联的私有SQLiteDatabase数据库  </div><div class="line">startActivity 开始一个Activity  </div><div class="line">registerReceiver 注册广播接收器  </div><div class="line">unregisterReceiver 注销广播接收器</div><div class="line">bindService 绑定服务  </div><div class="line">unbindService 解绑服务  </div><div class="line">startService 开始服务  </div><div class="line">stopService 停止服务  </div><div class="line">createPackageContext 以给定应用包名创建该应用的Context</div></pre></td></tr></table></figure>
-</li>
-</ol>
-<h2 id="Context默认实现"><a href="#Context默认实现" class="headerlink" title="Context默认实现"></a>Context默认实现</h2><p><img src="./images/blogs/context.png" alt="context关系"><br>前文说了, <code>Activity</code>和<code>Application</code>都是<code>Context</code>的间接子类. 但是他们处于不同层级, 拥有不同的继承链, <code>Application</code>继承了<code>ContextWrapper</code>(<code>Service</code>也继承了它), 而<code>Activity</code>继承了<code>ContextThemeWrapper</code>(它是<code>ContextWrapper</code>的直接子类). 在<code>ContextWrapper</code>中提供了大多数方法的默认实现, 正如其名, 它只是包装了一个<code>Context</code>实现, 这个实现就是它的<code>mBase</code>成员变量, 是通过构造函数或者<code>attachBaseContext</code>传入的<code>Context</code>实例. 在应用启动过程中, <code>performLaunchActivity</code>会将一个<code>ContextImpl</code>实例作为参数传入<code>Activity.attach</code>方法, 该方法就用这个实例调用<code>attachBaseContext</code>设置好<code>Context</code>. 换句话说, <code>Activity</code>所拥有的<code>Context</code>就是一个随<code>Activity</code>生命周期的<code>ContextImpl</code>实例, <code>Activity</code>中对<code>Context</code>接口的调用, 中途经过<code>ContextThemeWrapper</code>和<code>ContextWrapper</code>, 最终到达这个<code>mBase</code>指向的<code>ContextImpl</code>的相应接口调用. 也就是说, 它就是我们要找的Activity Context默认实现.<br>那么Application Context呢? 它调用Context接口时最终同样会传达到mBase上, 它的mBase对象又是什么呢? 我们考察应用启动过程, 发现在<code>performLaunchActivity</code>中, 有一步是<code>makeApplication</code>, 返回一个<code>Application</code>对象. 该方法属于<code>LoadedApk</code>类, 打开该类查看, 发现它维护了一个<code>Application mApplication</code>成员变量, <code>makeApplication</code>方法在该变量非空时直接返回该变量(意味着无论调用多少次, 都返回同一个Application实例), 否则新建一个<code>ContextImpl</code>对象, 并以它为参数之一, 调用<code>mActivityThread.mInstrumentation.newApplication</code>返回一个<code>Application</code>对象. 再查看<code>newApplication</code>方法, 它位于<code>frameworks/base/core/java/android/app/Instrumentation.java</code>中, 其行为是使用给定的<code>ClassLoader</code>先装载给定的类(这里是<code>LoadedApk.makeApplication</code>中字符串<code>appClass</code>代表的<code>Application</code>类, 如果没有指定或强制使用默认appClass, 则该值为”android.app.Application”), 再用该类对象的<code>newInstance</code>创建实例并调用<code>attach</code>方法绑定Context实例. 可见, <code>Application</code>的Context仍然是<code>ContextImpl</code>实例, 不同的是它的生命周期与<code>Application</code>一致.<br><code>ContextImpl</code>类中对Context大多数接口方法都有了默认实现, 我们重点只看<code>getApplicationContext</code>:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">// in file ContextImpl.java</div><div class="line"></div><div class="line">@Override</div><div class="line">public Context getApplicationContext() &#123;</div><div class="line">    return (mPackageInfo != null) ?</div><div class="line">            mPackageInfo.getApplication() : mMainThread.getApplication();</div><div class="line">&#125;// mPackageInfo是LoadedApk类型</div></pre></td></tr></table></figure></p>
-<p>方法<code>Activity.getApplication</code>返回的是成员变量<code>mApplication</code>, 根据其构造过程, 是在<code>attach</code>时赋值的<code>Application</code>实例, 换句话说, 在同一个应用中时, <code>Activity</code>中调用<code>getApplication</code>跟调用<code>getApplicationContext</code>返回的是同一个对象, 这可以很方便地验证.  </p>
-<h2 id="Context使用中需要注意的问题"><a href="#Context使用中需要注意的问题" class="headerlink" title="Context使用中需要注意的问题"></a>Context使用中需要注意的问题</h2><p>前文中我们曾特地指出, <code>Activity</code>的Context跟<code>Application</code>的Context生命周期不同, 细心的同学可能要问了, 强调这个是因为有什么坑吗? 是的, 这里有坑.<br>原因就在于我们在创建组件的时候经常会用到Context这个参数, 有时为了图方便就直接传<code>this</code>, 大多数情况下也挺好使, 但其实这里存在很大的内存泄漏风险.<br>举个例子, 我们假设在<code>Activity</code>中创建了一个<code>Bitmap</code>, 为了在手机横竖屏切换的时候不至于重新装载这个资源, 我们将它写成<code>static</code>, 这样它的生命周期也就跟<code>Activity.class</code>相同了. 然后我们通过<code>setBackgroundDrawable</code>将它设置成了某个<code>View</code>(该<code>View</code>是通过<code>new View(this)</code>方法构造的实例)的背景. 我们知道, 在手机横竖屏切换的时候, 当前Activity会被销毁再重新创建, 因此此间会有一个gc标记过程. 这里存在什么问题呢? <code>setBackgroundDrawable</code>之后, 静态变量<code>Bitmap</code>会持有一个该<code>View</code>的引用, 而这个<code>View</code>持有一个<code>Activity</code>的引用, 这就导致<code>Activity</code>的引用计数不为0, gc过程无法回收该对象内存, 但是该对象已经不被任何过程使用, 于是就泄露了. 归根到底是因为创建<code>View</code>的时候使用了<code>Activity</code>作为Context, 但是该<code>View</code>由于存在被静态变量<code>Bitmap</code>引用的情况, 其实际生命周期要长于<code>Activity</code>.<br>解决这种泄露的方法是, 保证在<code>Activity</code>中使用<code>Activity</code>或<code>this</code>作为Context的任何对象, 其生命周期都不长于<code>Activity</code>本身, 否则应该考虑使用<code>Application Context</code>.<br>另外, 如果定义了非静态内部类, 那么对非静态内部类实例的引用也有可能导致外部类实例内存泄漏, 解决这种内存泄漏的方法是控制内部类的引用, 对于生命周期长于外部类的内部类, 应定义为静态内部类.  </p>
-]]></content>
-    
-    <summary type="html">
-    
-      又叫【花样劝退教程】。本文讲Android中的Context
-    
-    </summary>
-    
-      <category term="android" scheme="https://hjhjw1991.github.io/categories/android/"/>
-    
-    
-      <category term="教程" scheme="https://hjhjw1991.github.io/tags/%E6%95%99%E7%A8%8B/"/>
-    
-      <category term="android" scheme="https://hjhjw1991.github.io/tags/android/"/>
-    
-      <category term="面试" scheme="https://hjhjw1991.github.io/tags/%E9%9D%A2%E8%AF%95/"/>
+      <category term="interview" scheme="https://hjhjw1991.github.io/tags/interview/"/>
     
   </entry>
   
@@ -1457,7 +1588,7 @@ FrameLayout.dispatchTouchEvent
     <link href="https://hjhjw1991.github.io/android/2017/01/23/%5BAndroid%E6%95%99%E7%A8%8B%5DSharedPreference%E8%AF%A6%E8%A7%A3/"/>
     <id>https://hjhjw1991.github.io/android/2017/01/23/[Android教程]SharedPreference详解/</id>
     <published>2017-01-22T16:00:00.000Z</published>
-    <updated>2017-02-07T09:12:54.883Z</updated>
+    <updated>2017-05-04T10:29:27.359Z</updated>
     
     <content type="html"><![CDATA[<p>Android为各位开发者提供了简单的数据存储和交换的方式, 就是<code>SharedPreference</code>, 它是一个在应用数据目录下的<code>.xml</code>文件, 无论是从名字还是实际应用来看, 它都是存取轻量不涉及安全问题的数据(例如设置项)的趁手方式之一. 当然, 它采用xml这样的格式有其自己的考虑, 但未必是最合适的. 当然它的缺点也跟优点一样明显, 今天我们就来看看它在源码中是怎样实现的, 由此也可看出它的优缺点何在.<br>老方法, 我们从实际使用场景来倒推.<br>本文结构:  </p>
 <ol>
@@ -1493,11 +1624,50 @@ FrameLayout.dispatchTouchEvent
       <category term="android" scheme="https://hjhjw1991.github.io/categories/android/"/>
     
     
-      <category term="教程" scheme="https://hjhjw1991.github.io/tags/%E6%95%99%E7%A8%8B/"/>
+      <category term="guide" scheme="https://hjhjw1991.github.io/tags/guide/"/>
     
       <category term="android" scheme="https://hjhjw1991.github.io/tags/android/"/>
     
-      <category term="面试" scheme="https://hjhjw1991.github.io/tags/%E9%9D%A2%E8%AF%95/"/>
+      <category term="interview" scheme="https://hjhjw1991.github.io/tags/interview/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>【Android教程】Context全解</title>
+    <link href="https://hjhjw1991.github.io/android/2017/01/23/%5BAndroid%E6%95%99%E7%A8%8B%5DContext%E5%85%A8%E8%A7%A3/"/>
+    <id>https://hjhjw1991.github.io/android/2017/01/23/[Android教程]Context全解/</id>
+    <published>2017-01-22T16:00:00.000Z</published>
+    <updated>2017-05-04T10:31:21.711Z</updated>
+    
+    <content type="html"><![CDATA[<p>我们在开发过程中会遇到很多场景需要Context, 包括但不限于: 获取资源, 创建View, 显示UI元素… 稍微追踪一下知道Context是一个接口, 当然从名字知道它是提供环境信息的接口, 今天我们就来看看, Context以及它的衍生类.  </p>
+<h2 id="Context接口和作用"><a href="#Context接口和作用" class="headerlink" title="Context接口和作用"></a>Context接口和作用</h2><p>位于<code>frameworks/base/core/java/android/content/Context.java</code>, 是一个抽象类, 它定义了所有可用的接口, 在AS中查看它的类继承关系, 可以发现它有<code>MockContext</code>和<code>ContextWrapper</code>两个直接子类, 继续追下去会发现它有数量不少的间接子类, <code>Application</code> <code>Activity</code> <code>Service</code>都是它的子类, 这也正是在这些类中用到Context参数时可以直接传<code>this</code>的原因. 我们来看Context定义了哪些接口, 接口及其说明在官网Context页都有说明, 我这里只是相当于翻译一下. 大致上可以分为两类:  </p>
+<ol>
+<li><p>全局信息资源接口及其配套常量. 包括但不限于以下接口:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">getResources 返回Resources实例, 提供应用包的资源管理接口.  </div><div class="line">getAssets 返回AssetManager实例, 它提供资源管理接口. 它管理的资源应当和getResources管理的资源保持一致, 即它们维护同一套资源.  </div><div class="line">getPackageManager 返回PackageManager实例, 提供全局包信息.  </div><div class="line">getContentResolver 返回ContentResolver实例, 提供内容解析接口.  </div><div class="line">getText 封装Resources.getText  </div><div class="line">getString 封装Resources.getString</div><div class="line">getClassLoader 获取ClassLoader实例, 可以由此获取包内所有类</div><div class="line">getPackageName 获取应用包的包名  </div><div class="line">getSystemService 获取系统服务, 系统服务的名字以常量形式存在Context类中</div></pre></td></tr></table></figure>
+</li>
+<li><p>公共方法及其配套常量. 包括但不限于:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">getMainLooper 返回当前Context的Looper实例  </div><div class="line">getApplicationContext 获取应用的Context实例, 它不同于当前Context实例, 而是一个属于当前进程的, 全局的, 单例的, Application对象, 这意味着它的生命周期不同于当前Context, 而是跟当前进程捆绑  </div><div class="line">registerComponentCallbacks 注册组件回调  </div><div class="line">unregisterComponentCallbacks 注销组件回调  </div><div class="line">deleteFile 删除与当前应用包关联的私有文件  </div><div class="line">deleteDatabase 删除与当前应用包关联的私有SQLiteDatabase数据库  </div><div class="line">startActivity 开始一个Activity  </div><div class="line">registerReceiver 注册广播接收器  </div><div class="line">unregisterReceiver 注销广播接收器</div><div class="line">bindService 绑定服务  </div><div class="line">unbindService 解绑服务  </div><div class="line">startService 开始服务  </div><div class="line">stopService 停止服务  </div><div class="line">createPackageContext 以给定应用包名创建该应用的Context</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<h2 id="Context默认实现"><a href="#Context默认实现" class="headerlink" title="Context默认实现"></a>Context默认实现</h2><p><img src="./images/blogs/context.png" alt="context关系"><br>前文说了, <code>Activity</code>和<code>Application</code>都是<code>Context</code>的间接子类. 但是他们处于不同层级, 拥有不同的继承链, <code>Application</code>继承了<code>ContextWrapper</code>(<code>Service</code>也继承了它), 而<code>Activity</code>继承了<code>ContextThemeWrapper</code>(它是<code>ContextWrapper</code>的直接子类). 在<code>ContextWrapper</code>中提供了大多数方法的默认实现, 正如其名, 它只是包装了一个<code>Context</code>实现, 这个实现就是它的<code>mBase</code>成员变量, 是通过构造函数或者<code>attachBaseContext</code>传入的<code>Context</code>实例. 在应用启动过程中, <code>performLaunchActivity</code>会将一个<code>ContextImpl</code>实例作为参数传入<code>Activity.attach</code>方法, 该方法就用这个实例调用<code>attachBaseContext</code>设置好<code>Context</code>. 换句话说, <code>Activity</code>所拥有的<code>Context</code>就是一个随<code>Activity</code>生命周期的<code>ContextImpl</code>实例, <code>Activity</code>中对<code>Context</code>接口的调用, 中途经过<code>ContextThemeWrapper</code>和<code>ContextWrapper</code>, 最终到达这个<code>mBase</code>指向的<code>ContextImpl</code>的相应接口调用. 也就是说, 它就是我们要找的Activity Context默认实现.<br>那么Application Context呢? 它调用Context接口时最终同样会传达到mBase上, 它的mBase对象又是什么呢? 我们考察应用启动过程, 发现在<code>performLaunchActivity</code>中, 有一步是<code>makeApplication</code>, 返回一个<code>Application</code>对象. 该方法属于<code>LoadedApk</code>类, 打开该类查看, 发现它维护了一个<code>Application mApplication</code>成员变量, <code>makeApplication</code>方法在该变量非空时直接返回该变量(意味着无论调用多少次, 都返回同一个Application实例), 否则新建一个<code>ContextImpl</code>对象, 并以它为参数之一, 调用<code>mActivityThread.mInstrumentation.newApplication</code>返回一个<code>Application</code>对象. 再查看<code>newApplication</code>方法, 它位于<code>frameworks/base/core/java/android/app/Instrumentation.java</code>中, 其行为是使用给定的<code>ClassLoader</code>先装载给定的类(这里是<code>LoadedApk.makeApplication</code>中字符串<code>appClass</code>代表的<code>Application</code>类, 如果没有指定或强制使用默认appClass, 则该值为”android.app.Application”), 再用该类对象的<code>newInstance</code>创建实例并调用<code>attach</code>方法绑定Context实例. 可见, <code>Application</code>的Context仍然是<code>ContextImpl</code>实例, 不同的是它的生命周期与<code>Application</code>一致.<br><code>ContextImpl</code>类中对Context大多数接口方法都有了默认实现, 我们重点只看<code>getApplicationContext</code>:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">// in file ContextImpl.java</div><div class="line"></div><div class="line">@Override</div><div class="line">public Context getApplicationContext() &#123;</div><div class="line">    return (mPackageInfo != null) ?</div><div class="line">            mPackageInfo.getApplication() : mMainThread.getApplication();</div><div class="line">&#125;// mPackageInfo是LoadedApk类型</div></pre></td></tr></table></figure></p>
+<p>方法<code>Activity.getApplication</code>返回的是成员变量<code>mApplication</code>, 根据其构造过程, 是在<code>attach</code>时赋值的<code>Application</code>实例, 换句话说, 在同一个应用中时, <code>Activity</code>中调用<code>getApplication</code>跟调用<code>getApplicationContext</code>返回的是同一个对象, 这可以很方便地验证.  </p>
+<h2 id="Context使用中需要注意的问题"><a href="#Context使用中需要注意的问题" class="headerlink" title="Context使用中需要注意的问题"></a>Context使用中需要注意的问题</h2><p>前文中我们曾特地指出, <code>Activity</code>的Context跟<code>Application</code>的Context生命周期不同, 细心的同学可能要问了, 强调这个是因为有什么坑吗? 是的, 这里有坑.<br>原因就在于我们在创建组件的时候经常会用到Context这个参数, 有时为了图方便就直接传<code>this</code>, 大多数情况下也挺好使, 但其实这里存在很大的内存泄漏风险.<br>举个例子, 我们假设在<code>Activity</code>中创建了一个<code>Bitmap</code>, 为了在手机横竖屏切换的时候不至于重新装载这个资源, 我们将它写成<code>static</code>, 这样它的生命周期也就跟<code>Activity.class</code>相同了. 然后我们通过<code>setBackgroundDrawable</code>将它设置成了某个<code>View</code>(该<code>View</code>是通过<code>new View(this)</code>方法构造的实例)的背景. 我们知道, 在手机横竖屏切换的时候, 当前Activity会被销毁再重新创建, 因此此间会有一个gc标记过程. 这里存在什么问题呢? <code>setBackgroundDrawable</code>之后, 静态变量<code>Bitmap</code>会持有一个该<code>View</code>的引用, 而这个<code>View</code>持有一个<code>Activity</code>的引用, 这就导致<code>Activity</code>的引用计数不为0, gc过程无法回收该对象内存, 但是该对象已经不被任何过程使用, 于是就泄露了. 归根到底是因为创建<code>View</code>的时候使用了<code>Activity</code>作为Context, 但是该<code>View</code>由于存在被静态变量<code>Bitmap</code>引用的情况, 其实际生命周期要长于<code>Activity</code>.<br>解决这种泄露的方法是, 保证在<code>Activity</code>中使用<code>Activity</code>或<code>this</code>作为Context的任何对象, 其生命周期都不长于<code>Activity</code>本身, 否则应该考虑使用<code>Application Context</code>.<br>另外, 如果定义了非静态内部类, 那么对非静态内部类实例的引用也有可能导致外部类实例内存泄漏, 解决这种内存泄漏的方法是控制内部类的引用, 对于生命周期长于外部类的内部类, 应定义为静态内部类.  </p>
+]]></content>
+    
+    <summary type="html">
+    
+      又叫【花样劝退教程】。本文讲Android中的Context
+    
+    </summary>
+    
+      <category term="android" scheme="https://hjhjw1991.github.io/categories/android/"/>
+    
+    
+      <category term="guide" scheme="https://hjhjw1991.github.io/tags/guide/"/>
+    
+      <category term="android" scheme="https://hjhjw1991.github.io/tags/android/"/>
+    
+      <category term="interview" scheme="https://hjhjw1991.github.io/tags/interview/"/>
     
   </entry>
   
@@ -1506,7 +1676,7 @@ FrameLayout.dispatchTouchEvent
     <link href="https://hjhjw1991.github.io/android/2017/01/10/%5BAndroid%E6%95%99%E7%A8%8B%5DBinder%E5%85%A8%E8%A7%A3/"/>
     <id>https://hjhjw1991.github.io/android/2017/01/10/[Android教程]Binder全解/</id>
     <published>2017-01-09T16:00:00.000Z</published>
-    <updated>2017-03-05T11:12:16.959Z</updated>
+    <updated>2017-05-04T10:31:43.295Z</updated>
     
     <content type="html"><![CDATA[<h2 id="某渣的凭印象回-hu-顾-zhou"><a href="#某渣的凭印象回-hu-顾-zhou" class="headerlink" title="某渣的凭印象回(hu)顾(zhou)"></a>某渣的凭印象回(hu)顾(zhou)</h2><p>Binder是Android提供的一种RPC机制, 它是C/S架构, 可以远程调用服务, 调用其他进程甚至其他App的服务. 它利用AIDL描述服务接口, 通过bind和unbind绑定和解绑具体服务, 其内部使用代理完成服务功能的调用. 调用方需要知道AIDL, 被调用方需要实现AIDL. Android系统的服务就是通过Binder机制来使用的.  </p>
 <h2 id="Binder的设计思想-工作原理"><a href="#Binder的设计思想-工作原理" class="headerlink" title="Binder的设计思想/工作原理"></a>Binder的设计思想/工作原理</h2><p>Binder是一种进程间通讯的机制, 不同于Handler的线程间通讯, 由于进程间没有共享区域, 所以Handler那种消息队列的机制在进程之间进行就会变得比较麻烦(进程A将消息拷贝到内核缓存空间, 另一进程B从内核缓存空间取消息), 特别是当进程间通讯涉及到接口调用等业务流程时. 出于安全性考虑, 一个进程的空间只对进程内部开放, 外部想要访问进程内的数据, 就只能曲线救国. Binder就是其中一种方式.  </p>
@@ -2692,11 +2862,11 @@ static int binder_open(struct inode *nodp, struct file *filp)
       <category term="android" scheme="https://hjhjw1991.github.io/categories/android/"/>
     
     
-      <category term="教程" scheme="https://hjhjw1991.github.io/tags/%E6%95%99%E7%A8%8B/"/>
+      <category term="guide" scheme="https://hjhjw1991.github.io/tags/guide/"/>
     
       <category term="android" scheme="https://hjhjw1991.github.io/tags/android/"/>
     
-      <category term="面试" scheme="https://hjhjw1991.github.io/tags/%E9%9D%A2%E8%AF%95/"/>
+      <category term="interview" scheme="https://hjhjw1991.github.io/tags/interview/"/>
     
   </entry>
   
@@ -2705,7 +2875,7 @@ static int binder_open(struct inode *nodp, struct file *filp)
     <link href="https://hjhjw1991.github.io/android/2017/01/06/%5BAndroid%E6%95%99%E7%A8%8B%5DHandler%E5%85%A8%E8%A7%A3/"/>
     <id>https://hjhjw1991.github.io/android/2017/01/06/[Android教程]Handler全解/</id>
     <published>2017-01-05T16:00:00.000Z</published>
-    <updated>2017-02-07T09:11:13.923Z</updated>
+    <updated>2017-05-04T10:32:16.091Z</updated>
     
     <content type="html"><![CDATA[<h2 id="某渣的凭印象回顾"><a href="#某渣的凭印象回顾" class="headerlink" title="某渣的凭印象回顾"></a>某渣的凭印象回顾</h2><p>Handler是线程间消息通讯的一种方式. 使用它需要Message, MessageQueue, Looper几个东西的配合. 每个线程都有一个Looper对象, 它里面有个方法loop()会去轮询消息队列MessageQueue中的Message, 对每个Message去调用它目标线程的Handler来处理这个消息. 轮询的操作会调用native方法使用epoll机制来获得Message. 最常见的使用场景就是子线程中做计算, 将结果返回给主线程, 此时子线程就需要使用主线程的Handler来发送消息到主线程的消息队列, 再由主线程的Handler来处理消息.  </p>
 <h2 id="为什么需要Handler"><a href="#为什么需要Handler" class="headerlink" title="为什么需要Handler"></a>为什么需要Handler</h2><p>参考: <a href="http://blog.csdn.net/innost/article/details/47317823" target="_blank" rel="external">&lt;&lt;深入理解Android 卷III&gt;&gt;第二章 深入理解Java Binder和MessageQueue</a>  </p>
@@ -2763,11 +2933,11 @@ static int binder_open(struct inode *nodp, struct file *filp)
       <category term="android" scheme="https://hjhjw1991.github.io/categories/android/"/>
     
     
-      <category term="教程" scheme="https://hjhjw1991.github.io/tags/%E6%95%99%E7%A8%8B/"/>
+      <category term="guide" scheme="https://hjhjw1991.github.io/tags/guide/"/>
     
       <category term="android" scheme="https://hjhjw1991.github.io/tags/android/"/>
     
-      <category term="面试" scheme="https://hjhjw1991.github.io/tags/%E9%9D%A2%E8%AF%95/"/>
+      <category term="interview" scheme="https://hjhjw1991.github.io/tags/interview/"/>
     
   </entry>
   
@@ -2776,7 +2946,7 @@ static int binder_open(struct inode *nodp, struct file *filp)
     <link href="https://hjhjw1991.github.io/android/2016/12/21/%5BAndroid%E6%95%99%E7%A8%8B%5Dndk&amp;jni/"/>
     <id>https://hjhjw1991.github.io/android/2016/12/21/[Android教程]ndk&amp;jni/</id>
     <published>2016-12-20T16:00:00.000Z</published>
-    <updated>2017-02-07T09:48:01.195Z</updated>
+    <updated>2017-05-04T10:31:59.115Z</updated>
     
     <content type="html"><![CDATA[<h2 id="NDK-amp-JNI"><a href="#NDK-amp-JNI" class="headerlink" title="NDK &amp; JNI"></a>NDK &amp; JNI</h2><p>NDK和JNI的关系是: Java通过JNI的方式调用由NDK编译生成的本地库.<br>JNI是独立于NDK的一个技术, NDK是帮助编译c/cpp文件的一个工具.  </p>
 <p>在JNI的c文件中如果用到了<code>#include &lt;utils/Log.h&gt;</code>  </p>
@@ -3062,11 +3232,11 @@ static int binder_open(struct inode *nodp, struct file *filp)
       <category term="android" scheme="https://hjhjw1991.github.io/categories/android/"/>
     
     
-      <category term="教程" scheme="https://hjhjw1991.github.io/tags/%E6%95%99%E7%A8%8B/"/>
+      <category term="guide" scheme="https://hjhjw1991.github.io/tags/guide/"/>
     
       <category term="android" scheme="https://hjhjw1991.github.io/tags/android/"/>
     
-      <category term="面试" scheme="https://hjhjw1991.github.io/tags/%E9%9D%A2%E8%AF%95/"/>
+      <category term="interview" scheme="https://hjhjw1991.github.io/tags/interview/"/>
     
   </entry>
   
@@ -3075,7 +3245,7 @@ static int binder_open(struct inode *nodp, struct file *filp)
     <link href="https://hjhjw1991.github.io/android/2016/08/01/build-android/"/>
     <id>https://hjhjw1991.github.io/android/2016/08/01/build-android/</id>
     <published>2016-07-31T16:00:00.000Z</published>
-    <updated>2017-02-07T09:05:29.367Z</updated>
+    <updated>2017-05-04T10:35:43.147Z</updated>
     
     <content type="html"><![CDATA[<p>自诩为Android开发者已经很久了然而却没有自己编译安装过Android源码，怎么也说不过去。今天就编译安装，记录下来过程中需要注意的情况。</p>
 <h2 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h2><ul>
@@ -3129,7 +3299,7 @@ of java.</code>。比如我编译4.4源码用的JDK 1.8，就提示java版本错
       <category term="android" scheme="https://hjhjw1991.github.io/categories/android/"/>
     
     
-      <category term="教程" scheme="https://hjhjw1991.github.io/tags/%E6%95%99%E7%A8%8B/"/>
+      <category term="guide" scheme="https://hjhjw1991.github.io/tags/guide/"/>
     
       <category term="android" scheme="https://hjhjw1991.github.io/tags/android/"/>
     
@@ -3140,7 +3310,7 @@ of java.</code>。比如我编译4.4源码用的JDK 1.8，就提示java版本错
     <link href="https://hjhjw1991.github.io/android/2016/08/01/Android%E6%BA%90%E7%A0%81%E7%BB%93%E6%9E%84/"/>
     <id>https://hjhjw1991.github.io/android/2016/08/01/Android源码结构/</id>
     <published>2016-07-31T16:00:00.000Z</published>
-    <updated>2017-02-07T09:18:02.211Z</updated>
+    <updated>2017-05-04T10:37:12.043Z</updated>
     
     <content type="html"><![CDATA[<p>相信各位对于Android系统架构图的三层或四层结构已经了然于胸，迫不及待想要膜拜一下源码，但是可能好不容易下载好源码打开一看就懵逼了：这目录是啥？这又是啥？其实Android源码目录名字已经很浅显地表明了目录的内容和功能，但对于初学者特别是背景知识不够宽宏的初学者而言还是有点摸不着头脑。本文简单介绍Android系统源码目录结构，好让读者对Android源码有一个整体的概念，这样当深入到某一模块研究的时候能够同时心中有全局。<br>首先要了解一个理念：Android源码以什么样的原则来分包和存放。从目录看，Android很自然地将源码分为Core、External和Package三种，其中Core是核心工程，在根目录的各个文件夹中，External是扩展工程，使用其他开源项目扩展的功能，在external文件夹中，Package是提供应用程序和服务的，在package中，平时用到的各种系统应用就是在这里面写就的。<br>以下按层次结构依次标注目录功能（源码版本：android_4.4.1-r1）：  </p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line">.</div><div class="line">├── abi                application binary interface，应用程序二进制接口</div><div class="line">├── art                art虚拟机</div><div class="line">├── bionic             [Build] bionic C运行时支持：libc、libm、libdl、动态linker</div><div class="line">├── bootable           启动引导相关代码</div><div class="line">├── build              [Build]存放系统编译规则及generic等基础开发配置</div><div class="line">├── cts                Android兼容性测试套件标准</div><div class="line">├── dalvik             dalvik虚拟机</div><div class="line">├── developers         开发者相关</div><div class="line">├── development        应用程序开发相关</div><div class="line">├── device             设备相关代码（厂商定制代码就放在这里）</div><div class="line">├── docs               开源相关文档</div><div class="line">├── external           Android使用的开源模块</div><div class="line">├── frameworks         核心框架，包含Java source和C++ source</div><div class="line">├── hardware           主要是硬件适配层HAL</div><div class="line">├── libcore            核心库相关</div><div class="line">├── libnativehelper    动态库，是实现JNI的基础</div><div class="line">├── Makefile           [Build]make的入口点，其内容只有一句话即include build/core/main.mk</div><div class="line">├── ndk                ndk相关代码</div><div class="line">├── out                编译输出文件夹，默认编译完成后的结果输出到此目录</div><div class="line">├── packages           应用程序包</div><div class="line">├── pdk                Plug Development Kit，本地开发套件</div><div class="line">├── prebuilts          预编译的资源（例如Linux-Kernel，分为x86和arm架构）</div><div class="line">├── sdk                sdk及模拟器相关代码</div><div class="line">├── system             文件系统和应用组件，c/c++代码</div><div class="line">├── tools              工具文件夹，如gradle等</div></pre></td></tr></table></figure>
@@ -3168,7 +3338,7 @@ of java.</code>。比如我编译4.4源码用的JDK 1.8，就提示java版本错
       <category term="android" scheme="https://hjhjw1991.github.io/categories/android/"/>
     
     
-      <category term="教程" scheme="https://hjhjw1991.github.io/tags/%E6%95%99%E7%A8%8B/"/>
+      <category term="guide" scheme="https://hjhjw1991.github.io/tags/guide/"/>
     
       <category term="android" scheme="https://hjhjw1991.github.io/tags/android/"/>
     
@@ -3179,7 +3349,7 @@ of java.</code>。比如我编译4.4源码用的JDK 1.8，就提示java版本错
     <link href="https://hjhjw1991.github.io/android/2016/08/01/build-android-sdk/"/>
     <id>https://hjhjw1991.github.io/android/2016/08/01/build-android-sdk/</id>
     <published>2016-07-31T16:00:00.000Z</published>
-    <updated>2017-02-07T09:04:30.339Z</updated>
+    <updated>2017-05-04T10:35:34.011Z</updated>
     
     <content type="html"><![CDATA[<h2 id="Build-Android-SDK"><a href="#Build-Android-SDK" class="headerlink" title="Build Android SDK"></a>Build Android SDK</h2><p>前面已经编译好了系统源码，解决了一些问题，本以为编译SDK会顺顺利利一气呵成，我还是太天真了。<br>上来就遇到<code>bluetooth-health</code>模块找不到。google之后知道这是官方预计删除但还没有删除bluetooth-health的Android.mk所致。解决方式是在<code>make sdk</code>之前先执行<code>lunch sdk-eng</code>。<br>然后遇到<code>tools/base</code>目录找不到，退出，这时候都编译很久了，这不坑爹吗！解决方法是找到<code>sdk/eclipse/scripts/create_all_symlinks.sh</code>把里面所有有关<code>tools/base</code>的命令都注释掉。哦，这个文件在错误提示中有。顺便看了下这个<code>tools/base</code>是干嘛用的，好像跟Gradle构建有关，反正是Eclipse的东西吧，注释就注释了吧，顺便把<code>tools/swt</code>也注释了。<br>再编译，漫长等待之后又遇到问题，<code>base:testutils</code>资源读不到。看了一下好像是测试相关的东西，好像是<code>easymock</code>依赖的东西，想了想果断也注释了。<br>再编译又遇到<code>sdk/build/tools.atree</code>提示<code>couldn&#39;t locate source file</code>，我连<code>Package SDK</code>都看到了，你给我出个这个错误，我都不知道该不该修，感觉SDK已经打包好了……想想还是修吧。看了下路径下确实没有错误中提到的Template文件夹，更别说文件了。摸进<code>tools.atree</code>把载入的地方看了下，看不出来有什么用，也注释掉了。<br>再编译，总算无错误完成。还不知道用起来有没有什么坑。  </p>
 ]]></content>
@@ -3193,7 +3363,7 @@ of java.</code>。比如我编译4.4源码用的JDK 1.8，就提示java版本错
       <category term="android" scheme="https://hjhjw1991.github.io/categories/android/"/>
     
     
-      <category term="教程" scheme="https://hjhjw1991.github.io/tags/%E6%95%99%E7%A8%8B/"/>
+      <category term="guide" scheme="https://hjhjw1991.github.io/tags/guide/"/>
     
       <category term="android" scheme="https://hjhjw1991.github.io/tags/android/"/>
     
@@ -3204,7 +3374,7 @@ of java.</code>。比如我编译4.4源码用的JDK 1.8，就提示java版本错
     <link href="https://hjhjw1991.github.io/android/2016/04/01/%5BAndroid%E6%95%99%E7%A8%8B%5DAIDL%E5%85%A5%E9%97%A8/"/>
     <id>https://hjhjw1991.github.io/android/2016/04/01/[Android教程]AIDL入门/</id>
     <published>2016-03-31T16:00:00.000Z</published>
-    <updated>2017-02-07T09:01:57.299Z</updated>
+    <updated>2017-05-04T10:34:56.491Z</updated>
     
     <content type="html"><![CDATA[<blockquote>
 <p>AIDL,android interface definition language  </p>
@@ -3260,11 +3430,11 @@ of java.</code>。比如我编译4.4源码用的JDK 1.8，就提示java版本错
       <category term="android" scheme="https://hjhjw1991.github.io/categories/android/"/>
     
     
-      <category term="教程" scheme="https://hjhjw1991.github.io/tags/%E6%95%99%E7%A8%8B/"/>
+      <category term="guide" scheme="https://hjhjw1991.github.io/tags/guide/"/>
     
       <category term="android" scheme="https://hjhjw1991.github.io/tags/android/"/>
     
-      <category term="面试" scheme="https://hjhjw1991.github.io/tags/%E9%9D%A2%E8%AF%95/"/>
+      <category term="interview" scheme="https://hjhjw1991.github.io/tags/interview/"/>
     
   </entry>
   
@@ -3356,90 +3526,6 @@ of java.</code>。比如我编译4.4源码用的JDK 1.8，就提示java版本错
     
       <category term="leetcode" scheme="https://hjhjw1991.github.io/categories/leetcode/"/>
     
-    
-  </entry>
-  
-  <entry>
-    <title>未能同步苹果，因为这台电脑不再被授权使用在此苹果上购买的项目</title>
-    <link href="https://hjhjw1991.github.io/tips/2016/03/08/%E6%9C%AA%E8%83%BD%E5%90%8C%E6%AD%A5%E8%8B%B9%E6%9E%9C%EF%BC%8C%E5%9B%A0%E4%B8%BA%E8%BF%99%E5%8F%B0%E7%94%B5%E8%84%91%E4%B8%8D%E5%86%8D%E8%A2%AB%E6%8E%88%E6%9D%83%E4%BD%BF%E7%94%A8%E5%9C%A8%E6%AD%A4%E8%8B%B9%E6%9E%9C%E4%B8%8A%E8%B4%AD%E4%B9%B0%E7%9A%84%E9%A1%B9%E7%9B%AE/"/>
-    <id>https://hjhjw1991.github.io/tips/2016/03/08/未能同步苹果，因为这台电脑不再被授权使用在此苹果上购买的项目/</id>
-    <published>2016-03-07T16:00:00.000Z</published>
-    <updated>2016-08-30T08:03:26.717Z</updated>
-    
-    <content type="html"><![CDATA[<h2 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h2><p>以前用pp助手的时候遇到过这个问题，它破解下载app的方法是用某个别的AppleID购买和下载应用，这样子只能通过它这个软件来更新，无法通过官方App Store更新，而且很大几率出现安装失败、白图标等问题。  </p>
-<p>最近手机迁移从旧手机的备份恢复到新手机（别人用过）上，结果又出现部分重叠的app购买ID没有恢复，AppleID不一致的情况，导致无法同步。  </p>
-<p>解决方法是卸载这些应用，用一致的AppleID重新购买和下载，但是一直纠结于卸载应用会删除所有数据，搜索是否有保存数据更换ID的方法未果。  </p>
-<p>下载itools查看手机应用可以看到每个应用的购买ID，把不一致的卸载再下载重装即可。  </p>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="http://zhidao.baidu.com/link?url=hapvL1G--ej8gwHRI_e6Zh18d7urfv83UzZapeWqT34VEEkQN8vREF6cVPHjf2jBGG4NPTmBp5O9fxJMSrYBRSjzU-qjj8-SNE641ZxAheC" target="_blank" rel="external">未能同步苹果，因为这台电脑不再被授权使用在此苹果上购买的项目</a>  </p>
-]]></content>
-    
-    <summary type="html">
-    
-      itunes同步的时候提示未能同步，点击商店-&gt;授权也没用，原因是手机上存在不同的AppleID所购买内容，需要都授权才行
-    
-    </summary>
-    
-      <category term="tips" scheme="https://hjhjw1991.github.io/categories/tips/"/>
-    
-    
-      <category term="ios" scheme="https://hjhjw1991.github.io/tags/ios/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Git中使用cherry-pick跨分支应用commit</title>
-    <link href="https://hjhjw1991.github.io/blog/2016/03/08/Git%E4%B8%AD%E4%BD%BF%E7%94%A8cherry-pick%E8%B7%A8%E5%88%86%E6%94%AF%E5%BA%94%E7%94%A8commit/"/>
-    <id>https://hjhjw1991.github.io/blog/2016/03/08/Git中使用cherry-pick跨分支应用commit/</id>
-    <published>2016-03-07T16:00:00.000Z</published>
-    <updated>2016-08-30T08:03:26.717Z</updated>
-    
-    <content type="html"><![CDATA[<blockquote>
-<p>git-cherry-pick - Apply the changes introduced by some existing commits    –from git-scm.com</p>
-</blockquote>
-<p>我们知道在git中对分支操作的命令有<code>merge</code>，<code>rebase</code>和<code>cherry-pick</code>，<code>merge</code>是两条分支直接合并，<code>rebase</code>是追溯到共同祖先之后逐个应用当前分支的commit到所选择的基分支上，可以通过<code>-i</code>选项进行对当前分支的交互式变基，用以修改提交历史，git中建议以<code>rebase</code>方式代替普通的<code>merge</code>。  </p>
-<p><code>cherry-pick</code>在英语中是精挑细选的意思，功能也正如名字一样，是<strong>选择一些commit，将其应用到当前分支上</strong>。可以想见，其应用的主要场景是将已经提交的commit进行搬动</p>
-<h2 id="场景1-引入某个commit新加入的功能但不改变分支历史"><a href="#场景1-引入某个commit新加入的功能但不改变分支历史" class="headerlink" title="场景1 引入某个commit新加入的功能但不改变分支历史"></a>场景1 引入某个commit新加入的功能但不改变分支历史</h2><p>直接使用<code>cherry-pick</code>即可，这样不会更改被引入分支的历史<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">git cherry-pick &lt;commit hash&gt;</div></pre></td></tr></table></figure></p>
-<p>默认情况下会创建一个新的提交，类似于<code>merge</code>。可通过选项关闭。  </p>
-<h2 id="场景2-保持history清晰的情况下将某些提交完全移动到别的分支上"><a href="#场景2-保持history清晰的情况下将某些提交完全移动到别的分支上" class="headerlink" title="场景2 保持history清晰的情况下将某些提交完全移动到别的分支上"></a>场景2 保持history清晰的情况下将某些提交完全移动到别的分支上</h2><p>例如，我想把以下分支  </p>
-<p><table width="200" border="1" cellspacing="1" cellpadding="1"></table></p>
-<p><tbody><tr><td></td></tr></tbody></p>
-<p><pre style=""><strong><br>A-B  master<br>   \<br>    C-D-E-F-G topic<br></strong></pre><br>中的D，F commit移动到master分支，而保持其他commit不变，就像这样  </p>
-<p><table width="200" border="1" cellspacing="1" cellpadding="1"><tbody></tbody></table></p>
-<p><tr><td></td></tr></p>
-<p><pre style=""><strong><br>A-B-D-F  master<br>       \<br>        C-E-G topic</strong></pre></p>
-<p><br>那么，思路是将D，F 用<code>cherry-pick</code>应用到<code>master</code>分支上，然后将<code>topic</code>分支对<code>master</code>分支变基。  </p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">$ git checkout master  </div><div class="line">$ git cherry-pick D  </div><div class="line">$ git cherry-pick F  </div><div class="line">$ git checkout topic  </div><div class="line">$ git rebase master</div></pre></td></tr></table></figure>
-<h2 id="EXAMPLES-from-official-guide"><a href="#EXAMPLES-from-official-guide" class="headerlink" title="EXAMPLES from official guide"></a>EXAMPLES from official guide</h2><p><code>git cherry-pick master</code><br>Apply the change introduced by the commit at the tip of the master branch and create a new commit with this change.  </p>
-<p><code>git cherry-pick ..master</code><br><code>git cherry-pick ^HEAD master</code><br>Apply the changes introduced by all commits that are ancestors of master but not of HEAD to produce new commits.  </p>
-<p><code>git cherry-pick maint next ^master</code><br><code>git cherry-pick maint master..next</code><br>Apply the changes introduced by all commits that are ancestors of <code>maint</code> or next, but not <code>master</code> or any of its ancestors. Note that the latter does not mean <code>maint</code> and everything between <code>master</code> and <code>next</code>; specifically, <code>maint</code> will not be used if it is included in <code>master</code>.  </p>
-<p><code>git cherry-pick master~4 master~2</code><br>Apply the changes introduced by the fifth and third last commits pointed to by master and create 2 new commits with these changes.  </p>
-<p><code>git cherry-pick -n master~1 next</code><br>Apply to the working tree and the index the changes introduced by the second last commit pointed to by master and by the last commit pointed to by next, but do not create any commit with these changes.  </p>
-<p><code>git cherry-pick --ff ..next</code><br>If history is linear and HEAD is an ancestor of next, update the working tree and advance the HEAD pointer to match next. Otherwise, apply the changes introduced by those commits that are in next but not HEAD to the current branch, creating a new commit for each new change.  </p>
-<p><code>git rev-list --reverse master -- README | git cherry-pick -n --stdin</code><br>Apply the changes introduced by all commits on the master branch that touched README to the working tree and index, so the result can be inspected and made into a single new commit if suitable.  </p>
-<p>The following sequence attempts to backport a patch, bails out because the code the patch applies to has changed too much, and then tries again, this time exercising more care about matching up context lines.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">$ git cherry-pick topic^             (1)</div><div class="line">$ git diff                           (2)</div><div class="line">$ git reset --merge ORIG_HEAD        (3)</div><div class="line">$ git cherry-pick -Xpatience topic^  (4)</div></pre></td></tr></table></figure></p>
-<ul>
-<li><p>apply the change that would be shown by <code>git show topic^</code>. In this example, the patch does not apply cleanly, so information about the conflict is written to the index and working tree and no new commit results.</p>
-</li>
-<li><p>summarize changes to be reconciled</p>
-</li>
-<li><p>cancel the cherry-pick. In other words, return to the pre-cherry-pick state, preserving any local modifications you had in the working tree.</p>
-</li>
-<li><p>try to apply the change introduced by <code>topic^</code> again, spending extra time to avoid mistakes based on incorrectly matching context lines.</p>
-</li>
-</ul>
-<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><p><a href="http://blog.csdn.net/duola_rain/article/details/43408733" target="_blank" rel="external">(转)Git cherry-pick 和 rebase 的混合用法</a><br><a href="http://git-scm.com/docs/git-cherry-pick/" target="_blank" rel="external">官方文档 - git-cherry-pick</a></p>
-]]></content>
-    
-    <summary type="html">
-    
-      假设我有个稳定版本的分支，叫v2.0，另外还有个开发版本的分支v3.0，我们想增加v3.0中某几个commit的功能到v2.0中，这时候cherry-pick就派上用场了
-    
-    </summary>
-    
-      <category term="blog" scheme="https://hjhjw1991.github.io/categories/blog/"/>
-    
-    
-      <category term="git" scheme="https://hjhjw1991.github.io/tags/git/"/>
     
   </entry>
   
