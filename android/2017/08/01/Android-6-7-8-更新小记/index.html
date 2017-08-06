@@ -1,0 +1,745 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Android 6-7-8 更新小记 | hjhjw1991&#39;s blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="hjhjw1991">
+    
+
+    
+    <meta name="description" content="如今Android 已经出到了O (Android 8.0, API Leve 26), 多个版本累加起来变化颇多, 记...">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android 6-7-8 更新小记">
+<meta property="og:url" content="https://hjhjw1991.github.io/android/2017/08/01/Android-6-7-8-更新小记/index.html">
+<meta property="og:site_name" content="hjhjw1991's blog">
+<meta property="og:description" content="如今Android 已经出到了O (Android 8.0, API Leve 26), 多个版本累加起来变化颇多, 记...">
+<meta property="og:updated_time" content="2017-08-01T08:57:37.162Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android 6-7-8 更新小记">
+<meta name="twitter:description" content="如今Android 已经出到了O (Android 8.0, API Leve 26), 多个版本累加起来变化颇多, 记...">
+
+    
+    <link rel="alternative" href="/atom.xml" title="hjhjw1991&#39;s blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/author.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/author.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="hjhjw1991&#39;s blog" title="hjhjw1991&#39;s blog"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="hjhjw1991&#39;s blog">hjhjw1991&#39;s blog</a></h1>
+				<h2 class="blog-motto">Coder, Learn</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="http://zhannei.baidu.com/cse/search" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value= 8741923514077570040 ><input type="text" name="q" size="30" placeholder="搜索"><br>
+						</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/android/2017/08/01/Android-6-7-8-更新小记/" title="Android 6-7-8 更新小记" itemprop="url">Android 6-7-8 更新小记</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="hjhjw1991" target="_blank" itemprop="author">hjhjw1991</a>
+		
+  <p class="article-time">
+    <time datetime="2017-07-31T16:00:00.000Z" itemprop="datePublished"> 发表于 2017-08-01</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Android-6-0-API-Level-23"><span class="toc-number">1.</span> <span class="toc-text">Android 6.0 API Level 23</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#新增"><span class="toc-number">1.1.</span> <span class="toc-text">新增</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#改变"><span class="toc-number">1.2.</span> <span class="toc-text">改变</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#删除"><span class="toc-number">1.3.</span> <span class="toc-text">删除</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Android-7-0-API-Level-24-25"><span class="toc-number">2.</span> <span class="toc-text">Android 7.0 API Level 24 25</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#新增-1"><span class="toc-number">2.1.</span> <span class="toc-text">新增</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#改变-1"><span class="toc-number">2.2.</span> <span class="toc-text">改变</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#删除-1"><span class="toc-number">2.3.</span> <span class="toc-text">删除</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#API-23-gt-API-24"><span class="toc-number">2.4.</span> <span class="toc-text">API 23 -> API 24</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Android-8-0"><span class="toc-number">3.</span> <span class="toc-text">Android 8.0</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#面向开发者的新功能"><span class="toc-number">3.1.</span> <span class="toc-text">面向开发者的新功能</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#通知"><span class="toc-number">3.1.1.</span> <span class="toc-text">通知</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#自动填充框架"><span class="toc-number">3.1.2.</span> <span class="toc-text">自动填充框架</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#画中画-PictureInPicture-PIP-模式"><span class="toc-number">3.1.3.</span> <span class="toc-text">画中画(PictureInPicture,PIP)模式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#处理字体"><span class="toc-number">3.1.4.</span> <span class="toc-text">处理字体</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#接听权限ANSWER-PHONE-CALLS"><span class="toc-number">3.1.5.</span> <span class="toc-text">接听权限ANSWER_PHONE_CALLS</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#内容提供程序分页"><span class="toc-number">3.1.6.</span> <span class="toc-text">内容提供程序分页</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#无障碍功能"><span class="toc-number">3.1.7.</span> <span class="toc-text">无障碍功能</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#其他功能"><span class="toc-number">3.1.8.</span> <span class="toc-text">其他功能</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#改变-2"><span class="toc-number">3.2.</span> <span class="toc-text">改变</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#针对Android-O的应用"><span class="toc-number">3.3.</span> <span class="toc-text">针对Android O的应用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#功能和API"><span class="toc-number">3.4.</span> <span class="toc-text">功能和API</span></a></li></ol></li></ol>
+		
+		</div>
+		
+		<p>如今Android 已经出到了O (Android 8.0, API Leve 26), 多个版本累加起来变化颇多, 记录一下.<br>从新增/改变/删除角度记录, 主要搬运官网.  </p>
+<h2 id="Android-6-0-API-Level-23"><a href="#Android-6-0-API-Level-23" class="headerlink" title="Android 6.0 API Level 23"></a>Android 6.0 API Level 23</h2><p>以前写过一篇<a href="http://hjhjw1991.github.io/android/2015/08/25/Android-6.0-%E5%B0%8F%E8%AE%B0/">Android 6.0小记</a>, 这回新瓶装旧酒, 换种组织方式再写一下.  </p>
+<h3 id="新增"><a href="#新增" class="headerlink" title="新增"></a>新增</h3><ul>
+<li>运行时请求应用权限. 这是一种新的权限请求方式, 它允许应用通过<code>requestPermissions()</code>来实时请求权限. 需要注意, 在Android 6.0的操作系统环境下, 应用的所有权限都可以随时被取消, 所以即便你在App中注册了权限, 你运行时也应该检查一下是不是已经获得了权限. 一种典型的情况是, 你注册了权限, 也成功运行了App并获取了权限, 但用户出于某些缘故把你申请的权限取消了, 此时哪怕你仍然在运行, 也应该在执行需要权限的操作前检查自身权限. 检查权限可调用<code>checkSelfPermission()</code>方法.  </li>
+<li>应用待机模式. 系统通过一段时间是否触摸屏幕判定是否进入待机模式, 并根据是否连接电源采取不同的处理策略, 以延长待机时间. 主要是限制被判定为待机模式的应用的网络访问, 同步, 闹钟等功能. 应用可申请加入白名单, 以保留网络访问, 但其他方面仍受限制.  </li>
+<li>低耗电模式. 系统在未插入电源且屏幕关闭后静止一定时间, 会进入低耗电模式. 该模式下会推迟Activity活动, 网络访问, 同步, 闹铃, 并定期退出低耗电模式统一完成这些操作.  </li>
+<li><p>文本选择时新增浮动工具栏. 交互方式与在单个视图中启用上下文操作模式类似.  </p>
+</li>
+<li><p>指纹验证<code>FingerpringManager</code>类及权限.  </p>
+</li>
+<li>确认凭据, 通过上次解锁与本次解锁的时间间隔来验证身份, 结合你应用自身的公钥或私钥, 完成身份验证. 通过<code>createConfirmDeviceCredentialIntent()</code>发起新验证, 通过<code>setUserAuthenticationValidityDurationSeconds()</code>设置同一密钥的有效期.  </li>
+<li>应用链接(App Linking). 可令应用与某个特定Web域关联, 系统处理特定Web域的时候就会默认使用该应用, 而无需用户选择.  </li>
+<li>自动备份应用. 目标平台在23以上的应用, 系统会通过Google账户为其自动执行完整的数据备份或恢复.  </li>
+<li>直接共享. 提供<code>ChooserTargetService</code>类以供扩展, 可以直接发起一次共享调起其他应用的特定<code>Activity</code>. 可以指定某个<code>Activity</code>为可供直接共享的公开<code>Activity</code>. 有点类似于<code>ContentProvider</code>.  </li>
+<li>新的语音交互API.  </li>
+<li>助手程序. 用户在手动开启助手功能后, 可以通过长按”首页”按钮在任何应用内召唤助手.  </li>
+<li>可采用的存储设备(adoptable storage device).  </li>
+<li>在Nexus 6和Nexus 9上添加了对Hotspot 2.0的支持.  </li>
+<li>新增4K显示模式. 新增<code>Display.Mode</code>API.  </li>
+<li>ColorStateList现在也可以使用主题属性.  </li>
+</ul>
+<h3 id="改变"><a href="#改变" class="headerlink" title="改变"></a>改变</h3><ul>
+<li>SSL库从OpenSSL迁移到BoringSSL. 主要影响使用加密库的项目, 如果使用NDK编译, 不要链接到非NDK API组成部分的加密库, 例如<code>libcrypto.so</code>, <code>libssl.so</code>, 因为并非公共API, 所以在不同版本的系统或设备上可能会引起故障或行为变化, 且存在安全漏洞. 如果要用, 应当静态链接.  </li>
+<li>修改直接获取硬件标识符的API. 对于使用WLAN API和Bluetooth API的应用, 从前可通过<code>WifiInfo.getMacAddress()</code>和<code>BluetoothAdapter.getAddress()</code>方法拿到硬件Mac值, 现在这两个接口返回常量值<code>02:00:00:00:00:00</code>. 想要获取Mac值, 需要<code>ACCESS_FINE_LOCATION</code>或<code>ACCESS_COARSE_LOCATION</code>权限.  </li>
+<li><code>Notification.setLatestEventInfo()</code>移除, 改为<code>Notification.Builder</code>构建通知. <code>adb shell dumpsys notification --noredact</code>打印<code>notification</code>对象中的文本.  </li>
+<li>不再通过<code>AudioManager</code>直接修改音量, 弃用<code>setStreamSolo()</code>, <code>setStreamMute()</code>, 应当分别改为调用<code>requestAudioFocus()</code>, <code>adjustStreamVolume</code>(传入方向值<code>ADJUST_MUTE ADJUST_UNMUTE</code>).  </li>
+<li>Android密钥库不再支持DSA, 仍支持ECDSA.  </li>
+<li>WLAN和网络连接变更. 现在应用只能修改自己创建的<code>WifiConfiguration</code>对象状态.  </li>
+<li>相机服务变更. 相机服务中共享资源的访问模式由”先到先得”改为”高优先级进程优先访问”. 低优先级进程可能会被驱逐, 导致回调断开相机服务的函数. 活动的相机客户端仅属于当前账户, 切换账户会导致客户端断开.  </li>
+<li>运行时. 正确实现了<code>newInstance()</code>访问规则检查. 更新了动态链接程序的行为, 可识别<code>soname</code>与其路径之间的差异, 并能按<code>soname</code>搜索. 正确实现<code>dlopen(3) RTLD_LOCAL</code>标记. 在目标SDK高于23时, 直接加载包含文本重定位信息的共享库会被拒绝, 可以通过检查<code>dlopen(3)</code>失败日志并通过<code>dlerror(3)</code>获得调用返回的问题描述文本来确定库加载是否成功.  </li>
+<li>更严格的APK验证. 如果清单中声明的文件在APK中不存在, 该APK会被视为已损坏.  </li>
+<li>USB连接. 默认情况下USB连接设置为仅充电, 需要手动显式授予权限给数据访问等其他交互方式.  </li>
+<li>改善对蓝牙触控笔的支持.  </li>
+<li>改进蓝牙低功耗扫描.  </li>
+<li>增强音频功能. 添加了对MIDI的支持.  </li>
+<li>增强视频功能. 新增<code>MediaSync</code>类帮助应用同步渲染音频流和视频流.  </li>
+<li>增强相机功能. 新提供Flashlight API和Reprocessing API系列接口.  </li>
+</ul>
+<h3 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h3><ul>
+<li>不再支持Apache HTTP客户端. 应当改用<code>HttpURLConnection</code>.  </li>
+<li>移除对全局书签的支持. 移除<code>android.provider.Browser.getAllBookmarks()</code> <code>android.provider.Browser.saveBookmark()</code>方法和<code>READ_HISTORY_BOOKMARKS</code> <code>WRITE_HISTORY_BOOKMARKS</code>权限.  </li>
+</ul>
+<h2 id="Android-7-0-API-Level-24-25"><a href="#Android-7-0-API-Level-24-25" class="headerlink" title="Android 7.0 API Level 24 25"></a>Android 7.0 API Level 24 25</h2><h3 id="新增-1"><a href="#新增-1" class="headerlink" title="新增"></a>新增</h3><h3 id="改变-1"><a href="#改变-1" class="headerlink" title="改变"></a>改变</h3><ul>
+<li>低耗电模式在手机不处于静止状态时也适用.  </li>
+<li>面向Android 7.0及以上版本的应用, 私有目录被限制访问(0700).<br>这将导致几个副作用: <ol>
+<li>自主扩大访问权限的行为受到影响, 例如使用<code>MODE_WORLD_READABLE</code>或<code>MODE_WORLD_WRITEABLE</code>将引发<code>SecurityException</code>(但使用原生API或File API修改权限仍然不被限制, 尽管官方强烈反对);  </li>
+<li>尝试传递<code>file://URI</code>会触发<code>FileUriExposedException</code>, 推荐使用<code>FileProvider</code>分享私有文件内容;  </li>
+<li><code>DownloadManager</code>不再按文件名分享私人存储的文件. 面向Android 7.0或更高版本的应用在尝试访问<code>COLUMN_LOCAL_FILENAME</code>时会触发<code>SecurityException</code>, 除非<code>DownloadManager</code>设置为将文件存放在公共位置, 但官方强烈反对这种使用方法. 首选访问方式是使用<code>ContentResolver.openFileDescriptor()</code>.  </li>
+</ol>
+</li>
+<li>面向Android 7.0的应用, <code>StrictMode</code> API禁止在应用外公开<code>file://URI</code>, 如果包含文件URI的intent发送超出你应用的范围, 则引起<code>FileUriExposedException</code>异常, 应当使用<code>content://URI</code>并授予URI临时访问权限, 以在应用间共享文件. 例如使用<code>FileProvider</code>进行授权.  </li>
+<li>无障碍改进. 支持用户设置显示尺寸, 设备密度会因此改变, 面向API 23及以下的应用会被终止后台进程, 面向Android 7.0的应用所有进程都会收到有关配置变更的通知; 设置向导中增加视觉设置.  </li>
+<li>NDK应用链接至平台库. 从Android 7.0开始, 系统阻止应用动态链接到非公开NDK库. 需要注意您的应用中的第三方静态库可能会这么做, 因此应当检查确保应用不会在Android 7.0崩溃. 如果要使用原声代码, 只能使用公开的<a href="https://developer.android.com/ndk/guides/stable_apis.html" target="_blank" rel="external">NDK API</a>. 要使用私有库, 就需要将其添加到应用中. Android 7.0 SDK带有工具<code>readelf</code>, 使用以下命令可以生成给定的<code>.so</code>文件的所有动态链接的共享库列表: <code>aarch64-linux-android-readelf -dW libMyLibrary.so</code>.  </li>
+</ul>
+<h3 id="删除-1"><a href="#删除-1" class="headerlink" title="删除"></a>删除</h3><ul>
+<li>删除三个隐式广播: <code>CONNECTIVITY_ACTION</code> <code>ACTION_NEW_PICTURE</code> <code>ACTION_NEW_VIDEO</code>. 移动设备会经历频繁的连接变更, 其他应用例如相机可能会发送隐式广播<code>ACTION_NEW_PICTURE</code>和<code>ACTION_NEW_VIDEO</code>, 这三种广播的发送都非常频繁, 导致所有注册了的接收者都会被唤醒. 删除后, 面向Android 7.0开发的应用不再收到<code>CONNECTIVITY_ACTION</code>广播, 即使它声明接收, 除非它在前台运行并使用<code>BroadcastReceiver</code>请求接收通知. 所有应用都将无法发送或接收<code>ACTION_NEW_PICTURE</code> <code>ACTION_NEW_VIDEO</code>广播.  </li>
+</ul>
+<h3 id="API-23-gt-API-24"><a href="#API-23-gt-API-24" class="headerlink" title="API 23 -&gt; API 24"></a>API 23 -&gt; API 24</h3><p>见<a href="https://developer.android.com/sdk/api_diff/24/changes.html" target="_blank" rel="external">网页端</a>  </p>
+<h2 id="Android-8-0"><a href="#Android-8-0" class="headerlink" title="Android 8.0"></a><a href="https://developer.android.com/preview/behavior-changes.html?hl=zh-cn" target="_blank" rel="external">Android 8.0</a></h2><h3 id="面向开发者的新功能"><a href="#面向开发者的新功能" class="headerlink" title="面向开发者的新功能"></a>面向开发者的新功能</h3><p>本文摘录一部分, 完整版见<a href="https://developer.android.com/preview/api-overview.html?hl=zh-cn" target="_blank" rel="external">官网</a>.  </p>
+<h4 id="通知"><a href="#通知" class="headerlink" title="通知"></a>通知</h4><p>重新设计通知, 使管理通知行为和设置更加轻松和统一.</p>
+<ul>
+<li>通知渠道. 允许为要显示的每种通知类型创建用户可自定义的渠道. 用户界面将通知渠道称为通知类别.  </li>
+<li>休眠. 用户可以将通知置于休眠状态, 稍后重新显示. 应用可以移除或更新已休眠的通知, 但更新不会使它重新显示.  </li>
+<li>通知超时. 使用<code>Notification.Builder.setTimeout()</code>可以设置超时, 在指定的持续时间之后取消通知, 也可以提前取消通知.  </li>
+<li>通知清除. 系统现在可以区分用户清除和应用清除. 在<code>NotificationListenerService.onNotificationRemoved()</code>方法中可以得知.  </li>
+<li>背景颜色. 为通知设置背景颜色.  </li>
+<li>消息样式. <code>MessagingStyle</code>可以在通知的折叠形式中显示更多内容.  </li>
+</ul>
+<h4 id="自动填充框架"><a href="#自动填充框架" class="headerlink" title="自动填充框架"></a>自动填充框架</h4><p>Android O 引入自动填充框架, 新老应用都可以用此简化登陆和表单填写等工作.  </p>
+<h4 id="画中画-PictureInPicture-PIP-模式"><a href="#画中画-PictureInPicture-PIP-模式" class="headerlink" title="画中画(PictureInPicture,PIP)模式"></a>画中画(PictureInPicture,PIP)模式</h4><p>PIP模式是一种特殊的多窗口模式, 在Android TV中最早出现, 现在可应用于搭载 Android O的其他设备. Activity处于PIP模式时, 它会处于暂停状态, 但仍继续显示内容. 因此, 假如是一个支持PIP模式的视频播放Activity, 应该在<code>onPause</code>中继续播放, 而在<code>onStop</code>中才暂停播放, 并在<code>onStart</code>中继续播放. 其需要注意的除了跟多窗口模式一样以外, 但区别于多窗口模式, 只需要在清单中将<code>android:supportsPictureInPicture</code>设置为<code>true</code>, 无需将<code>android:resizeableActivity</code>设置为<code>true</code>, 后者仅在需要支持其他多窗口模式时才需要.<br>为了完成PIP模式, Android O引入了一个新对象<code>android.app.PictureInPictureArgs</code>, 可以将该对象传递给PIP方法, 用以指定某个Activity在其处于PIP模式时的行为. <a href="https://developer.android.com/training/tv/playback/picture-in-picture.html?hl=zh-cn" target="_blank" rel="external">点击查看如何添加画中画</a>.  </p>
+<h4 id="处理字体"><a href="#处理字体" class="headerlink" title="处理字体"></a>处理字体</h4><p>XML中允许使用字体作为资源. 字体可以不再以资产的形式存放, 并可通过R文件访问. Android O提供机制用于检索与系统字体有关的信息并提供文件描述符, 详情参见<a href="https://developer.android.com/preview/features/working-with-fonts.html?hl=zh-cn" target="_blank" rel="external">处理字体</a>.  </p>
+<h4 id="接听权限ANSWER-PHONE-CALLS"><a href="#接听权限ANSWER-PHONE-CALLS" class="headerlink" title="接听权限ANSWER_PHONE_CALLS"></a>接听权限ANSWER_PHONE_CALLS</h4><p>Android O引入权限<code>android.permission.ANSWER_PHONE_CALLS</code>, 应用可按照设定的方式接听拨入的电话.  </p>
+<h4 id="内容提供程序分页"><a href="#内容提供程序分页" class="headerlink" title="内容提供程序分页"></a>内容提供程序分页</h4><p>更新了内容提供程序(ContentProvider), 以支持大型数据集, 每次加载一页. 客户端和提供程序都必须实现分页.  </p>
+<h4 id="无障碍功能"><a href="#无障碍功能" class="headerlink" title="无障碍功能"></a>无障碍功能</h4><p>Android O提供以下功能, 支持应用创建自己的无障碍服务.  </p>
+<ul>
+<li>语言检测. 使用<code>TextClassificaationManager.detectLanguages()</code>检测”TTS”工具在某个文本范围内识别的语言.  </li>
+<li>无障碍功能按钮. 可以通过设置标志请求系统在导航区域显示你的无障碍服务的功能按钮, 并调用你自己注册的按钮回调.  </li>
+<li>指纹手势. 现在指纹传感器支持指纹手势, 如上下左右滑动, 但你的服务仅能在指纹传感器不用于身份验证时才可使用它.  </li>
+<li>字词级突出显示.  </li>
+<li>提示文本. 可以通过<code>AccessibilityNodeInfo.getHintText()</code>获取<code>EditText</code>的提示文本, 即便它当前并未显示提示文本.  </li>
+<li>连续的手势分派. 可以使用<code>GestureDescription.StrokeDescription</code>构造函数的最后一个参数指定属于同一设定手势的笔划的顺序.  </li>
+</ul>
+<h4 id="其他功能"><a href="#其他功能" class="headerlink" title="其他功能"></a>其他功能</h4><ul>
+<li>自适应启动器图标. 可以在不同设备型号上显示不同形状的图标.  </li>
+<li>颜色管理. 现在可以支持广色域彩色显示的新设备, 需要在Activity中启用一个标志.  </li>
+<li>WLAN感知. 基于周边感知联网(NAN)规范, 在具有相应感应器的设备上, 应用可以与之通过WLAN进行搜索和通信, 无需依赖互联网接入点.  </li>
+<li>配套设备配对, Android O允许自定义配对请求对话框.  </li>
+<li>WebView API. 提供多种API以增强应用的稳定性和安全性. 见<a href="https://developer.android.com/preview/features/managing-webview.html?hl=zh-cn" target="_blank" rel="external">管理WebView</a>  </li>
+<li>固定快捷方式和小部件.  </li>
+<li>媒体功能增强.  </li>
+<li>多显示器支持.  </li>
+<li>新的帐号访问和Discovery API  </li>
+<li><code>AnimatorSet</code>支持寻道和倒播.  </li>
+<li>自动调整<code>TextView</code>大小.  </li>
+<li>应用可以声明它们所属的类别, 这将用于分类呈现给用户.  </li>
+<li>应用可获得一定的磁盘空间配额用于缓存数据, 在系统需要释放磁盘空间时会优先释放超过配额最多的应用的缓存文件, 应用可以针对每个目录设定两种行为, 以控制系统如何释放该数据: 1. 将指定的目录作为不可分割的整体进行删除; 2. 指示不应该删除某个文件, 而是将它截断为0字节.  </li>
+<li>有关企业版Android(Android for Work)的更新.  </li>
+<li>更新了Java编程语言支持.  </li>
+</ul>
+<h3 id="改变-2"><a href="#改变-2" class="headerlink" title="改变"></a>改变</h3><ul>
+<li>后台执行限制. 当应用进入已缓存状态时, 如果没有活动的组件, 系统将解除应用具有的所有唤醒锁.  </li>
+<li>降低了后台应用接收位置更新的频率.  </li>
+<li>蓝牙<code>ScanRecord.getBytes()</code>不再对所接收的字节数做任何假定. 返回的字节数可能会超过之前最大60字节的限制, 也可能小于.  </li>
+<li>无障碍服务现在可识别<code>TextView</code>内部的所有<code>ClickableSpan</code>实例.  </li>
+<li>安全性增强. 不再支持<code>SSLv3</code>; 使用<code>HttpsURLConnection</code>建立HTTPS连接时, 如果服务器未正确实现TLS协议版本, 不再采取回退到之前的TLS协议版本的权宜之计; Android O将使用安全计算过滤器过滤所有应用, 系统调用仅允许通过bionic公开的系统调用; WebView在多进程模式下运行, 网页内容在独立的进程, 与应用进程相隔离; APK不能假设驻留在名称以-1或-2结尾的目录中, 应用应当使用<a href="https://developer.android.com/reference/android/content/pm/ApplicationInfo.html?hl=zh-cn#sourceDir" target="_blank" rel="external">sourceDir</a>获取目录; 增强<a href="https://developer.android.com/preview/behavior-changes.html?hl=zh-cn#nl" target="_blank" rel="external">原生库</a>安全性.  </li>
+<li>隐私性. 改变了标识符处理方式, 现在通过应用而不是用户来确定<code>ANDROID_ID</code>的值范围. 对于同一包名和签名的应用, 卸载或重新安装时<code>ANDROID_ID</code>值不变, 如果软件包签名密钥因为系统更新而改变, <code>ANDROID_ID</code>值也不变; 查询<code>net.hostname</code>系统属性, 返回为空.  </li>
+<li>记录未捕获的异常. 如果异常未被移交给默认的<code>Thread.UncaughtExceptionHandler</code>, 系统将会记录异常堆栈跟踪情况. 建议自定义<code>Thread.UncaughtExceptionHandler</code>的实现始终移交给默认处理程序处理.  </li>
+<li>联系人提供程序 使用情况统计方法变更. 应用请求<code>READ_CONTACTS</code>权限, 使用情况数据查询会返回近似值, 此前是返回精确值.  </li>
+<li>集合的处理. <code>AbstractCollection.removeAll()</code> 和 <code>AbstractCollection.retainAll()</code> 始终引发 <code>NullPointerException</code>, 以符合文档要求.  </li>
+</ul>
+<h3 id="针对Android-O的应用"><a href="#针对Android-O的应用" class="headerlink" title="针对Android O的应用"></a>针对Android O的应用</h3><p>那些<code>compileSdkVersion</code>或<code>targetSdkVersion</code>在Android O及以上的应用, 开发者需要按如下指导修改以正确支持相应行为.  </p>
+<ul>
+<li>提醒窗口. 使用<code>SYSTEM_ALERT_WINDOW</code>权限的应用必须使用新的<code>TYPE_APPLICATION_OVERLAY</code>窗口类型来在其他应用和系统窗口上方显示提醒窗口, 以前的多个窗口类型不可用. 该新窗口类型具有以下特性: 始终显示在状态栏和输入法等关键系统窗口下面; 系统可以移动该窗口或调整其大小, 以改善屏幕显示效果; 用户可以打开通知栏设置阻止应用使用该类型的提示窗口.  </li>
+<li>内容变更通知. <code>ContentResolver.notifyChange()</code> 和 <code>registerContentObserver(Uri, boolean, ContentObserver)</code>接口需要在URI中定义一个有效的<code>ContentProvider</code>, 这可以防范来自恶意应用的内容变更.  </li>
+<li>View焦点. 现在View默认也可以成为焦点.  </li>
+<li>安全性. 网络安全性配置设置为不允许明文流量的话, <code>WebView</code>将无法通过HTTP访问网站.  </li>
+<li>权限. 此前, 应用在运行时请求权限并且被授予该权限, 那么在清单中注册的同一组的其他权限也将被一起授予. 现在, 这些同组权限不会在此时被授予, 但如果请求的某一权限被授予, 则后续对同组其他权限的请求将会立即被授予.  </li>
+<li>集合处理. 此前, <code>List.sort()</code>的默认实现会调用<code>Collections.sort()</code>, 在Android O中则恰好相反. 但此时有以下限制: <code>List.sort()</code>的实现不能调用<code>Collections.sort()</code>, 显然因为循环调用; 重写<code>sort</code>的时候也要异常小心, 区分API级别来调用不同的默认实现或者调用与<code>sort</code>不存在依赖关系的方法来实现; 此前, 在<code>List</code>迭代过程中<code>Collections.sort()</code>对<code>List</code>进行排序不会引发异常, 此项变更使得该方式也抛出<code>ConcurrentModificationException</code>异常.  </li>
+<li>类加载行为. 不支持多个类加载器加载同一个<code>DexFile</code>对象来定义类, 否则引发<code>InternalError</code>错误. <code>DexFile API</code>现已弃用. 所有类加载器都被视为支持并行运行. 多个线程用同一个类加载器加载相同的类时, 第一个完成操作的线程胜出, 操作结果可以用于其他线程.  </li>
+</ul>
+<h3 id="功能和API"><a href="#功能和API" class="headerlink" title="功能和API"></a>功能和API</h3><ul>
+<li>后台执行限制. Android O对应用在后台运行时可以执行的操作施加了限制. 应用在后台服务和广播两方面存在限制, 在多数情况下应用可以使用<code>JobScheduler</code>作业克服这些限制. Android O对<code>JobScheduler</code>提供了多个改进.  </li>
+<li>对于后台应用, 位置检索行为将受到限制, 频率降低.  </li>
+<li>Notification Badges. 前面介绍过, 类似于3D Touch的快捷方式.  </li>
+<li>以O为目标的应用, 显示通知需要实现一个或多个通知渠道(channel), 优先级(重要性)由以前的为单个通知指定变更为适用于整个通知渠道.  </li>
+<li>Autofill Framework. 全新的自动填充框架, 提供一个服务, 应用可以利用该服务使用自动填充.  </li>
+<li>Unknown App Install Permission. 这是一个权限, 允许App安装其他的未知App, 用户可以选择哪些应用具有这种权限. App需要在清单中声明, 在运行时申请该权限.  </li>
+<li>Pointer Capture. 这是鼠标动作捕捉机制. 在类似游戏/远程桌面/虚拟客户端等场景下, 控制鼠标点击很有用处. 该机制下, 获得焦点的View可以捕捉MotionEvent, 在回调中自行处理所有捕捉到的事件.  </li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/android/">android</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://hjhjw1991.github.io/android/2017/08/01/Android-6-7-8-更新小记/" data-title="Android 6-7-8 更新小记 | hjhjw1991&#39;s blog" data-tsina="1304671950" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/Java/2017/08/02/Executor框架/" title="Executor框架">
+  <strong>上一篇：</strong><br/>
+  <span>
+  Executor框架</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/android/2017/05/11/Animation详解/"  title="Animation详解">
+ <strong>下一篇：</strong><br/> 
+ <span>Animation详解
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Android-6-0-API-Level-23"><span class="toc-number">1.</span> <span class="toc-text">Android 6.0 API Level 23</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#新增"><span class="toc-number">1.1.</span> <span class="toc-text">新增</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#改变"><span class="toc-number">1.2.</span> <span class="toc-text">改变</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#删除"><span class="toc-number">1.3.</span> <span class="toc-text">删除</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Android-7-0-API-Level-24-25"><span class="toc-number">2.</span> <span class="toc-text">Android 7.0 API Level 24 25</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#新增-1"><span class="toc-number">2.1.</span> <span class="toc-text">新增</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#改变-1"><span class="toc-number">2.2.</span> <span class="toc-text">改变</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#删除-1"><span class="toc-number">2.3.</span> <span class="toc-text">删除</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#API-23-gt-API-24"><span class="toc-number">2.4.</span> <span class="toc-text">API 23 -> API 24</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Android-8-0"><span class="toc-number">3.</span> <span class="toc-text">Android 8.0</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#面向开发者的新功能"><span class="toc-number">3.1.</span> <span class="toc-text">面向开发者的新功能</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#通知"><span class="toc-number">3.1.1.</span> <span class="toc-text">通知</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#自动填充框架"><span class="toc-number">3.1.2.</span> <span class="toc-text">自动填充框架</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#画中画-PictureInPicture-PIP-模式"><span class="toc-number">3.1.3.</span> <span class="toc-text">画中画(PictureInPicture,PIP)模式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#处理字体"><span class="toc-number">3.1.4.</span> <span class="toc-text">处理字体</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#接听权限ANSWER-PHONE-CALLS"><span class="toc-number">3.1.5.</span> <span class="toc-text">接听权限ANSWER_PHONE_CALLS</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#内容提供程序分页"><span class="toc-number">3.1.6.</span> <span class="toc-text">内容提供程序分页</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#无障碍功能"><span class="toc-number">3.1.7.</span> <span class="toc-text">无障碍功能</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#其他功能"><span class="toc-number">3.1.8.</span> <span class="toc-text">其他功能</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#改变-2"><span class="toc-number">3.2.</span> <span class="toc-text">改变</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#针对Android-O的应用"><span class="toc-number">3.3.</span> <span class="toc-text">针对Android O的应用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#功能和API"><span class="toc-number">3.4.</span> <span class="toc-text">功能和API</span></a></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="hjhjw1991" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js" ></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/Java/" title="Java">Java<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/android/" title="android">android<sup>23</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/blog/" title="blog">blog<sup>13</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/leetcode/" title="leetcode">leetcode<sup>9</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/opinion/" title="opinion">opinion<sup>4</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/tips/" title="tips">tips<sup>4</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/android/" title="android">android<sup>24</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guide/" title="guide">guide<sup>18</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/interview/" title="interview">interview<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/windows/" title="windows">windows<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vps/" title="vps">vps<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ssh/" title="ssh">ssh<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/jekyll/" title="jekyll">jekyll<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/regex/" title="regex">regex<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/uwsgi/" title="uwsgi">uwsgi<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ios/" title="ios">ios<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vpn/" title="vpn">vpn<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/java/" title="java">java<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/linux/" title="linux">linux<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://google.com" target="_blank" title="Google">Google</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="120" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=1304671950&verifier=64e7ae81&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Huang Jun. <br/>
+			This is my blog.</p>
+	</section>
+	 
+	<div class="social-font" class="clearfix">
+		
+		<a href="http://weibo.com/1304671950" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/hjhjw1991" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:hjhjw1991@gmail.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		
+		<a href="/about" target="_blank" title="hjhjw1991">hjhjw1991</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'hjhjw1991';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?cd0e561542c22cc83da2e311ec57da84";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

@@ -17,7 +17,7 @@
 <meta property="og:url" content="https://hjhjw1991.github.io/android/2015/08/25/Android-6.0-小记/index.html">
 <meta property="og:site_name" content="hjhjw1991's blog">
 <meta property="og:description" content="最近 Google 正式发布了 Android M，并命名为“棉花糖”（Marshmallow）">
-<meta property="og:updated_time" content="2016-08-30T08:03:26.717Z">
+<meta property="og:updated_time" content="2017-05-27T09:39:52.453Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android 6.0 小记">
 <meta name="twitter:description" content="最近 Google 正式发布了 Android M，并命名为“棉花糖”（Marshmallow）">
@@ -95,7 +95,7 @@
 		<div id="toc" class="toc-article">
 			<strong class="toc-title">文章目录</strong>
 		
-			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#权限管理"><span class="toc-number">1.</span> <span class="toc-text">权限管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#APP-Linking"><span class="toc-number">2.</span> <span class="toc-text">APP Linking</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#APP-数据自动备份"><span class="toc-number">3.</span> <span class="toc-text">APP 数据自动备份</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#直接分享"><span class="toc-number">4.</span> <span class="toc-text">直接分享</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#支持蓝牙触控笔"><span class="toc-number">5.</span> <span class="toc-text">支持蓝牙触控笔</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#低功耗蓝牙扫描优化"><span class="toc-number">6.</span> <span class="toc-text">低功耗蓝牙扫描优化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#支持主题化的-ColorStateLists"><span class="toc-number">7.</span> <span class="toc-text">支持主题化的 ColorStateLists</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#其他"><span class="toc-number">8.</span> <span class="toc-text">其他</span></a></li></ol>
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#权限管理"><span class="toc-number">1.</span> <span class="toc-text">权限管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#APP-Linking"><span class="toc-number">2.</span> <span class="toc-text">APP Linking</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#APP-数据自动备份"><span class="toc-number">3.</span> <span class="toc-text">APP 数据自动备份</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#直接分享"><span class="toc-number">4.</span> <span class="toc-text">直接分享</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#支持蓝牙触控笔"><span class="toc-number">5.</span> <span class="toc-text">支持蓝牙触控笔</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#低功耗蓝牙扫描优化"><span class="toc-number">6.</span> <span class="toc-text">低功耗蓝牙扫描优化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#支持主题化的-ColorStateLists"><span class="toc-number">7.</span> <span class="toc-text">支持主题化的 ColorStateLists</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#相机-API"><span class="toc-number">8.</span> <span class="toc-text">相机 API</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#其他"><span class="toc-number">9.</span> <span class="toc-text">其他</span></a></li></ol>
 		
 		</div>
 		
@@ -125,7 +125,7 @@
 <hr>
 <h2 id="支持主题化的-ColorStateLists"><a href="#支持主题化的-ColorStateLists" class="headerlink" title="支持主题化的 ColorStateLists"></a>支持主题化的 <code>ColorStateLists</code></h2><p>使用 <code>context.getColorStateList(int id)</code> 来获取当前主题对应的 <code>ColorStateLists</code>。</p>
 <hr>
-<p>##相机 API<br>提供 API <code>setTorchMode()</code> 来直接开关闪光灯，并且可以监听闪光灯的开光状态，以前很多 APP 已经支持用闪光灯来做手电筒，现在官方提供 API 来做这样的事情了。<br>从 Android 5.0 开始，就提供了一套全新的相机 API <code>Camera2</code>，这里在此基础上添加了处理相关 API。</p>
+<h2 id="相机-API"><a href="#相机-API" class="headerlink" title="相机 API"></a>相机 API</h2><p>提供 API <code>setTorchMode()</code> 来直接开关闪光灯，并且可以监听闪光灯的开光状态，以前很多 APP 已经支持用闪光灯来做手电筒，现在官方提供 API 来做这样的事情了。<br>从 Android 5.0 开始，就提供了一套全新的相机 API <code>Camera2</code>，这里在此基础上添加了处理相关 API。</p>
 <hr>
 <h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><p>另外还有很多的改进，可以参考官方<a href="http://developer.android.com/preview/api-overview.html" target="_blank" rel="external">概述</a>：</p>
 <ul>
@@ -203,7 +203,7 @@
   <div id="toc" class="toc-aside">
   <strong class="toc-title">文章目录</strong>
  
- <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#权限管理"><span class="toc-number">1.</span> <span class="toc-text">权限管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#APP-Linking"><span class="toc-number">2.</span> <span class="toc-text">APP Linking</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#APP-数据自动备份"><span class="toc-number">3.</span> <span class="toc-text">APP 数据自动备份</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#直接分享"><span class="toc-number">4.</span> <span class="toc-text">直接分享</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#支持蓝牙触控笔"><span class="toc-number">5.</span> <span class="toc-text">支持蓝牙触控笔</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#低功耗蓝牙扫描优化"><span class="toc-number">6.</span> <span class="toc-text">低功耗蓝牙扫描优化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#支持主题化的-ColorStateLists"><span class="toc-number">7.</span> <span class="toc-text">支持主题化的 ColorStateLists</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#其他"><span class="toc-number">8.</span> <span class="toc-text">其他</span></a></li></ol>
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#权限管理"><span class="toc-number">1.</span> <span class="toc-text">权限管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#APP-Linking"><span class="toc-number">2.</span> <span class="toc-text">APP Linking</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#APP-数据自动备份"><span class="toc-number">3.</span> <span class="toc-text">APP 数据自动备份</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#直接分享"><span class="toc-number">4.</span> <span class="toc-text">直接分享</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#支持蓝牙触控笔"><span class="toc-number">5.</span> <span class="toc-text">支持蓝牙触控笔</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#低功耗蓝牙扫描优化"><span class="toc-number">6.</span> <span class="toc-text">低功耗蓝牙扫描优化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#支持主题化的-ColorStateLists"><span class="toc-number">7.</span> <span class="toc-text">支持主题化的 ColorStateLists</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#相机-API"><span class="toc-number">8.</span> <span class="toc-text">相机 API</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#其他"><span class="toc-number">9.</span> <span class="toc-text">其他</span></a></li></ol>
  
   </div>
 
@@ -227,7 +227,11 @@
 		<ul>
 		
 		  
-			<li><a href="/categories/android/" title="android">android<sup>20</sup></a></li>
+			<li><a href="/categories/Java/" title="Java">Java<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/android/" title="android">android<sup>23</sup></a></li>
 		  
 		
 		  
@@ -256,11 +260,11 @@
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/android/" title="android">android<sup>21</sup></a></li>
+				<li><a href="/tags/android/" title="android">android<sup>24</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/guide/" title="guide">guide<sup>17</sup></a></li>
+				<li><a href="/tags/guide/" title="guide">guide<sup>18</sup></a></li>
 			
 		
 			
@@ -276,15 +280,11 @@
 			
 		
 			
-				<li><a href="/tags/vps/" title="vps">vps<sup>2</sup></a></li>
-			
-		
-			
 				<li><a href="/tags/Java/" title="Java">Java<sup>2</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/jekyll/" title="jekyll">jekyll<sup>2</sup></a></li>
+				<li><a href="/tags/vps/" title="vps">vps<sup>2</sup></a></li>
 			
 		
 			
@@ -292,7 +292,11 @@
 			
 		
 			
-				<li><a href="/tags/python/" title="python">python<sup>1</sup></a></li>
+				<li><a href="/tags/jekyll/" title="jekyll">jekyll<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/regex/" title="regex">regex<sup>1</sup></a></li>
 			
 		
 			
@@ -300,7 +304,7 @@
 			
 		
 			
-				<li><a href="/tags/regex/" title="regex">regex<sup>1</sup></a></li>
+				<li><a href="/tags/python/" title="python">python<sup>1</sup></a></li>
 			
 		
 			
@@ -313,6 +317,14 @@
 		
 			
 				<li><a href="/tags/vpn/" title="vpn">vpn<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/java/" title="java">java<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/linux/" title="linux">linux<sup>1</sup></a></li>
 			
 		
 		</ul>

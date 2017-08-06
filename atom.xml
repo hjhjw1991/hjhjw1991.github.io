@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://hjhjw1991.github.io/"/>
-  <updated>2017-05-11T08:22:10.985Z</updated>
+  <updated>2017-08-03T09:15:07.239Z</updated>
   <id>https://hjhjw1991.github.io/</id>
   
   <author>
@@ -14,6 +14,287 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>消息机制之select-poll-epoll-兼谈同步异步&amp;阻塞非阻塞</title>
+    <link href="https://hjhjw1991.github.io/android/2017/08/03/%E6%B6%88%E6%81%AF%E6%9C%BA%E5%88%B6%E4%B9%8Bselect-poll-epoll-%E5%85%BC%E8%B0%88%E5%90%8C%E6%AD%A5%E5%BC%82%E6%AD%A5&amp;%E9%98%BB%E5%A1%9E%E9%9D%9E%E9%98%BB%E5%A1%9E/"/>
+    <id>https://hjhjw1991.github.io/android/2017/08/03/消息机制之select-poll-epoll-兼谈同步异步&amp;阻塞非阻塞/</id>
+    <published>2017-08-02T16:00:00.000Z</published>
+    <updated>2017-08-03T09:15:07.239Z</updated>
+    
+    <content type="html"><![CDATA[<p>这篇是我今年4月28号的工作周记, 我偷懒就直接拿过来了.  </p>
+<h2 id="20170428周记"><a href="#20170428周记" class="headerlink" title="20170428周记"></a>20170428周记</h2><p>在极困的状态下学习了同步/异步, 阻塞/非阻塞的概念, 以及select/poll/epoll的概念. 复习了一下Binder机制中数据传输的原理.  </p>
+<p>同步/异步, 阻塞/非阻塞容易混淆的原因就在于两者都涉及一个等待/非等待的状态.<br>先来讲何为同步/异步.<br>这对术语描述的是<strong>通信的方式</strong>, 即通信的一方在发送下一次消息前, 是否等待另一方返回消息, 等待则为同步, 不等待则为异步.<br>举个例子, 你打电话给携程问后天是否有到某地的特价机票, 携程客服说”你稍等我查一下”, 这期间你们俩都没挂电话, 等他查好了(可能几分钟也可能几天)告诉你结果. 这是同步.<br>客服说”我查一下, 查好了回你电话”然后他就挂电话了, 等查好了他就主动打给你. 这是异步.<br>注意, 所谓”等待”并不一定是什么都不做的”空等”.  </p>
+<p>阻塞/非阻塞关注的是在等待结果的时候<strong>程序的状态</strong>. 如果结果返回前, 程序被挂起, 则是阻塞, 否则非阻塞.<br>还是上面的例子, 如果你是阻塞式打电话, 无论客服是不是异步给你结果, 你都会在电话旁一直等着, 直到客服给你结果, 这期间你什么都不能做. 如果你是非阻塞式的, 那你打完电话(发起调用)之后, 如果客服没有立即给你结果, 你可以自己爱做啥做啥, 只需要时不时回来检查一下客服是不是给你结果了或者他是不是回电了.<br>所以其实阻塞/非阻塞, 跟异步/同步是两个完全无关的概念. 但是由于异步这个概念指的就是程序不等待返回结果, 所以异步一定是非阻塞的(当然, 你也可以把它”实现为阻塞”, 只不过这样做就失去了选择异步的意义, 从表现上跟”同步阻塞”无异).  </p>
+<p>好了, 下面来说select/poll/epoll.<br>这三个操作是linux系统的系统命令, 他们都属于I/O多路复用的实现. 他们都是同步I/O.<br>同步I/O操作, 指的是该操作会导致请求进程阻塞, 直到I/O操作完成. 异步I/O操作不导致请求进程阻塞. 我觉得这两个概念也是造成混淆的原因之一, 其实只要明白这里所说的阻塞/非阻塞, 跟编程语言层次(Java NIO)所说的阻塞/非阻塞, 所描述的不是同一个现象. 在NIO中, 也存在阻塞的过程(Selector.select()).<br>I/O多路复用的意思是, 用多个文件描述符同时服务多个I/O过程, 有任一一个处于就绪状态时就触发对应I/O过程继续执行, 整个过程用同一个进程来管理, 而不是每个I/O都自己新建一个进程.<br>区分同步/异步的方式很简单, 由于异步是注册一个回调, 让系统自动调用回调函数处理, 所以请求进程在发起请求后几乎不需要参与后续工作. 所以相对来说, 如果发起请求后, 请求进程需要通过某种方式(死循环轮询, 停下来等待, 抑或在子线程中做类似操作)去获知是否有返回结果并<strong>主动处理返回结果</strong>, 那就不是异步, 而是同步.  </p>
+<p>select, 就是在轮询所有注册的文件描述符, 直到有描述符就绪或操作超时, 才会返回. 由于它需要轮询所有文件描述符, 所以性能随文件描述符增多呈线性负相关.<br>poll定义了一个不同的数据结构用来表示I/O时的文件描述符, 等待的事件和实际返回的事件. 其余过程本质上和select相同, 也是轮询所有文件描述符来获得就绪状态的描述符.<br>epoll是在2.6的linux内核中加入的, 它不再是轮询所有文件描述符, 而是以回调的方式, 在文件描述符处于就绪状态后, <code>epoll_ctl</code>回调事先注册好的处理函数, 将就绪的文件描述符加入到就绪队列中, 并发出就绪通知, 而<code>epoll_wait</code>调用时会在参数中指明需要等待哪个文件描述符上的什么事件, 它去检查就绪队列并返回需要处理的事件数量, 所以整个过程的效率只与活跃的文件描述符数量有关, 在高并发的情况下优于select和poll. 同时, 它使用mmap让用户空间可以直接访问到内核空间写入的数据区域, 因此少了一次内核空间到用户空间的拷贝.  </p>
+<p>binder的底层调用的是epoll.  </p>
+]]></content>
+    
+    <summary type="html">
+    
+      这篇是我今年4月28号的工作周记, 我偷懒就直接拿过来了.
+    
+    </summary>
+    
+      <category term="android" scheme="https://hjhjw1991.github.io/categories/android/"/>
+    
+    
+      <category term="android" scheme="https://hjhjw1991.github.io/tags/android/"/>
+    
+      <category term="linux" scheme="https://hjhjw1991.github.io/tags/linux/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>IntentService什么鬼</title>
+    <link href="https://hjhjw1991.github.io/android/2017/08/03/IntentService%E4%BB%80%E4%B9%88%E9%AC%BC/"/>
+    <id>https://hjhjw1991.github.io/android/2017/08/03/IntentService什么鬼/</id>
+    <published>2017-08-02T16:00:00.000Z</published>
+    <updated>2017-08-03T04:09:41.479Z</updated>
+    
+    <content type="html"><![CDATA[<p>今天这篇进不了花样劝退系列, 因为非常浅显, 就是一个为特定的常用场景而诞生的类.  </p>
+<p>我们常常会有这样的需求: 需要执行一个任务, 而这个任务可能跟我们主线程要做的事情无关, 完全可以异步执行, 并且它还有可能很耗时而不能在主线程做.<br>这种情况非常常见, 例如开始一个下载任务, 或者开启一个定时任务. 我们自己来做的话会怎么做呢? 通常是自行实现一个工作线程<code>WorkerThread</code>(当然你可以用<code>ExecutorService</code>生成一个线程池来帮你构造线程), 然后将任务扔给这个线程的工作队列, 这个线程则永不知疲倦地处理扔给它的所有任务.<br>显然这是个具有固定结构的编程模式, 意味着它完全可以提取出来成为公共库. 事实上线程池就是这么一个公共库, 但是在<code>Android</code>中可以更简单, 因为<code>Android</code>中有一个用于传递数据信息的数据结构<code>Intent</code>, 这意味着你不需要太过操心怎么传递数据. <code>IntentService</code>就是这么一个”工作线程”, 它依托于<code>Service</code>的基本结构, 使用<code>Intent</code>作为传递任务的信使.<br>顺便一提, 如果你只是临时想要执行一个任务, 那么<code>AsyncTask</code>可能会更合适.  </p>
+<h2 id="IntentService用法"><a href="#IntentService用法" class="headerlink" title="IntentService用法"></a>IntentService用法</h2><p>用法非常简单, 它是一个抽象类, 所以你只需要实现自己的子类, 实现下面列表中的抽象方法即可.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">// 队列中每个Intent在处理时会调用本方法进行处理, 该方法运行在一个独立的工作线程上. 如果这个方法运行时间过长, 它会阻塞同个IntentService的后续请求. 所有队列中的请求处理完毕后, IntentService会自行停止, 所以无需再调用stopSelf</div><div class="line">// Intent是通过startService(Intent)传进来到请求队列的</div><div class="line">protected abstract void onHandleIntent(Intent intent);</div></pre></td></tr></table></figure></p>
+<p>然后你就可以使用<code>startService</code>或者<code>bindService</code>来启动或绑定服务.  </p>
+<p><code>IntentService</code>的开始和普通<code>Service</code>相同, <code>IntentService</code>自己会处理好<code>Service</code>何时停止, 具体来说工作线程无任务时服务就会停止.  </p>
+<h2 id="IntentService工作原理"><a href="#IntentService工作原理" class="headerlink" title="IntentService工作原理"></a>IntentService工作原理</h2><p>如上文所述, <code>IntentService</code>就是把”异步任务处理器”这种模型以<code>Service</code>的形式实现的一个类. 从源码类的注释我们可以知道, 它自己实现了一个工作队列, 用的是<code>Handler</code>机制.<br>具体来说, 它为自己创建了一个<code>HandlerThread</code>线程, 这个线程里面会准备好自己的<code>Looper</code>队列. 它为自己创建了一个<code>ServiceHandler</code>内部类实例, 传入线程的<code>Looper</code>作为消息队列.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">// in android/app/IntentService.java</div><div class="line">@Override</div><div class="line">public void onCreate() &#123;</div><div class="line">    super.onCreate();</div><div class="line">    HandlerThread thread = new HandlerThread(&quot;IntentService[&quot; + mName + &quot;]&quot;);</div><div class="line">    thread.start();</div><div class="line"></div><div class="line">    mServiceLooper = thread.getLooper();</div><div class="line">    mServiceHandler = new ServiceHandler(mServiceLooper);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p><code>ServiceHandler</code>是个<code>final</code>类, 在<code>handleMessage</code>中调用<code>onHandleIntent</code>来处理<code>Intent</code>, 消息处理完后立即调用<code>stopSelf</code>看是否需要停止服务. 它也在<code>onStart</code>中将传入的<code>Intent</code>发送到消息队列.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">// in android/app/IntentService.java</div><div class="line">private final class ServiceHandler extends Handler &#123;</div><div class="line">    </div><div class="line">    @Override</div><div class="line">    public void handleMessage(Message msg) &#123;</div><div class="line">        onHandleIntent((Intent)msg.obj); // 回调接口</div><div class="line">        stopSelf(msg.arg1); // 尝试停止服务</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">@Override</div><div class="line">public void onStart(Intent intent, int startId) &#123;</div><div class="line">    Message msg = mServiceHandler.obtainMessage();</div><div class="line">    msg.arg1 = startId; // 记录Id</div><div class="line">    msg.obj = intent; // 传递Intent</div><div class="line">    mServiceHandler.sendMessage(msg);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>可以看到<code>IntentService</code>提供了默认实现来处理<code>Service</code>停止的生命周期, 工作线程和队列的创建和消息传递. 因此在扩展实现<code>IntentService</code>的时候, 如果不想自己处理这些过程, 最好在重写方法时调用超类同名方法(<code>onBind</code>和<code>onHandleIntent</code>除外).  </p>
+<p>这个类的分析到这里就没了, 实在是庞大Android源码库中一股清流.  </p>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><p><a href="https://code.tutsplus.com/tutorials/android-fundamentals-intentservice-basics--mobile-6183" target="_blank" rel="external">Android Fundamentals: IntentService Basics</a><br><a href="http://androidxref.com/7.1.1_r6/xref/frameworks/base/core/java/android/app/IntentService.java" target="_blank" rel="external">source code</a>  </p>
+]]></content>
+    
+    <summary type="html">
+    
+      今天这篇进不了花样劝退系列, 因为非常浅显, 就是一个为特定的常用场景而...
+    
+    </summary>
+    
+      <category term="android" scheme="https://hjhjw1991.github.io/categories/android/"/>
+    
+    
+      <category term="guide" scheme="https://hjhjw1991.github.io/tags/guide/"/>
+    
+      <category term="android" scheme="https://hjhjw1991.github.io/tags/android/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Executor框架</title>
+    <link href="https://hjhjw1991.github.io/Java/2017/08/02/Executor%E6%A1%86%E6%9E%B6/"/>
+    <id>https://hjhjw1991.github.io/Java/2017/08/02/Executor框架/</id>
+    <published>2017-08-01T16:00:00.000Z</published>
+    <updated>2017-08-03T09:19:44.219Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="Executor框架"><a href="#Executor框架" class="headerlink" title="Executor框架"></a>Executor框架</h2><p>concurrent包是java提供的并发编程工具，从Java 5开始引入了Executor框架辅助实现并发编程，通过它控制线程的启动、执行和关闭，通常比使用Thread的start方法好。<br>Executor框架包括：线程池，Executor，Executors，ExecutorService，CompletionService，Future，Callable等。<br>使用它而不是Thread的好处是，它已经实现了一个线程池，可以以更节省资源的方式使用线程，它设计的接口可以较方便地管理线程。<br>Executor接口之中只定义了一个方法，即<code>void execute(Runnable command)</code>方法，大量注释用于描述它存在的意义和设计思想。ExecutorService继承自它，提供了更丰富的多线程接口，例如提供了关闭自己的方法<code>shutdown</code>，调用它可以平滑地关闭ExecutorService，所谓平滑就是调用方法后ExecutorService不再接受新的任务，并等待已经提交的任务（正在执行的和尚未开始的）完成，然后关闭ExecutorService。一般使用这个接口来实现和管理多线程。  </p>
+<p>ExecutorService的生命周期包括三种状态：运行，关闭，终止。创建后就进入运行状态，除非调用shutdown方法否则一直会处于运行状态。在调用shutdown方法之后会进入关闭状态，此时不再接受新任务，当已经提交的任务完成后就进入终止状态。Executors是一个工厂方法和工具方法集合，提供了创建线程池的工厂方法，可以返回实现了ExecutorSerivce接口的线程池，具体见<code>Executors.java</code>代码。下面介绍四个典型类型的线程池：</p>
+<pre><code>public static ExecutorService newFixedThreadPool(int nThreads)
+// 创建固定线程数目的线程池
+
+public static ExecutorService newCachedThreadPool()
+// 创建可缓存的线程池。调用execute方法时会重用以前构造的可用的线程，如果没有则创建新的并加入线程池中，同时终止并移除线程池中60秒没有使用的线程
+
+public static ExecutorService newSingleThreadExecutor()
+// 创建一个单线程化的Executor，等同于newFixedThreadPool(1)
+
+public static ScheduledExecutorService newScheduledThreadPool(int corePoolSize)
+// 创建一个支持定时和周期性执行任务的线程池，多数情况下可以替代Timer类
+</code></pre><p>先看CachedThreadPool，在缓存型线程池中，使用时先看池中有没有以前建立的线程，如果有就reuse，否则创建一个新的线程并加入池中。它通常用来执行一些生存期很短的异步任务，是Executor的首选。但不适宜面向连接的daemon型Server。<br>能reuse的线程必须要是 timeout IDLE (空闲超时)内的池中线程，缺省 timeout是60s(创建时keepAliveTime为60s)，IDLE超过这个时长，线程实例会被终止并移出线程池。因此不必担心它是否会结束，它会自动结束。  </p>
+<p>FixedThreadPool和缓存型差不多，在任务数超过固定线程数后能reuse的会reuse，不同在于不能随时创建新的线程，任一时间点最多只能有固定数目的活动线程存在，如果此时要创建新的线程，只能在队列中等待直到当前池中某个线程终止被移出。它没有IDLE机制(创建时keepAliveTime为0)，所以适用于有稳定且固定数量并发任务的场景，如服务器。  </p>
+<p>SingleThreadExecutor是线程池版单例模式，实现和CachedThreadPool、FixedThreadPool一样。  </p>
+<p>ScheduledThreadPool里的线程可以按schedule依次delay执行，或周期执行。  </p>
+<p>从上面分析知道，CachedThreadPool的设计会尽量让创建的线程数目与需要的相同，而且它会回收旧线程重用，因此理论上是大多数需要用到线程池的场景时的首选。《Thinking in Java》中说只有当这种方式存在问题时，比如需要大量长时间面向连接的线程时，才需要考虑用FixedThreadPool。  </p>
+<p>Executors还有一些别的工厂方法，可以看源码。调用工厂方法创建了ExecutorService的实例后，就可以调用实例的execute接口传入Runnable。该方法自动在某个线程上执行Runnable。<br>ExecutorService还可以执行Callable，通过调用<code>submit(Callable task)</code>，它与Runnable不同的地方在于Runnable没有返回值，而Callable有返回值。调用submit方法后会返回一个Future类型的对象表示任务等待完成。Future的get()方法会获取返回值，它会阻塞直到任务完成。<br>shutdown和shutdownNow都能关闭线程池，不同的是前者会设置状态为SHUTDOWN，中断所有没有在执行任务的线程，等待已提交任务完成，后者会设置状态为STOP，中断所有没有在执行任务的线程并试图中断正在执行任务或暂停任务的线程，返回等待执行的任务列表。在SHUTDOWN状态下线程池可能还没有挂壁，只有当处于TERMINATED状态才说明线程池关闭成功。  </p>
+<p><img src="/images/blogs/threadpool.jpg" alt="img">  </p>
+<p>上面介绍了Executors提供的工厂方法和特点，源码可以看到底层都是同样的数据结构来实现的，那么是什么样的数据结构，现在就来看看。创建线程池最终都是调用的ThreadPoolExecutor类的构造方法<code>ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, milliseconds,runnableTaskQueue, threadFactory, handler)</code>，依次是线程池基本大小、线程池最大大小、线程池中线程活动时间限制、时间单位、任务队列、线程工厂、饱和回调。<br>提交一个任务到线程池时，线程池会创建一个线程来执行任务，即使此时有其他基本线程可用，当提交的任务数大于线程池基本大小时不再创建而是尝试复用已有线程。newCachedThreadPool指定的这个基本大小是0，即始终尝试复用线程，而FixedThreadPool中这个值与maximumPoolSize相等，即优先考虑创建新线程。如果调用了prestartAllCoreThreads方法，线程池会提前创建并启动所有基本线程。任意时间线程池内的活动线程数目不超过maximumPoolSize。<br>任务队列是用来保存等待执行的任务的阻塞队列(BlockingQueue<runnable>)，可以从以下几种中选择，理论上应该也可以自己实现：</runnable></p>
+<ul>
+<li>ArrayBlockingQueue:基于数组结构的有界阻塞队列，元素顺序FIFO。</li>
+<li>LinkedBlockingQueue:基于链表的阻塞队列，FIFO，吞吐量通常高于ArrayBlockingQueue，在newFixedThreadPool中就会用这个队列。</li>
+<li>SynchronousQueue:一个不存储元素的阻塞队列。每个插入操作必须等到前一个移除操作完成，否则插入操作一直处于阻塞状态。吞吐量通常要高于LinkedBlockingQueue，newCachedThreadPool使用了这个队列。</li>
+<li>PriorityBlockingQueue:具有优先级的无阻塞队列，按优先级排序。  </li>
+</ul>
+<p>线程工厂用来创建线程，给线程命名等，可以通过实现自己的线程工厂来给线程设置更有意义的名字。<br>RejectedExecutionHandler饱和策略，当线程池和队列都处于饱和状态时必须采取一种策略处理新提交的任务，这个策略默认情况下是AbortPolicy，它会直接抛出RejectedExecutionException异常。Java提供了以下几种策略，你也可以自己实现RejectedExectionHandler：</p>
+<ul>
+<li>AbortPolicy：直接抛出异常</li>
+<li>CallerRunsPolicy：使用调用者所在线程来运行任务</li>
+<li>DiscardOldestPolicy：抛弃队列里最老的一个任务并执行当前任务</li>
+<li>DiscardPolicy：直接丢弃</li>
+</ul>
+<p>线程活动时间指的是工作线程空闲后的存活时间。如果任务多并且每个任务执行时间短，可以调大这个时间提高线程利用率。时间单位在TimeUnit里有定义，从天到纳秒。  </p>
+<p>线程池的存在和其实现原理提示了我们它的使用场景，可以从以下几个角度考虑：</p>
+<ol>
+<li>任务的性质：CPU密集型任务，IO密集型任务和混合型任务。</li>
+<li>任务的优先级：高，中和低。</li>
+<li>任务的执行时间：长，中和短。</li>
+<li>任务的依赖性：是否依赖其他系统资源，如数据库连接。</li>
+</ol>
+<p>线程池提供了beforeExecute和afterExecute接口用于在线程执行前后进行别的操作，例如Profile。<br><img src="/images/blogs/executorframework.png" alt="executorframework"><br>看了线程池对于Android有什么帮助呢？首先当然是我们知道有这么个东西，以后遇到并发任务的时候可以考虑用Executor来做，其次实际上Android有一个东西叫做AsyncTask，它也有execute方法，看看它的源码就会发现它就是用的ThreadPool，不谈它的实现的演变，它里面有一个Executor用来创建线程池和线程，默认使用LinkedBlockingQueue作为任务队列，固定了线程池基本线程、最大线程数量和空闲超时。<br>在Java里面有个注解<code>GuardedBy</code>，它与锁有关，事实上正是它让我想要看Java并发这一块内容的。  </p>
+]]></content>
+    
+    <summary type="html">
+    
+      concurrent包是java提供的并发编程工具，从Java 5开始引入了Executor框架辅助实现...
+    
+    </summary>
+    
+      <category term="Java" scheme="https://hjhjw1991.github.io/categories/Java/"/>
+    
+    
+      <category term="java" scheme="https://hjhjw1991.github.io/tags/java/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Android 6-7-8 更新小记</title>
+    <link href="https://hjhjw1991.github.io/android/2017/08/01/Android-6-7-8-%E6%9B%B4%E6%96%B0%E5%B0%8F%E8%AE%B0/"/>
+    <id>https://hjhjw1991.github.io/android/2017/08/01/Android-6-7-8-更新小记/</id>
+    <published>2017-07-31T16:00:00.000Z</published>
+    <updated>2017-08-01T08:57:37.162Z</updated>
+    
+    <content type="html"><![CDATA[<p>如今Android 已经出到了O (Android 8.0, API Leve 26), 多个版本累加起来变化颇多, 记录一下.<br>从新增/改变/删除角度记录, 主要搬运官网.  </p>
+<h2 id="Android-6-0-API-Level-23"><a href="#Android-6-0-API-Level-23" class="headerlink" title="Android 6.0 API Level 23"></a>Android 6.0 API Level 23</h2><p>以前写过一篇<a href="http://hjhjw1991.github.io/android/2015/08/25/Android-6.0-%E5%B0%8F%E8%AE%B0/">Android 6.0小记</a>, 这回新瓶装旧酒, 换种组织方式再写一下.  </p>
+<h3 id="新增"><a href="#新增" class="headerlink" title="新增"></a>新增</h3><ul>
+<li>运行时请求应用权限. 这是一种新的权限请求方式, 它允许应用通过<code>requestPermissions()</code>来实时请求权限. 需要注意, 在Android 6.0的操作系统环境下, 应用的所有权限都可以随时被取消, 所以即便你在App中注册了权限, 你运行时也应该检查一下是不是已经获得了权限. 一种典型的情况是, 你注册了权限, 也成功运行了App并获取了权限, 但用户出于某些缘故把你申请的权限取消了, 此时哪怕你仍然在运行, 也应该在执行需要权限的操作前检查自身权限. 检查权限可调用<code>checkSelfPermission()</code>方法.  </li>
+<li>应用待机模式. 系统通过一段时间是否触摸屏幕判定是否进入待机模式, 并根据是否连接电源采取不同的处理策略, 以延长待机时间. 主要是限制被判定为待机模式的应用的网络访问, 同步, 闹钟等功能. 应用可申请加入白名单, 以保留网络访问, 但其他方面仍受限制.  </li>
+<li>低耗电模式. 系统在未插入电源且屏幕关闭后静止一定时间, 会进入低耗电模式. 该模式下会推迟Activity活动, 网络访问, 同步, 闹铃, 并定期退出低耗电模式统一完成这些操作.  </li>
+<li><p>文本选择时新增浮动工具栏. 交互方式与在单个视图中启用上下文操作模式类似.  </p>
+</li>
+<li><p>指纹验证<code>FingerpringManager</code>类及权限.  </p>
+</li>
+<li>确认凭据, 通过上次解锁与本次解锁的时间间隔来验证身份, 结合你应用自身的公钥或私钥, 完成身份验证. 通过<code>createConfirmDeviceCredentialIntent()</code>发起新验证, 通过<code>setUserAuthenticationValidityDurationSeconds()</code>设置同一密钥的有效期.  </li>
+<li>应用链接(App Linking). 可令应用与某个特定Web域关联, 系统处理特定Web域的时候就会默认使用该应用, 而无需用户选择.  </li>
+<li>自动备份应用. 目标平台在23以上的应用, 系统会通过Google账户为其自动执行完整的数据备份或恢复.  </li>
+<li>直接共享. 提供<code>ChooserTargetService</code>类以供扩展, 可以直接发起一次共享调起其他应用的特定<code>Activity</code>. 可以指定某个<code>Activity</code>为可供直接共享的公开<code>Activity</code>. 有点类似于<code>ContentProvider</code>.  </li>
+<li>新的语音交互API.  </li>
+<li>助手程序. 用户在手动开启助手功能后, 可以通过长按”首页”按钮在任何应用内召唤助手.  </li>
+<li>可采用的存储设备(adoptable storage device).  </li>
+<li>在Nexus 6和Nexus 9上添加了对Hotspot 2.0的支持.  </li>
+<li>新增4K显示模式. 新增<code>Display.Mode</code>API.  </li>
+<li>ColorStateList现在也可以使用主题属性.  </li>
+</ul>
+<h3 id="改变"><a href="#改变" class="headerlink" title="改变"></a>改变</h3><ul>
+<li>SSL库从OpenSSL迁移到BoringSSL. 主要影响使用加密库的项目, 如果使用NDK编译, 不要链接到非NDK API组成部分的加密库, 例如<code>libcrypto.so</code>, <code>libssl.so</code>, 因为并非公共API, 所以在不同版本的系统或设备上可能会引起故障或行为变化, 且存在安全漏洞. 如果要用, 应当静态链接.  </li>
+<li>修改直接获取硬件标识符的API. 对于使用WLAN API和Bluetooth API的应用, 从前可通过<code>WifiInfo.getMacAddress()</code>和<code>BluetoothAdapter.getAddress()</code>方法拿到硬件Mac值, 现在这两个接口返回常量值<code>02:00:00:00:00:00</code>. 想要获取Mac值, 需要<code>ACCESS_FINE_LOCATION</code>或<code>ACCESS_COARSE_LOCATION</code>权限.  </li>
+<li><code>Notification.setLatestEventInfo()</code>移除, 改为<code>Notification.Builder</code>构建通知. <code>adb shell dumpsys notification --noredact</code>打印<code>notification</code>对象中的文本.  </li>
+<li>不再通过<code>AudioManager</code>直接修改音量, 弃用<code>setStreamSolo()</code>, <code>setStreamMute()</code>, 应当分别改为调用<code>requestAudioFocus()</code>, <code>adjustStreamVolume</code>(传入方向值<code>ADJUST_MUTE ADJUST_UNMUTE</code>).  </li>
+<li>Android密钥库不再支持DSA, 仍支持ECDSA.  </li>
+<li>WLAN和网络连接变更. 现在应用只能修改自己创建的<code>WifiConfiguration</code>对象状态.  </li>
+<li>相机服务变更. 相机服务中共享资源的访问模式由”先到先得”改为”高优先级进程优先访问”. 低优先级进程可能会被驱逐, 导致回调断开相机服务的函数. 活动的相机客户端仅属于当前账户, 切换账户会导致客户端断开.  </li>
+<li>运行时. 正确实现了<code>newInstance()</code>访问规则检查. 更新了动态链接程序的行为, 可识别<code>soname</code>与其路径之间的差异, 并能按<code>soname</code>搜索. 正确实现<code>dlopen(3) RTLD_LOCAL</code>标记. 在目标SDK高于23时, 直接加载包含文本重定位信息的共享库会被拒绝, 可以通过检查<code>dlopen(3)</code>失败日志并通过<code>dlerror(3)</code>获得调用返回的问题描述文本来确定库加载是否成功.  </li>
+<li>更严格的APK验证. 如果清单中声明的文件在APK中不存在, 该APK会被视为已损坏.  </li>
+<li>USB连接. 默认情况下USB连接设置为仅充电, 需要手动显式授予权限给数据访问等其他交互方式.  </li>
+<li>改善对蓝牙触控笔的支持.  </li>
+<li>改进蓝牙低功耗扫描.  </li>
+<li>增强音频功能. 添加了对MIDI的支持.  </li>
+<li>增强视频功能. 新增<code>MediaSync</code>类帮助应用同步渲染音频流和视频流.  </li>
+<li>增强相机功能. 新提供Flashlight API和Reprocessing API系列接口.  </li>
+</ul>
+<h3 id="删除"><a href="#删除" class="headerlink" title="删除"></a>删除</h3><ul>
+<li>不再支持Apache HTTP客户端. 应当改用<code>HttpURLConnection</code>.  </li>
+<li>移除对全局书签的支持. 移除<code>android.provider.Browser.getAllBookmarks()</code> <code>android.provider.Browser.saveBookmark()</code>方法和<code>READ_HISTORY_BOOKMARKS</code> <code>WRITE_HISTORY_BOOKMARKS</code>权限.  </li>
+</ul>
+<h2 id="Android-7-0-API-Level-24-25"><a href="#Android-7-0-API-Level-24-25" class="headerlink" title="Android 7.0 API Level 24 25"></a>Android 7.0 API Level 24 25</h2><h3 id="新增-1"><a href="#新增-1" class="headerlink" title="新增"></a>新增</h3><h3 id="改变-1"><a href="#改变-1" class="headerlink" title="改变"></a>改变</h3><ul>
+<li>低耗电模式在手机不处于静止状态时也适用.  </li>
+<li>面向Android 7.0及以上版本的应用, 私有目录被限制访问(0700).<br>这将导致几个副作用: <ol>
+<li>自主扩大访问权限的行为受到影响, 例如使用<code>MODE_WORLD_READABLE</code>或<code>MODE_WORLD_WRITEABLE</code>将引发<code>SecurityException</code>(但使用原生API或File API修改权限仍然不被限制, 尽管官方强烈反对);  </li>
+<li>尝试传递<code>file://URI</code>会触发<code>FileUriExposedException</code>, 推荐使用<code>FileProvider</code>分享私有文件内容;  </li>
+<li><code>DownloadManager</code>不再按文件名分享私人存储的文件. 面向Android 7.0或更高版本的应用在尝试访问<code>COLUMN_LOCAL_FILENAME</code>时会触发<code>SecurityException</code>, 除非<code>DownloadManager</code>设置为将文件存放在公共位置, 但官方强烈反对这种使用方法. 首选访问方式是使用<code>ContentResolver.openFileDescriptor()</code>.  </li>
+</ol>
+</li>
+<li>面向Android 7.0的应用, <code>StrictMode</code> API禁止在应用外公开<code>file://URI</code>, 如果包含文件URI的intent发送超出你应用的范围, 则引起<code>FileUriExposedException</code>异常, 应当使用<code>content://URI</code>并授予URI临时访问权限, 以在应用间共享文件. 例如使用<code>FileProvider</code>进行授权.  </li>
+<li>无障碍改进. 支持用户设置显示尺寸, 设备密度会因此改变, 面向API 23及以下的应用会被终止后台进程, 面向Android 7.0的应用所有进程都会收到有关配置变更的通知; 设置向导中增加视觉设置.  </li>
+<li>NDK应用链接至平台库. 从Android 7.0开始, 系统阻止应用动态链接到非公开NDK库. 需要注意您的应用中的第三方静态库可能会这么做, 因此应当检查确保应用不会在Android 7.0崩溃. 如果要使用原声代码, 只能使用公开的<a href="https://developer.android.com/ndk/guides/stable_apis.html" target="_blank" rel="external">NDK API</a>. 要使用私有库, 就需要将其添加到应用中. Android 7.0 SDK带有工具<code>readelf</code>, 使用以下命令可以生成给定的<code>.so</code>文件的所有动态链接的共享库列表: <code>aarch64-linux-android-readelf -dW libMyLibrary.so</code>.  </li>
+</ul>
+<h3 id="删除-1"><a href="#删除-1" class="headerlink" title="删除"></a>删除</h3><ul>
+<li>删除三个隐式广播: <code>CONNECTIVITY_ACTION</code> <code>ACTION_NEW_PICTURE</code> <code>ACTION_NEW_VIDEO</code>. 移动设备会经历频繁的连接变更, 其他应用例如相机可能会发送隐式广播<code>ACTION_NEW_PICTURE</code>和<code>ACTION_NEW_VIDEO</code>, 这三种广播的发送都非常频繁, 导致所有注册了的接收者都会被唤醒. 删除后, 面向Android 7.0开发的应用不再收到<code>CONNECTIVITY_ACTION</code>广播, 即使它声明接收, 除非它在前台运行并使用<code>BroadcastReceiver</code>请求接收通知. 所有应用都将无法发送或接收<code>ACTION_NEW_PICTURE</code> <code>ACTION_NEW_VIDEO</code>广播.  </li>
+</ul>
+<h3 id="API-23-gt-API-24"><a href="#API-23-gt-API-24" class="headerlink" title="API 23 -&gt; API 24"></a>API 23 -&gt; API 24</h3><p>见<a href="https://developer.android.com/sdk/api_diff/24/changes.html" target="_blank" rel="external">网页端</a>  </p>
+<h2 id="Android-8-0"><a href="#Android-8-0" class="headerlink" title="Android 8.0"></a><a href="https://developer.android.com/preview/behavior-changes.html?hl=zh-cn" target="_blank" rel="external">Android 8.0</a></h2><h3 id="面向开发者的新功能"><a href="#面向开发者的新功能" class="headerlink" title="面向开发者的新功能"></a>面向开发者的新功能</h3><p>本文摘录一部分, 完整版见<a href="https://developer.android.com/preview/api-overview.html?hl=zh-cn" target="_blank" rel="external">官网</a>.  </p>
+<h4 id="通知"><a href="#通知" class="headerlink" title="通知"></a>通知</h4><p>重新设计通知, 使管理通知行为和设置更加轻松和统一.</p>
+<ul>
+<li>通知渠道. 允许为要显示的每种通知类型创建用户可自定义的渠道. 用户界面将通知渠道称为通知类别.  </li>
+<li>休眠. 用户可以将通知置于休眠状态, 稍后重新显示. 应用可以移除或更新已休眠的通知, 但更新不会使它重新显示.  </li>
+<li>通知超时. 使用<code>Notification.Builder.setTimeout()</code>可以设置超时, 在指定的持续时间之后取消通知, 也可以提前取消通知.  </li>
+<li>通知清除. 系统现在可以区分用户清除和应用清除. 在<code>NotificationListenerService.onNotificationRemoved()</code>方法中可以得知.  </li>
+<li>背景颜色. 为通知设置背景颜色.  </li>
+<li>消息样式. <code>MessagingStyle</code>可以在通知的折叠形式中显示更多内容.  </li>
+</ul>
+<h4 id="自动填充框架"><a href="#自动填充框架" class="headerlink" title="自动填充框架"></a>自动填充框架</h4><p>Android O 引入自动填充框架, 新老应用都可以用此简化登陆和表单填写等工作.  </p>
+<h4 id="画中画-PictureInPicture-PIP-模式"><a href="#画中画-PictureInPicture-PIP-模式" class="headerlink" title="画中画(PictureInPicture,PIP)模式"></a>画中画(PictureInPicture,PIP)模式</h4><p>PIP模式是一种特殊的多窗口模式, 在Android TV中最早出现, 现在可应用于搭载 Android O的其他设备. Activity处于PIP模式时, 它会处于暂停状态, 但仍继续显示内容. 因此, 假如是一个支持PIP模式的视频播放Activity, 应该在<code>onPause</code>中继续播放, 而在<code>onStop</code>中才暂停播放, 并在<code>onStart</code>中继续播放. 其需要注意的除了跟多窗口模式一样以外, 但区别于多窗口模式, 只需要在清单中将<code>android:supportsPictureInPicture</code>设置为<code>true</code>, 无需将<code>android:resizeableActivity</code>设置为<code>true</code>, 后者仅在需要支持其他多窗口模式时才需要.<br>为了完成PIP模式, Android O引入了一个新对象<code>android.app.PictureInPictureArgs</code>, 可以将该对象传递给PIP方法, 用以指定某个Activity在其处于PIP模式时的行为. <a href="https://developer.android.com/training/tv/playback/picture-in-picture.html?hl=zh-cn" target="_blank" rel="external">点击查看如何添加画中画</a>.  </p>
+<h4 id="处理字体"><a href="#处理字体" class="headerlink" title="处理字体"></a>处理字体</h4><p>XML中允许使用字体作为资源. 字体可以不再以资产的形式存放, 并可通过R文件访问. Android O提供机制用于检索与系统字体有关的信息并提供文件描述符, 详情参见<a href="https://developer.android.com/preview/features/working-with-fonts.html?hl=zh-cn" target="_blank" rel="external">处理字体</a>.  </p>
+<h4 id="接听权限ANSWER-PHONE-CALLS"><a href="#接听权限ANSWER-PHONE-CALLS" class="headerlink" title="接听权限ANSWER_PHONE_CALLS"></a>接听权限ANSWER_PHONE_CALLS</h4><p>Android O引入权限<code>android.permission.ANSWER_PHONE_CALLS</code>, 应用可按照设定的方式接听拨入的电话.  </p>
+<h4 id="内容提供程序分页"><a href="#内容提供程序分页" class="headerlink" title="内容提供程序分页"></a>内容提供程序分页</h4><p>更新了内容提供程序(ContentProvider), 以支持大型数据集, 每次加载一页. 客户端和提供程序都必须实现分页.  </p>
+<h4 id="无障碍功能"><a href="#无障碍功能" class="headerlink" title="无障碍功能"></a>无障碍功能</h4><p>Android O提供以下功能, 支持应用创建自己的无障碍服务.  </p>
+<ul>
+<li>语言检测. 使用<code>TextClassificaationManager.detectLanguages()</code>检测”TTS”工具在某个文本范围内识别的语言.  </li>
+<li>无障碍功能按钮. 可以通过设置标志请求系统在导航区域显示你的无障碍服务的功能按钮, 并调用你自己注册的按钮回调.  </li>
+<li>指纹手势. 现在指纹传感器支持指纹手势, 如上下左右滑动, 但你的服务仅能在指纹传感器不用于身份验证时才可使用它.  </li>
+<li>字词级突出显示.  </li>
+<li>提示文本. 可以通过<code>AccessibilityNodeInfo.getHintText()</code>获取<code>EditText</code>的提示文本, 即便它当前并未显示提示文本.  </li>
+<li>连续的手势分派. 可以使用<code>GestureDescription.StrokeDescription</code>构造函数的最后一个参数指定属于同一设定手势的笔划的顺序.  </li>
+</ul>
+<h4 id="其他功能"><a href="#其他功能" class="headerlink" title="其他功能"></a>其他功能</h4><ul>
+<li>自适应启动器图标. 可以在不同设备型号上显示不同形状的图标.  </li>
+<li>颜色管理. 现在可以支持广色域彩色显示的新设备, 需要在Activity中启用一个标志.  </li>
+<li>WLAN感知. 基于周边感知联网(NAN)规范, 在具有相应感应器的设备上, 应用可以与之通过WLAN进行搜索和通信, 无需依赖互联网接入点.  </li>
+<li>配套设备配对, Android O允许自定义配对请求对话框.  </li>
+<li>WebView API. 提供多种API以增强应用的稳定性和安全性. 见<a href="https://developer.android.com/preview/features/managing-webview.html?hl=zh-cn" target="_blank" rel="external">管理WebView</a>  </li>
+<li>固定快捷方式和小部件.  </li>
+<li>媒体功能增强.  </li>
+<li>多显示器支持.  </li>
+<li>新的帐号访问和Discovery API  </li>
+<li><code>AnimatorSet</code>支持寻道和倒播.  </li>
+<li>自动调整<code>TextView</code>大小.  </li>
+<li>应用可以声明它们所属的类别, 这将用于分类呈现给用户.  </li>
+<li>应用可获得一定的磁盘空间配额用于缓存数据, 在系统需要释放磁盘空间时会优先释放超过配额最多的应用的缓存文件, 应用可以针对每个目录设定两种行为, 以控制系统如何释放该数据: 1. 将指定的目录作为不可分割的整体进行删除; 2. 指示不应该删除某个文件, 而是将它截断为0字节.  </li>
+<li>有关企业版Android(Android for Work)的更新.  </li>
+<li>更新了Java编程语言支持.  </li>
+</ul>
+<h3 id="改变-2"><a href="#改变-2" class="headerlink" title="改变"></a>改变</h3><ul>
+<li>后台执行限制. 当应用进入已缓存状态时, 如果没有活动的组件, 系统将解除应用具有的所有唤醒锁.  </li>
+<li>降低了后台应用接收位置更新的频率.  </li>
+<li>蓝牙<code>ScanRecord.getBytes()</code>不再对所接收的字节数做任何假定. 返回的字节数可能会超过之前最大60字节的限制, 也可能小于.  </li>
+<li>无障碍服务现在可识别<code>TextView</code>内部的所有<code>ClickableSpan</code>实例.  </li>
+<li>安全性增强. 不再支持<code>SSLv3</code>; 使用<code>HttpsURLConnection</code>建立HTTPS连接时, 如果服务器未正确实现TLS协议版本, 不再采取回退到之前的TLS协议版本的权宜之计; Android O将使用安全计算过滤器过滤所有应用, 系统调用仅允许通过bionic公开的系统调用; WebView在多进程模式下运行, 网页内容在独立的进程, 与应用进程相隔离; APK不能假设驻留在名称以-1或-2结尾的目录中, 应用应当使用<a href="https://developer.android.com/reference/android/content/pm/ApplicationInfo.html?hl=zh-cn#sourceDir" target="_blank" rel="external">sourceDir</a>获取目录; 增强<a href="https://developer.android.com/preview/behavior-changes.html?hl=zh-cn#nl" target="_blank" rel="external">原生库</a>安全性.  </li>
+<li>隐私性. 改变了标识符处理方式, 现在通过应用而不是用户来确定<code>ANDROID_ID</code>的值范围. 对于同一包名和签名的应用, 卸载或重新安装时<code>ANDROID_ID</code>值不变, 如果软件包签名密钥因为系统更新而改变, <code>ANDROID_ID</code>值也不变; 查询<code>net.hostname</code>系统属性, 返回为空.  </li>
+<li>记录未捕获的异常. 如果异常未被移交给默认的<code>Thread.UncaughtExceptionHandler</code>, 系统将会记录异常堆栈跟踪情况. 建议自定义<code>Thread.UncaughtExceptionHandler</code>的实现始终移交给默认处理程序处理.  </li>
+<li>联系人提供程序 使用情况统计方法变更. 应用请求<code>READ_CONTACTS</code>权限, 使用情况数据查询会返回近似值, 此前是返回精确值.  </li>
+<li>集合的处理. <code>AbstractCollection.removeAll()</code> 和 <code>AbstractCollection.retainAll()</code> 始终引发 <code>NullPointerException</code>, 以符合文档要求.  </li>
+</ul>
+<h3 id="针对Android-O的应用"><a href="#针对Android-O的应用" class="headerlink" title="针对Android O的应用"></a>针对Android O的应用</h3><p>那些<code>compileSdkVersion</code>或<code>targetSdkVersion</code>在Android O及以上的应用, 开发者需要按如下指导修改以正确支持相应行为.  </p>
+<ul>
+<li>提醒窗口. 使用<code>SYSTEM_ALERT_WINDOW</code>权限的应用必须使用新的<code>TYPE_APPLICATION_OVERLAY</code>窗口类型来在其他应用和系统窗口上方显示提醒窗口, 以前的多个窗口类型不可用. 该新窗口类型具有以下特性: 始终显示在状态栏和输入法等关键系统窗口下面; 系统可以移动该窗口或调整其大小, 以改善屏幕显示效果; 用户可以打开通知栏设置阻止应用使用该类型的提示窗口.  </li>
+<li>内容变更通知. <code>ContentResolver.notifyChange()</code> 和 <code>registerContentObserver(Uri, boolean, ContentObserver)</code>接口需要在URI中定义一个有效的<code>ContentProvider</code>, 这可以防范来自恶意应用的内容变更.  </li>
+<li>View焦点. 现在View默认也可以成为焦点.  </li>
+<li>安全性. 网络安全性配置设置为不允许明文流量的话, <code>WebView</code>将无法通过HTTP访问网站.  </li>
+<li>权限. 此前, 应用在运行时请求权限并且被授予该权限, 那么在清单中注册的同一组的其他权限也将被一起授予. 现在, 这些同组权限不会在此时被授予, 但如果请求的某一权限被授予, 则后续对同组其他权限的请求将会立即被授予.  </li>
+<li>集合处理. 此前, <code>List.sort()</code>的默认实现会调用<code>Collections.sort()</code>, 在Android O中则恰好相反. 但此时有以下限制: <code>List.sort()</code>的实现不能调用<code>Collections.sort()</code>, 显然因为循环调用; 重写<code>sort</code>的时候也要异常小心, 区分API级别来调用不同的默认实现或者调用与<code>sort</code>不存在依赖关系的方法来实现; 此前, 在<code>List</code>迭代过程中<code>Collections.sort()</code>对<code>List</code>进行排序不会引发异常, 此项变更使得该方式也抛出<code>ConcurrentModificationException</code>异常.  </li>
+<li>类加载行为. 不支持多个类加载器加载同一个<code>DexFile</code>对象来定义类, 否则引发<code>InternalError</code>错误. <code>DexFile API</code>现已弃用. 所有类加载器都被视为支持并行运行. 多个线程用同一个类加载器加载相同的类时, 第一个完成操作的线程胜出, 操作结果可以用于其他线程.  </li>
+</ul>
+<h3 id="功能和API"><a href="#功能和API" class="headerlink" title="功能和API"></a>功能和API</h3><ul>
+<li>后台执行限制. Android O对应用在后台运行时可以执行的操作施加了限制. 应用在后台服务和广播两方面存在限制, 在多数情况下应用可以使用<code>JobScheduler</code>作业克服这些限制. Android O对<code>JobScheduler</code>提供了多个改进.  </li>
+<li>对于后台应用, 位置检索行为将受到限制, 频率降低.  </li>
+<li>Notification Badges. 前面介绍过, 类似于3D Touch的快捷方式.  </li>
+<li>以O为目标的应用, 显示通知需要实现一个或多个通知渠道(channel), 优先级(重要性)由以前的为单个通知指定变更为适用于整个通知渠道.  </li>
+<li>Autofill Framework. 全新的自动填充框架, 提供一个服务, 应用可以利用该服务使用自动填充.  </li>
+<li>Unknown App Install Permission. 这是一个权限, 允许App安装其他的未知App, 用户可以选择哪些应用具有这种权限. App需要在清单中声明, 在运行时申请该权限.  </li>
+<li>Pointer Capture. 这是鼠标动作捕捉机制. 在类似游戏/远程桌面/虚拟客户端等场景下, 控制鼠标点击很有用处. 该机制下, 获得焦点的View可以捕捉MotionEvent, 在回调中自行处理所有捕捉到的事件.  </li>
+</ul>
+]]></content>
+    
+    <summary type="html">
+    
+      如今Android 已经出到了O (Android 8.0, API Leve 26), 多个版本累加起来变化颇多, 记...
+    
+    </summary>
+    
+      <category term="android" scheme="https://hjhjw1991.github.io/categories/android/"/>
+    
+    
+      <category term="android" scheme="https://hjhjw1991.github.io/tags/android/"/>
+    
+  </entry>
   
   <entry>
     <title>Animation详解</title>
@@ -3366,166 +3647,6 @@ of java.</code>。比如我编译4.4源码用的JDK 1.8，就提示java版本错
       <category term="guide" scheme="https://hjhjw1991.github.io/tags/guide/"/>
     
       <category term="android" scheme="https://hjhjw1991.github.io/tags/android/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>【Android教程】AIDL入门</title>
-    <link href="https://hjhjw1991.github.io/android/2016/04/01/%5BAndroid%E6%95%99%E7%A8%8B%5DAIDL%E5%85%A5%E9%97%A8/"/>
-    <id>https://hjhjw1991.github.io/android/2016/04/01/[Android教程]AIDL入门/</id>
-    <published>2016-03-31T16:00:00.000Z</published>
-    <updated>2017-05-04T10:34:56.491Z</updated>
-    
-    <content type="html"><![CDATA[<blockquote>
-<p>AIDL,android interface definition language  </p>
-</blockquote>
-<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><blockquote>
-<p>某天，我问谷歌爸爸，在Android中进程之间如何进行通讯？<br>我以为这很简单，我去找到要通讯的对象进程，然后建立连接，直接通讯。<br>然而谷歌爸爸说，不行，你这么做不安全，你崩掉了可能让人家也崩掉，锅不是这么甩的。<br>我问谷歌爸爸，那怎么办？<br>谷歌爸爸说，我给你工具，我给你通道，你给我间接地来，我保证你们互不影响。<br>工具在哪？叫什么名字？<br>工具在SDK里，有AIDL，Binder，Messenger，Service，需要什么用什么<br>怎么用？<br>自己看文档<br>看不懂怎么办？<br>边看边写<br>写了还不懂怎么办？<br>考虑改行吧<br>哦  </p>
-</blockquote>
-<p><img src="/images/blogs/aidl-basic.png" alt="aidl">  </p>
-<h2 id="AIDL"><a href="#AIDL" class="headerlink" title="AIDL"></a>AIDL</h2><p>在Android中，进程之间是不能直接通讯的，他们也没有公共数据区域，但我们实实在在地需要进程间通讯，怎么办呢？Android为我们提供了四种进程间通讯的方式，正好对应四种基本应用程序组件：Activity, Content Provider, Broadcase, Service.  </p>
-<ul>
-<li>Activity可以跨进程调用其他的Activity  </li>
-<li>Content Provider以形似DBC(database connector)的方式访问其他应用程序的数据  </li>
-<li>Broadcast以发送广播的方式唤起对应进程  </li>
-<li>Service以AIDL方式访问其他应用程序的数据  </li>
-</ul>
-<p>AIDL是一种IPC(Inter-Process Communication)方式，是C/S结构，如果接触过Java中RPC框架(例如hessian)，可以很快理解这种方式。  </p>
-<p>AIDL可以算是一种DSL(Domain Specific Language)。Android中一个进程不允许直接访问另一个进程的内存数据，他们必须要将数据分解(parcel)成操作系统可以识别的最基本的数据类型之后进行传输。AIDL就负责这一块。  </p>
-<p>与所有技术一样，只有在需要的时候才考虑AIDL，因为跨进程通讯是有代价的。那么什么时候用AIDL呢？  </p>
-<ul>
-<li>如果你<strong>只需要IPC</strong>，不需要多线程，你应该考虑Android提供的<strong>Messenger</strong>机制</li>
-<li>如果你还要<strong>多线程</strong>，但是不需要多个应用程序并发进行IPC，你应该考虑Android提供的<strong>Binder</strong>机制(特化的AIDL)</li>
-<li>如果你需要<strong>多个应用程序并发IPC</strong>，还需要多线程处理，你应该考虑使用AIDL</li>
-</ul>
-<p>那么，AIDL怎么写，怎么用？其实一句话懂的人就懂了：AIDL就是RPC中的服务接口。<br>如下图示(绿色虚线框为服务端代码，蓝色虚线框为客户端代码)：<br><img src="/images/blogs/aidl-call.png" alt="aidl-call"></p>
-<p>假设我们的应用A需要自己能被别的应用调用和访问，不妨假设调用者为应用B。这样被访问的一方，就是提供服务的一方，即C/S中的S，而访问的一方就是客户端C。<br>我们需要在应用A中和应用B中都定义AIDL，并且在应用A中实现AIDL接口。<br>如果A不实现AIDL，是没法以AIDL的方式被调用的。这很好理解，你想跟别人对话，也要看别人愿不愿意跟你对话，对吧。  </p>
-<p>Android SDK中aidl工具会将<code>.aidl</code>文件加入一些东西(比如自动加入抽象静态内部类<strong>Stub</strong>)，转换为同名的<code>.java</code>文件以供使用。<br>Eclipse和Android Studio都可以调用aidl工具将你定义的<code>.aidl</code>文件转换成<code>.java</code>。<br>AIDL文件中可以引用其他AIDL文件定义的接口，但不能直接引用<code>.java</code>中定义的接口。<br>但是！有能力的程序员完全可以自己写<code>.java</code>文件，完全手工完成接口定义。  </p>
-<h2 id="案例"><a href="#案例" class="headerlink" title="案例"></a>案例</h2><p>继续沿用上一节末尾提到的应用A和应用B，这里为了简化场景，假设A是某个Application中负责远程计算的Service，运行在独立的进程中，B是这同一个Application中负责业务逻辑的模块，需要调用A来进行远程计算。  </p>
-<p>在具体使用的时候，需要结合具体情境给出回调方式以获取服务实例，这里以使用Service为例，它自带onBind回调，我们只需要实现这个回调返回给客户端一个实例。  </p>
-<p>当获得了服务端的实例之后就可以直接使用这个对象了。  </p>
-<p>如下图所示：</p>
-<p><img src="/images/blogs/aidl-instance.png" alt="aidl-instance"></p>
-<p>由于画图技能没点，该图讲得不好，最好结合自己写的aidl和对应生成的<code>.java</code>文件来看。  </p>
-<h2 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h2><p>aidl自动生成的文件中，使用抽象类Stub帮助你从外部定义服务端的实现，系统通过Stub和asInterface等存在于该生成文件中的预定义的方法来实现调用。  </p>
-<p>打开<code>.java</code>文件，看看它的所有新增的方法和成员，可以帮助深入理解aidl的设计思想和运行原理。它里面有非常神奇的一些用法，例如抽象内部类Stub实现了存在于其外部的接口（它自身！），然后利用Proxy代理使用服务端实现。  </p>
-<p>客户端获取到的实际上是远程服务的代理。而实际工作，是在服务端的代理中调用方法，以及代理前后调用onTransact进行序列化和反序列化。  </p>
-<p>以下是示意图，写下去涉及的东西就多了，而且我也没有仔细阅读，这里就不误人子弟了，强烈建议大家自己去阅读感兴趣的部分。  </p>
-<p><img src="/images/blogs/aidl-axiom.png" alt="aidl-axiom"></p>
-<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>先上最重要的结论：<strong>在自带的<code>Binder</code>机制和<code>Messenger</code>机制无法解决你的多线程、多应用间通讯的场景时，使用aidl</strong>  </p>
-<p>aidl提供了由系统支持的类RPC的进程间通讯方式。与直接通信的区别在于，系统可以借助aidl的定义来找到实现该aidl的组件，而且看起来好像并没有切换出当前进程环境(事实上是系统帮你把远程服务端运行起来了，aidl的执行都是在服务端，这就是为什么你在使用完毕的时候需要解绑服务端进程以避免内存泄漏)，使得客户端使用较为流畅无痕。隔离客户端和服务端，两者只需要面向接口编程，客户端可以完全不关心服务端的行为。  </p>
-<p>aidl的缺点是传输的数据只支持Java内建基本数据类型(而且<code>short</code>除外)、<code>String</code>、<code>CharSequence</code>、只包含以上支持类型的List和Map，以及实现了<code>Parcelable</code>(一个类似于<code>Serializable</code>的接口，但强制要求实现类必须实现反序列化生成器<code>public static final Parcelable.Creator&lt;T&gt; CREATOR</code>和序列化生成器<code>writeToParcel</code>，其中<code>CREATOR</code>虽然是自己写的成员变量，但是名称和修饰词都不能更改)接口的类型。  </p>
-<p>在<code>List</code>和<code>Map</code>这种用到泛型的情况下，需要指明List和Map是作为<code>in/out/inout</code>哪种方式使用的。网上某视频说在传输数据的时候会有一个打包和解包的过程，而这个过程代价非常大，说是出于节约资源的考虑才要求指明是作为输入还是作为输出。这或许也是考虑之一，但我更倾向于认为是出于保持里氏代换原则的考虑，毕竟这里如果你没声明的话会报编译错误，而一般来说影响性能的行为只会报警告，而不是错误。而且看到<code>in/out</code>这种词语，我很容易就联想到我的另一篇blog<a href="http://blog.hjhjw1991.net/blog/2016/02/25/Java%E4%B8%AD%E7%9A%84%E5%8D%8F%E5%8F%98%E5%92%8C%E9%80%86%E5%8F%98/" target="_blank" rel="external">Java中的协变和逆变</a>  </p>
-<p>另外，如果使用<code>Parcelable</code>接口传递自定义的数据对象，由于传递对象的时候序列化之后本质上是二进制流，那实现相应的序列化和反序列化的方法时，成员顺序必须完全一致，而且客户端和服务端都需要有完全一致的该自定义类文件。也是由于底层序列化会把<code>short</code>类型强行提升为<code>int</code>型，所以就直接不支持<code>short</code>类型的序列化 。  </p>
-<p>对于aidl来说，它不直接识别java的源文件，所以需要给出自定义类的相应的aidl描述。当然aidl中对于实体的描述比接口描述要简单得多，只需要直接声明实体就行了。  </p>
-<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p>《Android开发艺术探索》<br><a href="http://blog.csdn.net/luoshengyang/article/details/6642463" target="_blank" rel="external">Android系统进程间通信Binder机制在应用程序框架层的Java接口源代码分析</a><br><a href="http://blog.csdn.net/coding_glacier/article/details/7520199" target="_blank" rel="external">Android Binder机制</a><br><a href="http://blog.csdn.net/toyuexinshangwan/article/details/8640709" target="_blank" rel="external">Android跨进程通信的四种方式</a><br><a href="http://blog.csdn.net/thegameisfives/article/details/14000941" target="_blank" rel="external">Android ： 基本空间划分 ＆ IPC框架分析</a><br><a href="http://www.cnblogs.com/a284628487/p/3187320.html" target="_blank" rel="external">Android 内核–Binder架构分析</a><br><a href="http://blog.csdn.net/stonecao/article/details/6425019" target="_blank" rel="external">Android AIDL使用详解</a><br><a href="http://www.cnblogs.com/feike/archive/2013/01/08/2851833.html" target="_blank" rel="external">Binder与AIDL服务</a>  </p>
-]]></content>
-    
-    <summary type="html">
-    
-      又叫【花样劝退教程】。本文讲AIDL进程间通讯
-    
-    </summary>
-    
-      <category term="android" scheme="https://hjhjw1991.github.io/categories/android/"/>
-    
-    
-      <category term="guide" scheme="https://hjhjw1991.github.io/tags/guide/"/>
-    
-      <category term="android" scheme="https://hjhjw1991.github.io/tags/android/"/>
-    
-      <category term="interview" scheme="https://hjhjw1991.github.io/tags/interview/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>【Leetcode题解】3-Longest Substring Without Repeating Characters</title>
-    <link href="https://hjhjw1991.github.io/leetcode/2016/03/21/%5BLeetcode%E9%A2%98%E8%A7%A3%5D3-Longest%20Substring%20Without%20Repeating%20Characters/"/>
-    <id>https://hjhjw1991.github.io/leetcode/2016/03/21/[Leetcode题解]3-Longest Substring Without Repeating Characters/</id>
-    <published>2016-03-20T16:00:00.000Z</published>
-    <updated>2016-08-30T08:03:26.717Z</updated>
-    
-    <content type="html"><![CDATA[<blockquote>
-<p>本系列代码见<a href="https://github.com/hjhjw1991/leetcode" target="_blank" rel="external">我的Leetcode仓库</a></p>
-</blockquote>
-<p>tags: [Hash Table,Two Pointers]  </p>
-<p>在字符串中找到最长的无重复字符的子串，返回它的长度。<br>这个题的题设要求非常简单，只要出现重复的字符就不行，所以很容易可以想到Hash Table。<br>HashTable的做法是，从左到右扫描并存储见过的字符，如果遇到该字符已经见过了，则记录当前table容量并与当前最大长度求max，并从左到右删除到该字符为止的已经见过的字符。根据题意可以假设最大长度至少为1，且不会大于26.当原字符串为空时最大长度为0.  </p>
-<p>从上面HashTable的解法描述中可以提取Two Pointers解法，即设置同向指针left和right，并初始化boolean数组用以表示是否参与当前最长子串计算，boolean数组下标是字符，其作用可以用HashMap代替。<br>初始left和right指向字符串起点，如果boolean数组right所指向的字符没有参与，则设置为参与并右移，否则计算right-left获得当前长度，并与当前最大长度求max，这之后left左移恢复状态，直到left所指向的字符与right所指向的字符一致。  </p>
-<p>Two Pointers解法比HashTable解法好的一点是，用boolean数组代替了HashMap，这在运行性能上会好一些，但理论时间复杂度没变，都是O(N)。考虑到隐性假设字符为ASCII字符，范围可控，使用boolean数组做更合适。如果是任意字符，则应该使用HashTable。  </p>
-]]></content>
-    
-    <summary type="html">
-    
-      最长无重复字符的子串
-    
-    </summary>
-    
-      <category term="leetcode" scheme="https://hjhjw1991.github.io/categories/leetcode/"/>
-    
-    
-  </entry>
-  
-  <entry>
-    <title>【Leetcode题解】2-Add Two Sum</title>
-    <link href="https://hjhjw1991.github.io/leetcode/2016/03/21/%5BLeetcode%E9%A2%98%E8%A7%A3%5D2-Add-Two-Numbers/"/>
-    <id>https://hjhjw1991.github.io/leetcode/2016/03/21/[Leetcode题解]2-Add-Two-Numbers/</id>
-    <published>2016-03-20T16:00:00.000Z</published>
-    <updated>2016-08-30T08:03:26.717Z</updated>
-    
-    <content type="html"><![CDATA[<blockquote>
-<p>本系列代码见<a href="https://github.com/hjhjw1991/leetcode" target="_blank" rel="external">我的Leetcode仓库</a></p>
-</blockquote>
-<p>tags: [Math,Linked List]  </p>
-<p>两个以链表形式存储的非负整数，每个节点是一个数字，并且按倒序表示，低位在前高位在后，要求返回同样形式表示的和。  </p>
-<p>这是一个非常典型的数学基本操作和链表基本操作题，别看它难度不大，多做这样的题可以让你在以后做基本操作的时候得心应手，而且几乎不会出错。  </p>
-<p>解题方式和注意点也非常典型。<br>加法器的基本实现思路是从低位到高位按位相加并保持进位。<br>正确性上需要注意对最高位进位的处理，链表上需要对空输入和剩余位处理。  </p>
-<p>正文已经结束，我最后啰嗦几句，这个题简单在题设，我们自己可以试着把限制条件一一去掉以接近更真实的情况，例如正序表示，考虑负数，考虑小数。事实上Leetcode上就有变形题。<br>处理链表的时候，除了基本的指针操作以外，特别要注意头节点和尾节点处理，以及空链表和单节点链表这两种特殊情况。<br>指针操作也是一系列涉及指针的问题的基本操作，所以需要熟练掌握，除了单链表以外，还有双向链表，循环链表，十字链表，Dancing链表，数组模拟链表。在树结构处理的时候，经常就会用到多指针链表，例如Btree，Trie。  </p>
-]]></content>
-    
-    <summary type="html">
-    
-      填坑, 两数求和
-    
-    </summary>
-    
-      <category term="leetcode" scheme="https://hjhjw1991.github.io/categories/leetcode/"/>
-    
-    
-  </entry>
-  
-  <entry>
-    <title>【Leetcode题解】1-Two Sum</title>
-    <link href="https://hjhjw1991.github.io/leetcode/2016/03/21/%5BLeetcode%E9%A2%98%E8%A7%A3%5D1-Two-Sum/"/>
-    <id>https://hjhjw1991.github.io/leetcode/2016/03/21/[Leetcode题解]1-Two-Sum/</id>
-    <published>2016-03-20T16:00:00.000Z</published>
-    <updated>2016-08-30T08:03:26.717Z</updated>
-    
-    <content type="html"><![CDATA[<blockquote>
-<p>本系列代码见<a href="https://github.com/hjhjw1991/leetcode" target="_blank" rel="external">我的Leetcode仓库</a></p>
-</blockquote>
-<p>tags: [Array,Hash Table]</p>
-<p>填坑第一作，坑在<a href="http://blog.hjhjw1991.net/opinion/2015/10/15/开坑-Leetcode题解/" target="_blank" rel="external">这里</a><br>以后都假设大家都看过题目了，我会大略说一下题意，注意点，解法，但是就不搬运题目了。  </p>
-<p>Two Sum是一个经典的数列问题，它可以直指高斯消元法。本题是一个最简单的情况，给定一个数列和一个目标，在数列中找到两个数，使得他们的和等于目标，返回这两个数的序号（从0开始计）。  </p>
-<p>虽然是简单的题，但我说话比较啰嗦，就说一下我的想法。此题乃至一般题，首先想到判空，如果数列中不存在目标数怎么处理。因为是在Leetcode上可以无限试，特别是现在开了模拟coding run之后，所以完全可以构造一个用例看看Leetcode对于这种情况他是怎么处理的。然后考虑多个解的情况，怎么处理。我做的时候，他题目中有很强的假设，说有且仅有一个解。如果在面试的过程中遇到这种题，需要向面试官明确以上条件，不但可以简化实现，同时也可以反映出你的思路，一般来说面试时很少遇到这么简单的题，如果遇到那么你在别的方面的表现可能就是你取胜之处。  </p>
-<p>考虑了不存在的情况后，考虑正常情况。可以有几种解法：  </p>
-<h2 id="Brute-Force"><a href="#Brute-Force" class="headerlink" title="Brute Force"></a>Brute Force</h2><p>最容易想到暴力解法，固定一个元素，遍历其余元素，找到满足条件的就返回。这种解法最坏情况是N^2时间复杂度。但是这是帮助自己理清思路的好方法，特别是当问题较为复杂的时候，如果有暴力解法能写出来，再在这个基础上优化也是好的。在面试的时候，面试官对于这种优化行为也是较为欣赏。怎么说呢，暴力解法就像是及格线，需要熟练掌握，但是未必需要亮出来。  </p>
-<h2 id="HashMap"><a href="#HashMap" class="headerlink" title="HashMap"></a>HashMap</h2><p>HashMap总体上跟暴力解法相似，但是进行了优化。我们在暴力解法中，事实上有过很多重复计算，如果能把这些计算保存下来必然可以减少复杂度，HashMap就是在这种情况下想到的。  </p>
-<p>解法是先预处理，将数组每个元素相对于目标的差值及其对应的下标存入Map，时间O(N)。<br>然后从头开始看每个元素是否都已经存在于Map中，这一步是N*O(1)。如果存在则说明找到解，可以返回序号。<br>需要注意的是判断两个下标是否指向同一个元素，如果是则跳过。<br>总体复杂度是O(2N)  </p>
-<h2 id="Two-Pointer"><a href="#Two-Pointer" class="headerlink" title="Two Pointer"></a>Two Pointer</h2><p>有没有更巧妙的方式呢？有，就是Two Pointer。但是Two Pointer的解法依赖于有序数组，而题目中没有这个信息，所以这种算法在这个题不一定是最好的，但是这是一种非常巧妙的思想，可以在一遍扫描就完成求解。  </p>
-<p>Two Pointer的基本思路，就是在有序数组上，左右设置指针，对向移动，当指针相遇则算法结束。无比经典的快速排序就是基于Two Pointer和Recursive的方式。  </p>
-<p>对于求和，不妨先假设数组升序，那么设置left和right指针，对向移动，看left和right指向的数之和是否等于目标，如果是则返回，如果大了则right指针移动，小了则left指针移动，指针相遇说明无解。这个算法的正确性可以很简单地证明：假设相遇时存在解，那么可以假设至少其中一个指针曾停留在其中一个解上，不妨假设是left指针在较小的解上，此时如果right指针在另一个解左边，则和小于目标，不可能移动right，而right在另一个解的右边时则和大于目标，应当移动right，必然到达另一个解，与假设矛盾。  </p>
-<p>至此思路清晰，将数组排序，然后使用双指针跑一遍即可得到解，总体时间复杂度是O(logN+N)，如果原本就有序则可更优。<br>需要注意的是排序前保留序号和数值对应关系，同时注意可能有重复元素，所以需要以链表方式存储。  </p>
-<p>Two Pointer算法可以扩展到含有重复元素的数组，可以扩展到双向链表，可以修改为同向指针应用于链表有无环判断，可以扩展到Three Pointers，可以扩展到适用于N Sum问题，可以结合回溯法解最优化问题。可以说是非常简洁有用的算法。  </p>
-]]></content>
-    
-    <summary type="html">
-    
-      填坑第一作，从简单的开始
-    
-    </summary>
-    
-      <category term="leetcode" scheme="https://hjhjw1991.github.io/categories/leetcode/"/>
-    
     
   </entry>
   
