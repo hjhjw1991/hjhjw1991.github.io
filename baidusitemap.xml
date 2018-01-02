@@ -4,6 +4,52 @@
 
     
   <url>
+    <loc>https://hjhjw1991.github.io/android/2018/01/02/Apk%E5%AE%89%E8%A3%85%E5%8D%B8%E8%BD%BD%E5%8E%9F%E7%90%86/</loc>
+    <lastmod>2018-01-02T10:58:28.862Z</lastmod>
+    <data>
+        <display>
+        <title>Apk安装卸载原理</title>
+        <pubTime>2018-01-01T16:00:00.000Z</pubTime>
+        
+        <tag>guide</tag>
+         
+        <tag>android</tag>
+         
+         
+           
+             
+              <breadCrumb title="android" url="https://hjhjw1991.github.io/categories/android/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://hjhjw1991.github.io/android/2016/12/21/%5BAndroid%E6%95%99%E7%A8%8B%5Dndk&jni/</loc>
+    <lastmod>2017-08-16T04:44:47.745Z</lastmod>
+    <data>
+        <display>
+        <title>【Android教程】NDK&JNI入门</title>
+        <pubTime>2016-12-20T16:00:00.000Z</pubTime>
+        
+        <tag>guide</tag>
+         
+        <tag>android</tag>
+         
+        <tag>interview</tag>
+         
+         
+           
+             
+              <breadCrumb title="android" url="https://hjhjw1991.github.io/categories/android/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>https://hjhjw1991.github.io/Java/2017/08/02/Executor%E6%A1%86%E6%9E%B6/</loc>
     <lastmod>2017-08-03T09:19:44.219Z</lastmod>
     <data>
@@ -384,30 +430,6 @@
 
     
   <url>
-    <loc>https://hjhjw1991.github.io/android/2016/12/21/%5BAndroid%E6%95%99%E7%A8%8B%5Dndk&jni/</loc>
-    <lastmod>2017-05-04T10:31:59.115Z</lastmod>
-    <data>
-        <display>
-        <title>【Android教程】NDK&JNI入门</title>
-        <pubTime>2016-12-20T16:00:00.000Z</pubTime>
-        
-        <tag>guide</tag>
-         
-        <tag>android</tag>
-         
-        <tag>interview</tag>
-         
-         
-           
-             
-              <breadCrumb title="android" url="https://hjhjw1991.github.io/categories/android/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
     <loc>https://hjhjw1991.github.io/android/2017/01/10/%5BAndroid%E6%95%99%E7%A8%8B%5DBinder%E5%85%A8%E8%A7%A3/</loc>
     <lastmod>2017-05-04T10:31:43.295Z</lastmod>
     <data>
@@ -644,26 +666,6 @@
 
     
   <url>
-    <loc>https://hjhjw1991.github.io/blog/2016/02/25/Java%E4%B8%AD%E7%9A%84%E5%8D%8F%E5%8F%98%E5%92%8C%E9%80%86%E5%8F%98/</loc>
-    <lastmod>2016-08-30T08:03:26.717Z</lastmod>
-    <data>
-        <display>
-        <title>Java中的协变和逆变</title>
-        <pubTime>2016-02-24T16:00:00.000Z</pubTime>
-        
-        <tag>Java</tag>
-         
-         
-           
-             
-              <breadCrumb title="blog" url="https://hjhjw1991.github.io/categories/blog/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
     <loc>https://hjhjw1991.github.io/leetcode/2016/03/21/%5BLeetcode%E9%A2%98%E8%A7%A3%5D1-Two-Sum/</loc>
     <lastmod>2016-08-30T08:03:26.717Z</lastmod>
     <data>
@@ -682,11 +684,11 @@
 
     
   <url>
-    <loc>https://hjhjw1991.github.io/leetcode/2016/03/21/%5BLeetcode%E9%A2%98%E8%A7%A3%5D3-Longest%20Substring%20Without%20Repeating%20Characters/</loc>
+    <loc>https://hjhjw1991.github.io/leetcode/2016/03/21/%5BLeetcode%E9%A2%98%E8%A7%A3%5D2-Add-Two-Numbers/</loc>
     <lastmod>2016-08-30T08:03:26.717Z</lastmod>
     <data>
         <display>
-        <title>【Leetcode题解】3-Longest Substring Without Repeating Characters</title>
+        <title>【Leetcode题解】2-Add Two Sum</title>
         <pubTime>2016-03-20T16:00:00.000Z</pubTime>
         
          
@@ -700,11 +702,11 @@
 
     
   <url>
-    <loc>https://hjhjw1991.github.io/leetcode/2016/03/21/%5BLeetcode%E9%A2%98%E8%A7%A3%5D2-Add-Two-Numbers/</loc>
+    <loc>https://hjhjw1991.github.io/leetcode/2016/03/21/%5BLeetcode%E9%A2%98%E8%A7%A3%5D3-Longest%20Substring%20Without%20Repeating%20Characters/</loc>
     <lastmod>2016-08-30T08:03:26.717Z</lastmod>
     <data>
         <display>
-        <title>【Leetcode题解】2-Add Two Sum</title>
+        <title>【Leetcode题解】3-Longest Substring Without Repeating Characters</title>
         <pubTime>2016-03-20T16:00:00.000Z</pubTime>
         
          
@@ -754,12 +756,12 @@
 
     
   <url>
-    <loc>https://hjhjw1991.github.io/leetcode/2015/08/06/%5BLeetcode%E9%A2%98%E8%A7%A3%5D136-137-260-Single-Number/</loc>
+    <loc>https://hjhjw1991.github.io/leetcode/2014/12/26/%5BLeetcode%E9%A2%98%E8%A7%A3%5D169-Majority-Element/</loc>
     <lastmod>2016-08-30T08:03:26.717Z</lastmod>
     <data>
         <display>
-        <title>【Leetcode题解】136-137-260-Single Number类型的问题</title>
-        <pubTime>2015-08-05T16:00:00.000Z</pubTime>
+        <title>【Leetcode题解】169-Majority Element</title>
+        <pubTime>2014-12-25T16:00:00.000Z</pubTime>
         
          
            
@@ -772,12 +774,12 @@
 
     
   <url>
-    <loc>https://hjhjw1991.github.io/leetcode/2014/12/26/%5BLeetcode%E9%A2%98%E8%A7%A3%5D65-Valid-Number/</loc>
+    <loc>https://hjhjw1991.github.io/leetcode/2015/08/06/%5BLeetcode%E9%A2%98%E8%A7%A3%5D136-137-260-Single-Number/</loc>
     <lastmod>2016-08-30T08:03:26.717Z</lastmod>
     <data>
         <display>
-        <title>【Leetcode题解】65-Valid Number</title>
-        <pubTime>2014-12-25T16:00:00.000Z</pubTime>
+        <title>【Leetcode题解】136-137-260-Single Number类型的问题</title>
+        <pubTime>2015-08-05T16:00:00.000Z</pubTime>
         
          
            
@@ -808,24 +810,6 @@
 
     
   <url>
-    <loc>https://hjhjw1991.github.io/opinion/2014/12/26/leetcode%E5%8A%A0%E4%BA%86%E6%96%B0%E9%A2%98%E7%9B%AE/</loc>
-    <lastmod>2016-08-30T08:03:26.717Z</lastmod>
-    <data>
-        <display>
-        <title>leetcode加了新题目</title>
-        <pubTime>2014-12-25T16:00:00.000Z</pubTime>
-        
-         
-           
-             
-              <breadCrumb title="opinion" url="https://hjhjw1991.github.io/categories/opinion/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
     <loc>https://hjhjw1991.github.io/blog/2015/08/16/windows%E4%B8%8B%E4%BD%BF%E7%94%A8Putty%E9%85%8D%E7%BD%AEgithub-ssh-key/</loc>
     <lastmod>2016-08-30T08:03:26.717Z</lastmod>
     <data>
@@ -843,6 +827,24 @@
            
              
               <breadCrumb title="blog" url="https://hjhjw1991.github.io/categories/blog/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://hjhjw1991.github.io/opinion/2014/12/26/leetcode%E5%8A%A0%E4%BA%86%E6%96%B0%E9%A2%98%E7%9B%AE/</loc>
+    <lastmod>2016-08-30T08:03:26.717Z</lastmod>
+    <data>
+        <display>
+        <title>leetcode加了新题目</title>
+        <pubTime>2014-12-25T16:00:00.000Z</pubTime>
+        
+         
+           
+             
+              <breadCrumb title="opinion" url="https://hjhjw1991.github.io/categories/opinion/"/>
           
         </display>
     </data>
@@ -966,11 +968,11 @@
 
     
   <url>
-    <loc>https://hjhjw1991.github.io/leetcode/2014/12/26/%5BLeetcode%E9%A2%98%E8%A7%A3%5D169-Majority-Element/</loc>
+    <loc>https://hjhjw1991.github.io/leetcode/2014/12/26/%5BLeetcode%E9%A2%98%E8%A7%A3%5D65-Valid-Number/</loc>
     <lastmod>2016-08-30T08:03:26.717Z</lastmod>
     <data>
         <display>
-        <title>【Leetcode题解】169-Majority Element</title>
+        <title>【Leetcode题解】65-Valid Number</title>
         <pubTime>2014-12-25T16:00:00.000Z</pubTime>
         
          
@@ -997,28 +999,6 @@
            
              
               <breadCrumb title="blog" url="https://hjhjw1991.github.io/categories/blog/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
-    <loc>https://hjhjw1991.github.io/tips/2016/02/23/utf-8%E9%A1%B9%E7%9B%AE%E7%94%9F%E6%88%90javadoc%E7%BC%96%E7%A0%81GBK%E7%9A%84%E4%B8%8D%E5%8F%AF%E6%98%A0%E5%B0%84%E5%AD%97%E7%AC%A6/</loc>
-    <lastmod>2016-08-30T08:03:26.717Z</lastmod>
-    <data>
-        <display>
-        <title>utf-8项目生成javadoc编码GBK的不可映射字符</title>
-        <pubTime>2016-02-22T16:00:00.000Z</pubTime>
-        
-        <tag>windows</tag>
-         
-        <tag>Java</tag>
-         
-         
-           
-             
-              <breadCrumb title="tips" url="https://hjhjw1991.github.io/categories/tips/"/>
           
         </display>
     </data>
@@ -1054,6 +1034,48 @@
         <pubTime>2016-02-21T16:00:00.000Z</pubTime>
         
         <tag>android</tag>
+         
+         
+           
+             
+              <breadCrumb title="blog" url="https://hjhjw1991.github.io/categories/blog/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://hjhjw1991.github.io/tips/2016/02/23/utf-8%E9%A1%B9%E7%9B%AE%E7%94%9F%E6%88%90javadoc%E7%BC%96%E7%A0%81GBK%E7%9A%84%E4%B8%8D%E5%8F%AF%E6%98%A0%E5%B0%84%E5%AD%97%E7%AC%A6/</loc>
+    <lastmod>2016-08-30T08:03:26.717Z</lastmod>
+    <data>
+        <display>
+        <title>utf-8项目生成javadoc编码GBK的不可映射字符</title>
+        <pubTime>2016-02-22T16:00:00.000Z</pubTime>
+        
+        <tag>windows</tag>
+         
+        <tag>Java</tag>
+         
+         
+           
+             
+              <breadCrumb title="tips" url="https://hjhjw1991.github.io/categories/tips/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://hjhjw1991.github.io/blog/2016/02/25/Java%E4%B8%AD%E7%9A%84%E5%8D%8F%E5%8F%98%E5%92%8C%E9%80%86%E5%8F%98/</loc>
+    <lastmod>2016-08-30T08:03:26.717Z</lastmod>
+    <data>
+        <display>
+        <title>Java中的协变和逆变</title>
+        <pubTime>2016-02-24T16:00:00.000Z</pubTime>
+        
+        <tag>Java</tag>
          
          
            

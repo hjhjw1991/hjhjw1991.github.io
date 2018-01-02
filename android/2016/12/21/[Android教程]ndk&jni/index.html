@@ -18,7 +18,7 @@
 <meta property="og:site_name" content="hjhjw1991's blog">
 <meta property="og:description" content="又叫【花样劝退教程】。本文讲NDK &amp; JNI基础">
 <meta property="og:image" content="https://hjhjw1991.github.io/images/blogs/c++runtimelibrary.jpg">
-<meta property="og:updated_time" content="2017-05-04T10:31:59.115Z">
+<meta property="og:updated_time" content="2017-08-16T04:44:47.745Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="【Android教程】NDK&JNI入门">
 <meta name="twitter:description" content="又叫【花样劝退教程】。本文讲NDK &amp; JNI基础">
@@ -97,7 +97,7 @@
 		<div id="toc" class="toc-article">
 			<strong class="toc-title">文章目录</strong>
 		
-			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#NDK-amp-JNI"><span class="toc-number">1.</span> <span class="toc-text">NDK & JNI</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JNI中的映射关系"><span class="toc-number">2.</span> <span class="toc-text">JNI中的映射关系</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#NDK用到的C-C-运行库"><span class="toc-number">3.</span> <span class="toc-text">NDK用到的C/C++运行库</span></a></li></ol>
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#NDK-amp-JNI"><span class="toc-number">1.</span> <span class="toc-text">NDK & JNI</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JNI中的映射关系"><span class="toc-number">2.</span> <span class="toc-text">JNI中的映射关系</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#NDK用到的C-C-运行库"><span class="toc-number">3.</span> <span class="toc-text">NDK用到的C/C++运行库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#References"><span class="toc-number">4.</span> <span class="toc-text">References</span></a></li></ol>
 		
 		</div>
 		
@@ -374,6 +374,7 @@
 <p>最后，还有一点需要注意，如果你的JNI功能都是包含在一个模块（也就是程序中只有一个.so文件）中的话，可以考虑用静态库C++运行时库的形式。而如果你的程序中包含了多个模块，请尽量使用动态C++运行时库。  </p>
 <p>在用动态C++运行时库的时候，相应的动态库.so文件（默认的C++运行时库除外）会随你的程序一起发布出去，位于apk文件中的lib目录下。  </p>
 <p>如果你的目标Android系统是4.3之前，那么你必须要在加载所有你自己的模块之前，显式的加载C++动态运行时库。  </p>
+<h2 id="References"><a href="#References" class="headerlink" title="References"></a>References</h2><p><a href="http://docs.oracle.com/javase/7/docs/technotes/guides/jni/spec/functions.html" target="_blank" rel="external">JNI版本加入的时间和版本间差异</a>  </p>
   
 	</div>
 		<footer class="article-footer clearfix">
@@ -442,7 +443,7 @@
   <div id="toc" class="toc-aside">
   <strong class="toc-title">文章目录</strong>
  
- <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#NDK-amp-JNI"><span class="toc-number">1.</span> <span class="toc-text">NDK & JNI</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JNI中的映射关系"><span class="toc-number">2.</span> <span class="toc-text">JNI中的映射关系</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#NDK用到的C-C-运行库"><span class="toc-number">3.</span> <span class="toc-text">NDK用到的C/C++运行库</span></a></li></ol>
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#NDK-amp-JNI"><span class="toc-number">1.</span> <span class="toc-text">NDK & JNI</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JNI中的映射关系"><span class="toc-number">2.</span> <span class="toc-text">JNI中的映射关系</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#NDK用到的C-C-运行库"><span class="toc-number">3.</span> <span class="toc-text">NDK用到的C/C++运行库</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#References"><span class="toc-number">4.</span> <span class="toc-text">References</span></a></li></ol>
  
   </div>
 
@@ -470,7 +471,7 @@
 		  
 		
 		  
-			<li><a href="/categories/android/" title="android">android<sup>23</sup></a></li>
+			<li><a href="/categories/android/" title="android">android<sup>24</sup></a></li>
 		  
 		
 		  
@@ -499,11 +500,11 @@
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/android/" title="android">android<sup>24</sup></a></li>
+				<li><a href="/tags/android/" title="android">android<sup>25</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/guide/" title="guide">guide<sup>18</sup></a></li>
+				<li><a href="/tags/guide/" title="guide">guide<sup>19</sup></a></li>
 			
 		
 			
@@ -523,10 +524,6 @@
 			
 		
 			
-				<li><a href="/tags/vps/" title="vps">vps<sup>2</sup></a></li>
-			
-		
-			
 				<li><a href="/tags/ssh/" title="ssh">ssh<sup>2</sup></a></li>
 			
 		
@@ -535,7 +532,11 @@
 			
 		
 			
-				<li><a href="/tags/regex/" title="regex">regex<sup>1</sup></a></li>
+				<li><a href="/tags/vps/" title="vps">vps<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>1</sup></a></li>
 			
 		
 			
@@ -543,7 +544,7 @@
 			
 		
 			
-				<li><a href="/tags/python/" title="python">python<sup>1</sup></a></li>
+				<li><a href="/tags/regex/" title="regex">regex<sup>1</sup></a></li>
 			
 		
 			
@@ -634,7 +635,7 @@
 		
 
 		<p class="copyright">
-		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017 
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2018 
 		
 		<a href="/about" target="_blank" title="hjhjw1991">hjhjw1991</a>
 		
