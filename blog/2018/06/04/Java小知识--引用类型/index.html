@@ -4,23 +4,23 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>【Android源码伴读】Layout那些事儿 | hjhjw1991&#39;s blog</title>
+    <title>Java小知识--引用类型 | hjhjw1991&#39;s blog</title>
     <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
     
     <meta name="author" content="hjhjw1991">
     
 
     
-    <meta name="description" content="android中layout可以通过xml和java代码两种方式来定义，那么它是怎么做到的？android中对于layout的属性概念是怎么定义的？绘制的时候又是怎么发挥作用的呢？ --施工中">
+    <meta name="description" content="在Java中, 我们知道对象都是以引用的形式存在于代码中的.">
 <meta property="og:type" content="article">
-<meta property="og:title" content="【Android源码伴读】Layout那些事儿">
-<meta property="og:url" content="https://hjhjw1991.github.io/android/2015/10/23/[Android源码伴读]Layout那些事儿/index.html">
+<meta property="og:title" content="Java小知识--引用类型">
+<meta property="og:url" content="https://hjhjw1991.github.io/blog/2018/06/04/Java小知识--引用类型/index.html">
 <meta property="og:site_name" content="hjhjw1991's blog">
-<meta property="og:description" content="android中layout可以通过xml和java代码两种方式来定义，那么它是怎么做到的？android中对于layout的属性概念是怎么定义的？绘制的时候又是怎么发挥作用的呢？ --施工中">
-<meta property="og:updated_time" content="2017-02-07T09:50:28.799Z">
+<meta property="og:description" content="在Java中, 我们知道对象都是以引用的形式存在于代码中的.">
+<meta property="og:updated_time" content="2018-06-04T10:27:34.271Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="【Android源码伴读】Layout那些事儿">
-<meta name="twitter:description" content="android中layout可以通过xml和java代码两种方式来定义，那么它是怎么做到的？android中对于layout的属性概念是怎么定义的？绘制的时候又是怎么发挥作用的呢？ --施工中">
+<meta name="twitter:title" content="Java小知识--引用类型">
+<meta name="twitter:description" content="在Java中, 我们知道对象都是以引用的形式存在于代码中的.">
 
     
     <link rel="alternative" href="/atom.xml" title="hjhjw1991&#39;s blog" type="application/atom+xml">
@@ -79,14 +79,14 @@
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/android/2015/10/23/[Android源码伴读]Layout那些事儿/" title="【Android源码伴读】Layout那些事儿" itemprop="url">【Android源码伴读】Layout那些事儿</a>
+      <a href="/blog/2018/06/04/Java小知识--引用类型/" title="Java小知识--引用类型" itemprop="url">Java小知识--引用类型</a>
   </h1>
   <p class="article-author">By
        
 		<a href="/about" title="hjhjw1991" target="_blank" itemprop="author">hjhjw1991</a>
 		
   <p class="article-time">
-    <time datetime="2015-10-22T16:00:00.000Z" itemprop="datePublished"> 发表于 2015-10-23</time>
+    <time datetime="2018-06-03T16:00:00.000Z" itemprop="datePublished"> 发表于 2018-06-04</time>
     
   </p>
 </header>
@@ -95,37 +95,31 @@
 		<div id="toc" class="toc-article">
 			<strong class="toc-title">文章目录</strong>
 		
-			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#android-layout-xxx"><span class="toc-number">1.</span> <span class="toc-text">android:layout_xxx</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#layout-weight"><span class="toc-number">1.1.</span> <span class="toc-text">layout_weight</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#layout-gravity"><span class="toc-number">1.2.</span> <span class="toc-text">layout_gravity</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#padding-margin-align"><span class="toc-number">2.</span> <span class="toc-text">padding margin align</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Layout及所有xml文件的加载原理"><span class="toc-number">3.</span> <span class="toc-text">Layout及所有xml文件的加载原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Layout源码分析"><span class="toc-number">4.</span> <span class="toc-text">Layout源码分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#自己动手写Layout"><span class="toc-number">5.</span> <span class="toc-text">自己动手写Layout</span></a></li></ol>
+			
 		
 		</div>
 		
-		<blockquote>
-<p>前言：Layout的xml文件本质上也就是遵从某一命名空间schema的xml描述，其使用的xmlns命名空间的名字是android，如此而已，还有一些如tools和app的命名空间前缀。在android命名空间中，Layout是用于布局的概念，它拥有一些属性，它在android中是怎么发挥作用的？</p>
-</blockquote>
-<h2 id="android-layout-xxx"><a href="#android-layout-xxx" class="headerlink" title="android:layout_xxx"></a>android:layout_xxx</h2><p>简单来说，有layout前缀的属性，表示这个属性是一个针对所属layout的属性，它的值是被父容器所用的，而不是本容器。<br>换句话说，带layout前缀的属性，是针对当前整个容器本身的，而不带layout前缀的属性，则是针对容器的内容而定的。如果是一个TextView，那么前者就是TextView本身，而后者就是TextView里面的text属性，也就是文字内容。<br>一些易于理解及不易混淆的属性，例如layout_height和layout_width两个属性，就不详加说明了。下面以一个不太易理解的例子和一个易混淆的例子来说明android中这个layout前缀的含义。  </p>
-<h3 id="layout-weight"><a href="#layout-weight" class="headerlink" title="layout_weight"></a>layout_weight</h3><p>weight的混淆来自于望文生义。诚然weight是代表权重的意思，是用于修饰layout的width和height的，但是它在和width、height两个属性一起使用的时候，会发生一些与我们第一印象的预期不太符合的现象。<br>首先，它的正当用途就是指定所修饰的属性在父容器中对剩余空间的分配权重的，值越大权重越大，所分配的比例越大。在官方的指导中，是建议被修饰的属性其值设置为”0dp”，从而避免发生意料之外的行为。官方表示，会发生意料之外的行为是因为根据width值的分配过程与根据weight值的分配过程是两个独立的不同的过程，因此建议使用weight的时候仅使用weight。<br>我们前面说过，weight表示的是对<strong>剩余空间</strong>的分配权重。<br>于是我们可以猜想，这个过程是在分配了其他明确知道大小的同级兄弟View之后才进行的过程。由此我们猜想，layout分配的时候，先计算确定大小的view，然后在剩余的空间中，按照权重分配空间给剩余view。<br>基于这个猜想，我们有以下的考虑：  </p>
-<ul>
-<li>如果从书写顺序上，带weight的view与确定大小的view交错书写，那么会发生什么呢？  </li>
-<li>如果我们在书写的时候，被修饰的width和height指定了值，会发生什么？</li>
-<li>我们可不可以对width和height指定不同的权重？weight是怎么找到它应该修饰的属性的？</li>
-<li>weight的值有什么限制吗？</li>
-<li>如果我们猜测是错误的，那么真实过程是怎么样的？</li>
-</ul>
-<p>我们接下来会做一系列的实验来猜想和验证weight的分配逻辑，给出这些问题的答案（除了最后一个，最后一个问题将放在Layout加载原理和源码中解析）。  </p>
-<h3 id="layout-gravity"><a href="#layout-gravity" class="headerlink" title="layout_gravity"></a>layout_gravity</h3><h2 id="padding-margin-align"><a href="#padding-margin-align" class="headerlink" title="padding margin align"></a>padding margin align</h2><h2 id="Layout及所有xml文件的加载原理"><a href="#Layout及所有xml文件的加载原理" class="headerlink" title="Layout及所有xml文件的加载原理"></a>Layout及所有xml文件的加载原理</h2><h2 id="Layout源码分析"><a href="#Layout源码分析" class="headerlink" title="Layout源码分析"></a>Layout源码分析</h2><h2 id="自己动手写Layout"><a href="#自己动手写Layout" class="headerlink" title="自己动手写Layout"></a>自己动手写Layout</h2>  
+		<p>在Java中, 我们知道对象都是以引用的形式存在于代码中的.<br>Java的自动垃圾回收, 就是基于引用, 如果一个对象再也没有人引用, 就会回收这个对象.<br>但是实际上还会有别的回收程度: 我要使用一个对象, 但是我可以在内存紧张的时候允许回收这个对象, 甚至我允许只要有垃圾回收就把这个对象回收. 换句话说, 我对这个对象的使用并没有”那么强”的要求, 为了内存分配我可以让渡空间.<br>基于上述实际情况, Java中专门创建了新的类来允许上述让渡行为, 即Reference. 针对不同的引用层级, 又分为以下几种引用:  </p>
+<ol>
+<li>强引用. 即一般的对象引用声明. 拥有强引用的对象, 任何时候都不会被回收.  </li>
+<li>软引用. SoftReference. 仅有软引用的对象, 在内存不足时允许回收.  </li>
+<li>弱引用. WeakReference. 仅有弱引用的对象, 在下次垃圾回收时允许被回收.  </li>
+<li>虚引用. PhantomReference. 虚引用只能作为引用标记, 不影响对象生命周期. 仅有虚引用的对象, 等效于没有引用, 但Java的实现中允许给虚引用添加一个队列, 当引用指向的对象其可触及性发生变化时, 该对象会被添加到指定的引用队列(这其实是抽象类Reference的实现). 例如, 如果我们想要在某个对象确实被回收后, 才创建新的对象, 那么我们可以对这个对象创建一个虚引用, 并监控传入的引用队列, 在队列非空时创建新对象.  </li>
+</ol>
+  
 	</div>
 		<footer class="article-footer clearfix">
 <div class="article-catetags">
 
 <div class="article-categories">
   <span></span>
-  <a class="article-category-link" href="/categories/android/">android</a>
+  <a class="article-category-link" href="/categories/blog/">blog</a>
 </div>
 
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/android/">android</a>
+  <span></span> <a href="/tags/guide/">guide</a><a href="/tags/Java/">Java</a>
   </div>
 
 </div>
@@ -134,7 +128,7 @@
 
 	<div class="article-share" id="share">
 	
-	  <div data-url="https://hjhjw1991.github.io/android/2015/10/23/[Android源码伴读]Layout那些事儿/" data-title="【Android源码伴读】Layout那些事儿 | hjhjw1991&#39;s blog" data-tsina="1304671950" class="share clearfix">
+	  <div data-url="https://hjhjw1991.github.io/blog/2018/06/04/Java小知识--引用类型/" data-title="Java小知识--引用类型 | hjhjw1991&#39;s blog" data-tsina="1304671950" class="share clearfix">
 	  </div>
 	
 	</div>
@@ -148,18 +142,18 @@
 <nav class="article-nav clearfix">
  
  <div class="prev" >
- <a href="/blog/2015/11/14/git submodule vs subtree/" title="git submodule vs. subtree">
+ <a href="/android/2018/06/04/EventBus--基于订阅模式的事件总线库/" title="EventBus--基于订阅模式的事件总线库">
   <strong>上一篇：</strong><br/>
   <span>
-  git submodule vs. subtree</span>
+  EventBus--基于订阅模式的事件总线库</span>
 </a>
 </div>
 
 
 <div class="next">
-<a href="/android/2015/10/20/[Android源码伴读]ListView那些事儿/"  title="【Android源码伴读】ListView那些事儿">
+<a href="/android/2018/01/02/Apk安装卸载原理/"  title="Apk安装卸载原理">
  <strong>下一篇：</strong><br/> 
- <span>【Android源码伴读】ListView那些事儿
+ <span>Apk安装卸载原理
 </span>
 </a>
 </div>
@@ -180,7 +174,7 @@
   <div id="toc" class="toc-aside">
   <strong class="toc-title">文章目录</strong>
  
- <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#android-layout-xxx"><span class="toc-number">1.</span> <span class="toc-text">android:layout_xxx</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#layout-weight"><span class="toc-number">1.1.</span> <span class="toc-text">layout_weight</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#layout-gravity"><span class="toc-number">1.2.</span> <span class="toc-text">layout_gravity</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#padding-margin-align"><span class="toc-number">2.</span> <span class="toc-text">padding margin align</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Layout及所有xml文件的加载原理"><span class="toc-number">3.</span> <span class="toc-text">Layout及所有xml文件的加载原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Layout源码分析"><span class="toc-number">4.</span> <span class="toc-text">Layout源码分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#自己动手写Layout"><span class="toc-number">5.</span> <span class="toc-text">自己动手写Layout</span></a></li></ol>
+ 
  
   </div>
 
@@ -204,15 +198,11 @@
 		<ul>
 		
 		  
-			<li><a href="/categories/Java/" title="Java">Java<sup>1</sup></a></li>
+			<li><a href="/categories/android/" title="android">android<sup>25</sup></a></li>
 		  
 		
 		  
-			<li><a href="/categories/android/" title="android">android<sup>24</sup></a></li>
-		  
-		
-		  
-			<li><a href="/categories/blog/" title="blog">blog<sup>13</sup></a></li>
+			<li><a href="/categories/blog/" title="blog">blog<sup>15</sup></a></li>
 		  
 		
 		  
@@ -237,11 +227,11 @@
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/android/" title="android">android<sup>25</sup></a></li>
+				<li><a href="/tags/android/" title="android">android<sup>26</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/guide/" title="guide">guide<sup>19</sup></a></li>
+				<li><a href="/tags/guide/" title="guide">guide<sup>21</sup></a></li>
 			
 		
 			
@@ -253,11 +243,11 @@
 			
 		
 			
-				<li><a href="/tags/windows/" title="windows">windows<sup>3</sup></a></li>
+				<li><a href="/tags/Java/" title="Java">Java<sup>4</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/Java/" title="Java">Java<sup>2</sup></a></li>
+				<li><a href="/tags/windows/" title="windows">windows<sup>3</sup></a></li>
 			
 		
 			
@@ -273,15 +263,15 @@
 			
 		
 			
+				<li><a href="/tags/regex/" title="regex">regex<sup>1</sup></a></li>
+			
+		
+			
 				<li><a href="/tags/python/" title="python">python<sup>1</sup></a></li>
 			
 		
 			
 				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/regex/" title="regex">regex<sup>1</sup></a></li>
 			
 		
 			
@@ -294,10 +284,6 @@
 		
 			
 				<li><a href="/tags/vpn/" title="vpn">vpn<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/java/" title="java">java<sup>1</sup></a></li>
 			
 		
 			
