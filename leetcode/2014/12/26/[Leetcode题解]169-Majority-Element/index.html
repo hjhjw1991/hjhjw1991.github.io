@@ -15,8 +15,9 @@
 <meta property="og:type" content="article">
 <meta property="og:title" content="【Leetcode题解】169-Majority Element">
 <meta property="og:url" content="https://hjhjw1991.github.io/leetcode/2014/12/26/[Leetcode题解]169-Majority-Element/index.html">
-<meta property="og:site_name" content="hjhjw1991's blog">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
 <meta property="og:description" content="寻找数组主元素 Level:Easy">
+<meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2016-08-30T08:03:26.717Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="【Leetcode题解】169-Majority Element">
@@ -100,11 +101,11 @@
 		</div>
 		
 		<blockquote>
-<p>本系列代码见<a href="https://github.com/hjhjw1991/leetcode" target="_blank" rel="external">我的Leetcode仓库</a></p>
+<p>本系列代码见<a href="https://github.com/hjhjw1991/leetcode" target="_blank" rel="noopener">我的Leetcode仓库</a></p>
 </blockquote>
-<h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a><a href="https://oj.leetcode.com/problems/majority-element/" target="_blank" rel="external">题目</a></h2><p>Given an array of size n, find the majority element. The majority element is the element that appears more than ⌊ n/2 ⌋ times.</p>
+<h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a><a href="https://oj.leetcode.com/problems/majority-element/" target="_blank" rel="noopener">题目</a></h2><p>Given an array of size n, find the majority element. The majority element is the element that appears more than ⌊ n/2 ⌋ times.</p>
 <p>You may assume that the array is non-empty and the majority element always exist in the array.</p>
-<p>Credits:<br>Special thanks to <a href="https://oj.leetcode.com/discuss/user/ts" target="_blank" rel="external">@ts</a> for adding this problem and creating all test cases.</p>
+<p>Credits:<br>Special thanks to <a href="https://oj.leetcode.com/discuss/user/ts" target="_blank" rel="noopener">@ts</a> for adding this problem and creating all test cases.</p>
 <p>这个题被标注为Easy，事实上也的确如此。AC率达到了30%以上。但我比较想强调的是我的思路跟它的提示有点不太一样。</p>
 <h2 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h2><p>首先翻译一下题目，说的是一个包含n个元素的一维数组中出现次数为floor(n/2)次，即等于或大于一半元素数量的元素，称为这个数组的主元素。题目要求寻找主元素，给了两个重要的假设（这两个假设是我的思路能够实现的前提）数组非空、主元素必存在。</p>
 <h3 id="官方提示"><a href="#官方提示" class="headerlink" title="官方提示"></a>官方提示</h3><ol>
@@ -116,7 +117,7 @@
 <li><p>Runtime: O(n) — Moore voting algorithm: We maintain a current candidate and a counter initialized to 0. As we iterate the array, we look at the current element x:</p>
 <ul>
 <li>If the counter is 0, we set the current candidate to x and the counter to 1.</li>
-<li>If the counter is not 0, we increment or decrement the counter based on whether x is the current candidate.<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">After one pass, the current candidate is the majority element. Runtime complexity = O(n).</div></pre></td></tr></table></figure>
+<li>If the counter is not 0, we increment or decrement the counter based on whether x is the current candidate.<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">After one pass, the current candidate is the majority element. Runtime complexity = O(n).</span><br></pre></td></tr></table></figure>
 </li>
 </ul>
 </li>
@@ -124,7 +125,7 @@
 </li>
 </ol>
 <p>Update (2014/12/24): Improve algorithm on the O(n log n) sorting solution: We do not need to ‘Find the longest contiguous identical element’ after sorting, the n/2th element is always the majority.</p>
-<p>Analysis written by <a href="https://oj.leetcode.com/discuss/user/ts" target="_blank" rel="external">@ts</a> and <a href="https://oj.leetcode.com/discuss/user/1337c0d3r" target="_blank" rel="external">@1337c0d3r</a>.</p>
+<p>Analysis written by <a href="https://oj.leetcode.com/discuss/user/ts" target="_blank" rel="noopener">@ts</a> and <a href="https://oj.leetcode.com/discuss/user/1337c0d3r" target="_blank" rel="noopener">@1337c0d3r</a>.</p>
 <h3 id="我的思路"><a href="#我的思路" class="headerlink" title="我的思路"></a>我的思路</h3><p>好吧，前天做的时候还没有，刚刚才看到最后那个update，正好我就是这个思路，所以没啥说的了。快速排序，最中间的必然是主元素，时间O(n log n)，代码量2行。</p>
 <h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><p><strong>Language:java</strong><br><!-- lang:java --></p>
 <pre><code>public class Solution {
@@ -221,7 +222,7 @@
 		<ul>
 		
 		  
-			<li><a href="/categories/android/" title="android">android<sup>25</sup></a></li>
+			<li><a href="/categories/android/" title="android">android<sup>26</sup></a></li>
 		  
 		
 		  
@@ -250,7 +251,7 @@
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/android/" title="android">android<sup>26</sup></a></li>
+				<li><a href="/tags/android/" title="android">android<sup>27</sup></a></li>
 			
 		
 			

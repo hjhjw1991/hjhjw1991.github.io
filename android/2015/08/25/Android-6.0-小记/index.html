@@ -12,11 +12,13 @@
 
     
     <meta name="description" content="最近 Google 正式发布了 Android M，并命名为“棉花糖”（Marshmallow）">
+<meta name="keywords" content="android">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Android 6.0 小记">
 <meta property="og:url" content="https://hjhjw1991.github.io/android/2015/08/25/Android-6.0-小记/index.html">
-<meta property="og:site_name" content="hjhjw1991's blog">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
 <meta property="og:description" content="最近 Google 正式发布了 Android M，并命名为“棉花糖”（Marshmallow）">
+<meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2017-05-27T09:39:52.453Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android 6.0 小记">
@@ -109,15 +111,15 @@
 <li>普通权限还是在安装时授权</li>
 <li>其他权限在运行时系统弹窗授权，并且要解析使用这个权限的目的</li>
 </ul>
-<p>对于开发者来说，需要小心处理权限相关的问题。在使用某个功能的时候，需要总是判断是否有改权限，并且通过合适的方式请求用户授权。关于 Android M 权限的处理，可以参考<a href="http://developer.android.com/preview/features/runtime-permissions.html" target="_blank" rel="external">官方文档</a>。<br>另外，这篇<a href="https://medium.com/ribot-labs/exploring-the-new-android-permissions-model-ba1d5d6c0610" target="_blank" rel="external">文章</a>结合图文和代码讲述了 Android M 中权限模型，比较清晰，可以参考一下。</p>
+<p>对于开发者来说，需要小心处理权限相关的问题。在使用某个功能的时候，需要总是判断是否有改权限，并且通过合适的方式请求用户授权。关于 Android M 权限的处理，可以参考<a href="http://developer.android.com/preview/features/runtime-permissions.html" target="_blank" rel="noopener">官方文档</a>。<br>另外，这篇<a href="https://medium.com/ribot-labs/exploring-the-new-android-permissions-model-ba1d5d6c0610" target="_blank" rel="noopener">文章</a>结合图文和代码讲述了 Android M 中权限模型，比较清晰，可以参考一下。</p>
 <hr>
-<h2 id="APP-Linking"><a href="#APP-Linking" class="headerlink" title="APP Linking"></a>APP Linking</h2><p>这是一个把 APP 和网页直接打通的技术，能够让 APP 能够直接来处理你的网站普通的 URL 链接，来展示你对应的网站内容。这绝对是一个值得关注的改进，Web 和 APP 之间缝隙将越来越小。这对既有网站又有 APP 的应用来说非常有利，例如知乎和淘宝等。<br>有点类似于之前的 APP 的 Deep link，可以通过特殊的 Schema 也可以让 APP 直接打开对应的内容。APP Linking 的特点是，只要使用传统的 URL 就可以，而且是根据 URL 的域名对应特定的 APP 的。<br>开发者需要做的是在 <code>AndroidManifest.xml</code> 做一下对应的声明即可。如果需要让系统默认用你的 APP 打开对应的 URL 的话，还需要网站配合提供 <code>assetlinks.json</code>。详情可以参考<a href="http://developer.android.com/preview/features/app-linking.html" target="_blank" rel="external">这里</a>。</p>
+<h2 id="APP-Linking"><a href="#APP-Linking" class="headerlink" title="APP Linking"></a>APP Linking</h2><p>这是一个把 APP 和网页直接打通的技术，能够让 APP 能够直接来处理你的网站普通的 URL 链接，来展示你对应的网站内容。这绝对是一个值得关注的改进，Web 和 APP 之间缝隙将越来越小。这对既有网站又有 APP 的应用来说非常有利，例如知乎和淘宝等。<br>有点类似于之前的 APP 的 Deep link，可以通过特殊的 Schema 也可以让 APP 直接打开对应的内容。APP Linking 的特点是，只要使用传统的 URL 就可以，而且是根据 URL 的域名对应特定的 APP 的。<br>开发者需要做的是在 <code>AndroidManifest.xml</code> 做一下对应的声明即可。如果需要让系统默认用你的 APP 打开对应的 URL 的话，还需要网站配合提供 <code>assetlinks.json</code>。详情可以参考<a href="http://developer.android.com/preview/features/app-linking.html" target="_blank" rel="noopener">这里</a>。</p>
 <hr>
-<h2 id="APP-数据自动备份"><a href="#APP-数据自动备份" class="headerlink" title="APP 数据自动备份"></a>APP 数据自动备份</h2><p>支持 APP 数据自动备份到 Google Drive，在你换手机的时候，能够直接把 APP 的数据恢复到你的手机上，你还可以配置些数据那些数据需要或者不需要备份。而且不用写任何代码就自动实现了。详情可以参考<a href="http://developer.android.com/preview/backup/index.html" target="_blank" rel="external">这里</a>。<br>然而这些对国内的开发者来说，并没有什么用。国内厂商的 ROM 有些已经有或者准备会跟上，到时候都能享受到这样的便利。</p>
+<h2 id="APP-数据自动备份"><a href="#APP-数据自动备份" class="headerlink" title="APP 数据自动备份"></a>APP 数据自动备份</h2><p>支持 APP 数据自动备份到 Google Drive，在你换手机的时候，能够直接把 APP 的数据恢复到你的手机上，你还可以配置些数据那些数据需要或者不需要备份。而且不用写任何代码就自动实现了。详情可以参考<a href="http://developer.android.com/preview/backup/index.html" target="_blank" rel="noopener">这里</a>。<br>然而这些对国内的开发者来说，并没有什么用。国内厂商的 ROM 有些已经有或者准备会跟上，到时候都能享受到这样的便利。</p>
 <hr>
-<p>##指纹解锁<br>Android 官方支持指纹认证，可以用在解锁，或者任何需要验证用户的地方，例如支付。提供了新的 API <code>FingerprintManager</code>，让第三方 APP 来用来获得指纹认证的功能。具体使用方法可以参考这个<a href="https://github.com/googlesamples/android-FingerprintDialog" target="_blank" rel="external">实例</a>。</p>
+<p>##指纹解锁<br>Android 官方支持指纹认证，可以用在解锁，或者任何需要验证用户的地方，例如支付。提供了新的 API <code>FingerprintManager</code>，让第三方 APP 来用来获得指纹认证的功能。具体使用方法可以参考这个<a href="https://github.com/googlesamples/android-FingerprintDialog" target="_blank" rel="noopener">实例</a>。</p>
 <hr>
-<h2 id="直接分享"><a href="#直接分享" class="headerlink" title="直接分享"></a>直接分享</h2><p>直接分享是在 APP 内直接弹出一个选择分享到其他应用的中的对象的列表，中间省略了选择需要分享的 APP，选择“联系人”之类的操作。Android 中分享已经做得很好了，这里又更进一步简化了分享操作。如果要让你的 APP 支持被直接分享，需要实现一个 <code>ChooserTargetService</code>，并且实现对应的处理分享 Intent 的 Activity。具体使用可以参考<a href="http://stackoverflow.com/a/30721038/1260562" target="_blank" rel="external">这里</a>。</p>
+<h2 id="直接分享"><a href="#直接分享" class="headerlink" title="直接分享"></a>直接分享</h2><p>直接分享是在 APP 内直接弹出一个选择分享到其他应用的中的对象的列表，中间省略了选择需要分享的 APP，选择“联系人”之类的操作。Android 中分享已经做得很好了，这里又更进一步简化了分享操作。如果要让你的 APP 支持被直接分享，需要实现一个 <code>ChooserTargetService</code>，并且实现对应的处理分享 Intent 的 Activity。具体使用可以参考<a href="http://stackoverflow.com/a/30721038/1260562" target="_blank" rel="noopener">这里</a>。</p>
 <hr>
 <h2 id="支持蓝牙触控笔"><a href="#支持蓝牙触控笔" class="headerlink" title="支持蓝牙触控笔"></a>支持蓝牙触控笔</h2><p>系统内置支持蓝牙触控笔，这样 Android 系统就默认支持高大上的触控笔了。并提供了 API 让你的 APP 来响应触控笔事件。</p>
 <hr>
@@ -127,12 +129,12 @@
 <hr>
 <h2 id="相机-API"><a href="#相机-API" class="headerlink" title="相机 API"></a>相机 API</h2><p>提供 API <code>setTorchMode()</code> 来直接开关闪光灯，并且可以监听闪光灯的开光状态，以前很多 APP 已经支持用闪光灯来做手电筒，现在官方提供 API 来做这样的事情了。<br>从 Android 5.0 开始，就提供了一套全新的相机 API <code>Camera2</code>，这里在此基础上添加了处理相关 API。</p>
 <hr>
-<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><p>另外还有很多的改进，可以参考官方<a href="http://developer.android.com/preview/api-overview.html" target="_blank" rel="external">概述</a>：</p>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><p>另外还有很多的改进，可以参考官方<a href="http://developer.android.com/preview/api-overview.html" target="_blank" rel="noopener">概述</a>：</p>
 <ul>
 <li>有语音交互 API</li>
 <li>Hotspot 2.0 支持</li>
 <li>4k 屏支持</li>
-<li><a href="http://developer.android.com/preview/api-overview.html#audio" target="_blank" rel="external">语音</a>和<a href="http://developer.android.com/preview/api-overview.html#video" target="_blank" rel="external">视频</a> API 的改进</li>
+<li><a href="http://developer.android.com/preview/api-overview.html#audio" target="_blank" rel="noopener">语音</a>和<a href="http://developer.android.com/preview/api-overview.html#video" target="_blank" rel="noopener">视频</a> API 的改进</li>
 <li>Android 企业用户特性，例如多用户支持，静默安装等</li>
 </ul>
   
@@ -227,7 +229,7 @@
 		<ul>
 		
 		  
-			<li><a href="/categories/android/" title="android">android<sup>25</sup></a></li>
+			<li><a href="/categories/android/" title="android">android<sup>26</sup></a></li>
 		  
 		
 		  
@@ -256,7 +258,7 @@
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/android/" title="android">android<sup>26</sup></a></li>
+				<li><a href="/tags/android/" title="android">android<sup>27</sup></a></li>
 			
 		
 			

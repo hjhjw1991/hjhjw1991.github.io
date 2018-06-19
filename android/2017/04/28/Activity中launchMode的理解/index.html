@@ -12,13 +12,15 @@
 
     
     <meta name="description" content="我们知道, `Activity`需要配置在`AndroidManifest.xml`中才能正常启动, 其原因是launc...">
+<meta name="keywords" content="guide,android">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Activity中launchMode的理解">
 <meta property="og:url" content="https://hjhjw1991.github.io/android/2017/04/28/Activity中launchMode的理解/index.html">
-<meta property="og:site_name" content="hjhjw1991's blog">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
 <meta property="og:description" content="我们知道, `Activity`需要配置在`AndroidManifest.xml`中才能正常启动, 其原因是launc...">
+<meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://hjhjw1991.github.io/images/blogs/back_stack.png">
-<meta property="og:updated_time" content="2017-05-02T02:20:44.491Z">
+<meta property="og:updated_time" content="2017-05-02T02:20:44.492Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Activity中launchMode的理解">
 <meta name="twitter:description" content="我们知道, `Activity`需要配置在`AndroidManifest.xml`中才能正常启动, 其原因是launc...">
@@ -138,14 +140,14 @@
 <p>细心的同学可能还发现, 表格中没有<code>singleInstance</code>模式对应的FLAG. 那是因为这种模式要达成的效果需要在处理<code>Intent</code>之前更早的时期来控制, 在<code>Intent</code>中设置没用.  </p>
 <h2 id="任务栈和回退栈"><a href="#任务栈和回退栈" class="headerlink" title="任务栈和回退栈"></a>任务栈和回退栈</h2><p>由前文所述我们接触到两个概念: 任务栈和回退栈. 我姑且在此拙劣地理解一下: 任务栈是为了完成某种任务而形成的<code>Activity</code>的栈; 回退栈是显示回退顺序的<code>Activity</code>栈. 如此理解的话, 那么两者是从不同的侧面来描述<code>Activity</code>的组织方式, 其中任务栈就是我们上文一直在说的<code>Task</code>, 而回退栈只是一个逻辑上的概念. 事实上我们在新建或者唤起一个<code>Activity</code>的时候, 它所在的整个<code>Task</code>会被提到最上层, 也就是”回退栈”的顶端, 就算<code>launcher</code>应用也是以这种方式回到栈顶的, 只不过它对<code>Back</code>和<code>Home</code>做了处理, 我们无法通过返回键令它出栈而回到位于它下面的<code>Activity</code>. 这就是为什么我们能够在不同的应用间切换, 还能保持应用所打开的<code>Activity</code>的原因(事实上通过设置<code>clearTaskOnLaunch</code>等属性, 切入后台后再切回来可以清空已打开的<code>Activity</code>). 一个栈的名字由在这个栈的底端的那个<code>Activity</code>来定义, 默认就是那个<code>Activity</code>所在的应用的包名.<br>最后一个思考题, 这些任务栈是被谁在什么时候进行管理的呢?<br>祭出我们的大杀器: 源码. 全目录搜索关键词<code>launchMode</code>, 然后就会发现一个东西<code>./frameworks/base/services/java/com/android/server/am/ActivityStack.java</code>以及另一个东西<code>./frameworks/base/core/java/android/content/pm/ActivityInfo.java</code>, 其中前者我们在AMS中已经见到过了, 至此得解.  </p>
 <h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
-<li><a href="https://developer.android.com/guide/components/tasks-and-back-stack.html#ManagingTasks" target="_blank" rel="external">官网 任务和返回栈</a>  </li>
-<li><a href="http://www.jcodecraeer.com/a/anzhuokaifa/androidkaifa/2015/0520/2897.html" target="_blank" rel="external">Activity启动模式图文详解</a>  </li>
-<li><a href="http://blog.csdn.net/qilamaxiu/article/details/51604957" target="_blank" rel="external">Activity启动模式解析</a>  </li>
-<li><a href="http://blog.csdn.net/liuhe688/article/details/6754323" target="_blank" rel="external">基础总结篇之二：Activity的四种launchMode</a>  </li>
-<li><a href="http://blog.csdn.net/thewalker3000/article/details/62035836" target="_blank" rel="external">如何正确理解和使用 Activity的4种启动模式</a>  </li>
-<li><a href="http://wangkuiwu.github.io/2014/06/26/IntentFlag/" target="_blank" rel="external">Android 之Activity启动模式(二)之 Intent的Flag属性</a>  </li>
-<li><a href="http://www.cloudchou.com/android/post-760.html" target="_blank" rel="external">深入理解Activity启动模式(二)–Activity,回退栈,Task之间的关系</a>  </li>
-<li><a href="http://blog.csdn.net/wanghao200906/article/details/49766309" target="_blank" rel="external">android的启动模式 到底在什么时候用呢</a>  </li>
+<li><a href="https://developer.android.com/guide/components/tasks-and-back-stack.html#ManagingTasks" target="_blank" rel="noopener">官网 任务和返回栈</a>  </li>
+<li><a href="http://www.jcodecraeer.com/a/anzhuokaifa/androidkaifa/2015/0520/2897.html" target="_blank" rel="noopener">Activity启动模式图文详解</a>  </li>
+<li><a href="http://blog.csdn.net/qilamaxiu/article/details/51604957" target="_blank" rel="noopener">Activity启动模式解析</a>  </li>
+<li><a href="http://blog.csdn.net/liuhe688/article/details/6754323" target="_blank" rel="noopener">基础总结篇之二：Activity的四种launchMode</a>  </li>
+<li><a href="http://blog.csdn.net/thewalker3000/article/details/62035836" target="_blank" rel="noopener">如何正确理解和使用 Activity的4种启动模式</a>  </li>
+<li><a href="http://wangkuiwu.github.io/2014/06/26/IntentFlag/" target="_blank" rel="noopener">Android 之Activity启动模式(二)之 Intent的Flag属性</a>  </li>
+<li><a href="http://www.cloudchou.com/android/post-760.html" target="_blank" rel="noopener">深入理解Activity启动模式(二)–Activity,回退栈,Task之间的关系</a>  </li>
+<li><a href="http://blog.csdn.net/wanghao200906/article/details/49766309" target="_blank" rel="noopener">android的启动模式 到底在什么时候用呢</a>  </li>
 </ul>
   
 	</div>
@@ -239,7 +241,7 @@
 		<ul>
 		
 		  
-			<li><a href="/categories/android/" title="android">android<sup>25</sup></a></li>
+			<li><a href="/categories/android/" title="android">android<sup>26</sup></a></li>
 		  
 		
 		  
@@ -268,7 +270,7 @@
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/android/" title="android">android<sup>26</sup></a></li>
+				<li><a href="/tags/android/" title="android">android<sup>27</sup></a></li>
 			
 		
 			

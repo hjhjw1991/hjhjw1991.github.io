@@ -12,11 +12,13 @@
 
     
     <meta name="description" content="jvm arguments -encoding utf-8 -charset utf-8">
+<meta name="keywords" content="windows,Java">
 <meta property="og:type" content="article">
 <meta property="og:title" content="utf-8项目生成javadoc编码GBK的不可映射字符">
 <meta property="og:url" content="https://hjhjw1991.github.io/tips/2016/02/23/utf-8项目生成javadoc编码GBK的不可映射字符/index.html">
-<meta property="og:site_name" content="hjhjw1991's blog">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
 <meta property="og:description" content="jvm arguments -encoding utf-8 -charset utf-8">
+<meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2016-08-30T08:03:26.717Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="utf-8项目生成javadoc编码GBK的不可映射字符">
@@ -100,7 +102,7 @@
 		</div>
 		
 		<p>原因是javadoc生成的时候没有指定编码格式，windows默认编码gbk识别不了utf-8的中文<br>解决方法<br>Eclipse中Generate javadoc最后一步中VM参数设置加入以下代码  </p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">-encoding utf-<span class="number">8</span> -charset utf-<span class="number">8</span></div></pre></td></tr></table></figure>  
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-encoding utf-<span class="number">8</span> -charset utf-<span class="number">8</span></span><br></pre></td></tr></table></figure>  
 	</div>
 		<footer class="article-footer clearfix">
 <div class="article-catetags">
@@ -192,7 +194,7 @@
 		<ul>
 		
 		  
-			<li><a href="/categories/android/" title="android">android<sup>25</sup></a></li>
+			<li><a href="/categories/android/" title="android">android<sup>26</sup></a></li>
 		  
 		
 		  
@@ -221,7 +223,7 @@
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/android/" title="android">android<sup>26</sup></a></li>
+				<li><a href="/tags/android/" title="android">android<sup>27</sup></a></li>
 			
 		
 			

@@ -12,11 +12,13 @@
 
     
     <meta name="description" content="更新flask应用版本后，uwsgi运行出错提示sqlite3_stmt_readonly未知标志位">
+<meta name="keywords" content="vps,uwsgi">
 <meta property="og:type" content="article">
 <meta property="og:title" content="记一次uwsgi故障排除">
 <meta property="og:url" content="https://hjhjw1991.github.io/blog/2016/03/02/记一次uwsgi故障排除/index.html">
-<meta property="og:site_name" content="hjhjw1991's blog">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
 <meta property="og:description" content="更新flask应用版本后，uwsgi运行出错提示sqlite3_stmt_readonly未知标志位">
+<meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2016-08-30T08:03:26.717Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="记一次uwsgi故障排除">
@@ -103,7 +105,7 @@
 <p>我在本地调试了一个flask应用，本地跑得好好的，部署到远程centos6 32位vps上就出了问题。<br>问题非常隐蔽，因此也走了不少弯路，甚至最后都不知道是哪一步起了关键作用。因此记一下。</p>
 </blockquote>
 <h2 id="应用升级使用sqlite3数据库，引起访问出错"><a href="#应用升级使用sqlite3数据库，引起访问出错" class="headerlink" title="应用升级使用sqlite3数据库，引起访问出错"></a>应用升级使用sqlite3数据库，引起访问出错</h2><p>应用采用nginx+uwsgi+flask的结构  </p>
-<p>应用最新版本中引入了sqlite3数据库，就这一步出了问题。在要访问数据库的时候返回<code>502  bad gateway</code>，查uwsgi日志，记录提示pysqlite中出了错，找不到symbol<code>sqlite3_stmt_readonly</code>什么的(对了这个信息需要在flask开启debug模式才会被记录下来)。查了vps的sqlite3，是3.6版本，我开发机是3.8版本，在以<code>undefined symbol sqlite3_stmt_readonly</code>为关键词反复搜索信息的过程中知道了这个标志是3.7以后的版本才有的，猜想是不是sqlite版本问题。找到了pysqlite的github仓库中一个<a href="https://github.com/ghaering/pysqlite/issues/85" target="_blank" rel="external">issue</a>，也是同样的错误。根据下面开发者的回答进行了操作，然而并没有什么用。  </p>
+<p>应用最新版本中引入了sqlite3数据库，就这一步出了问题。在要访问数据库的时候返回<code>502  bad gateway</code>，查uwsgi日志，记录提示pysqlite中出了错，找不到symbol<code>sqlite3_stmt_readonly</code>什么的(对了这个信息需要在flask开启debug模式才会被记录下来)。查了vps的sqlite3，是3.6版本，我开发机是3.8版本，在以<code>undefined symbol sqlite3_stmt_readonly</code>为关键词反复搜索信息的过程中知道了这个标志是3.7以后的版本才有的，猜想是不是sqlite版本问题。找到了pysqlite的github仓库中一个<a href="https://github.com/ghaering/pysqlite/issues/85" target="_blank" rel="noopener">issue</a>，也是同样的错误。根据下面开发者的回答进行了操作，然而并没有什么用。  </p>
 <p>又有说没有安装uwsgi的python插件，我用pip和yum都装了一下，也没有用。(<code>pip install uwsgi</code>, <code>yum install uwsgi-plugin-python</code>)  </p>
 <p>最后还弄出新的问题: 包_sqlite找不到。显然是包管理出问题了。中间各种麻烦，一气之下将python2.7.11源码下载编译安装，然后编译安装了easy_setup和pip，幸好自己以前写过教程。然后重新安装了应用的requirements，幸好之前有更新requirements。  </p>
 <p>这下出现了新问题，所有的python位置和版本都是2.7.11了，但重启uwsgi后竟然直接找不到flask包，一看发现日志记录的python版本还是之前的2.7.8，这个锅看来uwsgi非背不可了。又是一阵折腾python更新和uwsgi配置未果(包括设置虚拟python环境)。  </p>
@@ -215,7 +217,7 @@
 		<ul>
 		
 		  
-			<li><a href="/categories/android/" title="android">android<sup>25</sup></a></li>
+			<li><a href="/categories/android/" title="android">android<sup>26</sup></a></li>
 		  
 		
 		  
@@ -244,7 +246,7 @@
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/android/" title="android">android<sup>26</sup></a></li>
+				<li><a href="/tags/android/" title="android">android<sup>27</sup></a></li>
 			
 		
 			

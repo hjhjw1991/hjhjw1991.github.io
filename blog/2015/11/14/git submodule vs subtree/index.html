@@ -12,11 +12,13 @@
 
     
     <meta name="description" content="当我们的项目中包含别的在逻辑上独立管理的项目，或者干脆就是别人的项目时，使用submodule或subtree会带来方便。那么这两种方式怎么用，区别又在哪呢？">
+<meta name="keywords" content="git">
 <meta property="og:type" content="article">
 <meta property="og:title" content="git submodule vs. subtree">
 <meta property="og:url" content="https://hjhjw1991.github.io/blog/2015/11/14/git submodule vs subtree/index.html">
-<meta property="og:site_name" content="hjhjw1991's blog">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
 <meta property="og:description" content="当我们的项目中包含别的在逻辑上独立管理的项目，或者干脆就是别人的项目时，使用submodule或subtree会带来方便。那么这两种方式怎么用，区别又在哪呢？">
+<meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2016-08-30T08:03:26.717Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="git submodule vs. subtree">
@@ -169,12 +171,12 @@ https://bitbucket.org/vim-plugins-mirror/vim-surround.git master --squash
 <li>subtree有不同的merge策略，需要学习</li>
 <li>初始化的时候命令有点长</li>
 </ol>
-<p>上游代码更新和<code>subtree merge</code>可以参考<a href="http://blogs.atlassian.com/2013/05/alternatives-to-git-submodule-git-subtree/" target="_blank" rel="external">alternatives-to-git-submodule-git-subtree</a>  </p>
+<p>上游代码更新和<code>subtree merge</code>可以参考<a href="http://blogs.atlassian.com/2013/05/alternatives-to-git-submodule-git-subtree/" target="_blank" rel="noopener">alternatives-to-git-submodule-git-subtree</a>  </p>
 <h2 id="submodule与subtree各自适用的场景"><a href="#submodule与subtree各自适用的场景" class="headerlink" title="submodule与subtree各自适用的场景"></a>submodule与subtree各自适用的场景</h2><p>从以上对比中可以看出，submodule和subtree具有各自适用的场景：  </p>
 <p><em>submodule</em> 适用特点：  仓库单独管理; 只依赖于某个特定提交; 上游端较不活跃;</p>
 <p><em>subtree</em> 适用特点：  希望隐藏subtree，作为一整个仓库管理; 简化子模块维护流程; 对上游端贡献频率低</p>
 <p>在<code>git 1.5.2</code>以后建议使用subtree管理子模块  </p>
-<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><p><a href="http://www.tuicool.com/articles/JR3qUz" target="_blank" rel="external">Git submodule VS Git Subtree</a><br><a href="http://blog.charlescy.com/blog/2013/08/17/git-subtree-tutorial/" target="_blank" rel="external">非常棒的 SubTree 教程</a><br><a href="https://gist.github.com/kvnsmth/4688345" target="_blank" rel="external">一个真实场景的使用例子</a><br><a href="http://blogs.atlassian.com/2013/05/alternatives-to-git-submodule-git-subtree/" target="_blank" rel="external">alternatives-to-git-submodule-git-subtree</a><br><a href="http://blogs.atlassian.com/2013/03/git-submodules-workflows-tips/" target="_blank" rel="external">Git Submodules: Core concept, workflows and tips</a><br><a href="http://wenku.baidu.com/link?url=ola85Z5tIXJpxCjLTk-dcO81ayXLs68_y6dsmXIa0niF8vWlnAtnEEiZTGlzCNk1G_g36UYNHUBpu9oszONFNB54LNzo3rX7W_ULJg-P-eG" target="_blank" rel="external">为什么使用Git Subtree - 百度文库</a><br><a href="http://git-scm.com/docs/git-cherry-pick/" target="_blank" rel="external">Git Submodule的坑</a><br><a href="http://mobile.51cto.com/aprogram-393324.htm" target="_blank" rel="external">使用Git Submodule可能遇到的坑</a><br><a href="http://blog.csdn.net/kangear/article/details/13169395" target="_blank" rel="external">Git深度使用经验总结</a><br><a href="http://www.speirs.org/blog/2009/5/11/understanding-git-submodules.html" target="_blank" rel="external">understanding git submodules</a></p>
+<h2 id="references"><a href="#references" class="headerlink" title="references"></a>references</h2><p><a href="http://www.tuicool.com/articles/JR3qUz" target="_blank" rel="noopener">Git submodule VS Git Subtree</a><br><a href="http://blog.charlescy.com/blog/2013/08/17/git-subtree-tutorial/" target="_blank" rel="noopener">非常棒的 SubTree 教程</a><br><a href="https://gist.github.com/kvnsmth/4688345" target="_blank" rel="noopener">一个真实场景的使用例子</a><br><a href="http://blogs.atlassian.com/2013/05/alternatives-to-git-submodule-git-subtree/" target="_blank" rel="noopener">alternatives-to-git-submodule-git-subtree</a><br><a href="http://blogs.atlassian.com/2013/03/git-submodules-workflows-tips/" target="_blank" rel="noopener">Git Submodules: Core concept, workflows and tips</a><br><a href="http://wenku.baidu.com/link?url=ola85Z5tIXJpxCjLTk-dcO81ayXLs68_y6dsmXIa0niF8vWlnAtnEEiZTGlzCNk1G_g36UYNHUBpu9oszONFNB54LNzo3rX7W_ULJg-P-eG" target="_blank" rel="noopener">为什么使用Git Subtree - 百度文库</a><br><a href="http://git-scm.com/docs/git-cherry-pick/" target="_blank" rel="noopener">Git Submodule的坑</a><br><a href="http://mobile.51cto.com/aprogram-393324.htm" target="_blank" rel="noopener">使用Git Submodule可能遇到的坑</a><br><a href="http://blog.csdn.net/kangear/article/details/13169395" target="_blank" rel="noopener">Git深度使用经验总结</a><br><a href="http://www.speirs.org/blog/2009/5/11/understanding-git-submodules.html" target="_blank" rel="noopener">understanding git submodules</a></p>
   
 	</div>
 		<footer class="article-footer clearfix">
@@ -267,7 +269,7 @@ https://bitbucket.org/vim-plugins-mirror/vim-surround.git master --squash
 		<ul>
 		
 		  
-			<li><a href="/categories/android/" title="android">android<sup>25</sup></a></li>
+			<li><a href="/categories/android/" title="android">android<sup>26</sup></a></li>
 		  
 		
 		  
@@ -296,7 +298,7 @@ https://bitbucket.org/vim-plugins-mirror/vim-surround.git master --squash
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/android/" title="android">android<sup>26</sup></a></li>
+				<li><a href="/tags/android/" title="android">android<sup>27</sup></a></li>
 			
 		
 			

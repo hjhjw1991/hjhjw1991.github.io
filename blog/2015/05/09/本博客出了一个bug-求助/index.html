@@ -11,22 +11,18 @@
     
 
     
-    <meta name="description" content="我的leetcode更新了6篇，但只显示了3篇求助万能的网友，PR或issue告诉我都可以
-
-6-17 更新原因虽然没有彻底确定，但基本弄清楚了：不能显示的两个post，是前一个版本库遗留下来的，迁移之后没有重新入数据库，所以在在线的_site中始终不存在这两个post，同时由于本地没有改变，所以也不会更新远程post。我在复制和修改了这两个post之后，并且将题目日期改成了修改时的日期后，无论原">
+    <meta name="description" content="我的leetcode更新了6篇，但只显示了3篇求助万能的网友，PR或issue告诉我都可以  6-17 更新原因虽然没有彻底确定，但基本弄清楚了：不能显示的两个post，是前一个版本库遗留下来的，迁移之后没有重新入数据库，所以在在线的_site中始终不存在这两个post，同时由于本地没有改变，所以也不会更新远程post。我在复制和修改了这两个post之后，并且将题目日期改成了修改时的日期后，无论原">
+<meta name="keywords" content="jekyll">
 <meta property="og:type" content="article">
 <meta property="og:title" content="post更新的内容，页面只显示其中一部分[已解决]">
 <meta property="og:url" content="https://hjhjw1991.github.io/blog/2015/05/09/本博客出了一个bug-求助/index.html">
-<meta property="og:site_name" content="hjhjw1991's blog">
-<meta property="og:description" content="我的leetcode更新了6篇，但只显示了3篇求助万能的网友，PR或issue告诉我都可以
-
-6-17 更新原因虽然没有彻底确定，但基本弄清楚了：不能显示的两个post，是前一个版本库遗留下来的，迁移之后没有重新入数据库，所以在在线的_site中始终不存在这两个post，同时由于本地没有改变，所以也不会更新远程post。我在复制和修改了这两个post之后，并且将题目日期改成了修改时的日期后，无论原">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
+<meta property="og:description" content="我的leetcode更新了6篇，但只显示了3篇求助万能的网友，PR或issue告诉我都可以  6-17 更新原因虽然没有彻底确定，但基本弄清楚了：不能显示的两个post，是前一个版本库遗留下来的，迁移之后没有重新入数据库，所以在在线的_site中始终不存在这两个post，同时由于本地没有改变，所以也不会更新远程post。我在复制和修改了这两个post之后，并且将题目日期改成了修改时的日期后，无论原">
+<meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2016-08-30T08:03:26.717Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="post更新的内容，页面只显示其中一部分[已解决]">
-<meta name="twitter:description" content="我的leetcode更新了6篇，但只显示了3篇求助万能的网友，PR或issue告诉我都可以
-
-6-17 更新原因虽然没有彻底确定，但基本弄清楚了：不能显示的两个post，是前一个版本库遗留下来的，迁移之后没有重新入数据库，所以在在线的_site中始终不存在这两个post，同时由于本地没有改变，所以也不会更新远程post。我在复制和修改了这两个post之后，并且将题目日期改成了修改时的日期后，无论原">
+<meta name="twitter:description" content="我的leetcode更新了6篇，但只显示了3篇求助万能的网友，PR或issue告诉我都可以  6-17 更新原因虽然没有彻底确定，但基本弄清楚了：不能显示的两个post，是前一个版本库遗留下来的，迁移之后没有重新入数据库，所以在在线的_site中始终不存在这两个post，同时由于本地没有改变，所以也不会更新远程post。我在复制和修改了这两个post之后，并且将题目日期改成了修改时的日期后，无论原">
 
     
     <link rel="alternative" href="/atom.xml" title="hjhjw1991&#39;s blog" type="application/atom+xml">
@@ -109,7 +105,7 @@
 <hr>
 <h2 id="6-17-更新"><a href="#6-17-更新" class="headerlink" title="6-17 更新"></a>6-17 更新</h2><p>原因虽然没有彻底确定，但基本弄清楚了：不能显示的两个post，是前一个版本库遗留下来的，迁移之后没有重新入数据库，所以在在线的_site中始终不存在这两个post，同时由于本地没有改变，所以也不会更新远程post。<br>我在复制和修改了这两个post之后，并且将题目日期改成了修改时的日期后，无论原post还是复制的post都可以显示了。 至此bug解决。  </p>
 <hr>
-<h2 id="8-16-更新"><a href="#8-16-更新" class="headerlink" title="8-16 更新"></a>8-16 更新</h2><p>上面的说法是<strong>错误的</strong>，实际上原因是我在复制和编辑的时候，不慎把标题中<code>---</code>三道杠包围起来的头部的格式弄错了，导致模板解析引擎无法解析出post的内容，自然就无法在前端显示啦。只要注意jekyll的模板解析引擎格式规则，就不会出问题了。我的问题在于头部前面的label中，冒号后面没有跟一个空格。任何post，可以缺某一个单独的元素，例如description，但是不能缺<code>---</code>这三道杠的包围圈。并且如果要正确解读，label的冒号后面就必须要有一个空格。<br>哪怕是一个空的头，也必须要包含以下两行<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">---  </div><div class="line">---</div></pre></td></tr></table></figure></p>
+<h2 id="8-16-更新"><a href="#8-16-更新" class="headerlink" title="8-16 更新"></a>8-16 更新</h2><p>上面的说法是<strong>错误的</strong>，实际上原因是我在复制和编辑的时候，不慎把标题中<code>---</code>三道杠包围起来的头部的格式弄错了，导致模板解析引擎无法解析出post的内容，自然就无法在前端显示啦。只要注意jekyll的模板解析引擎格式规则，就不会出问题了。我的问题在于头部前面的label中，冒号后面没有跟一个空格。任何post，可以缺某一个单独的元素，例如description，但是不能缺<code>---</code>这三道杠的包围圈。并且如果要正确解读，label的冒号后面就必须要有一个空格。<br>哪怕是一个空的头，也必须要包含以下两行<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">---  </span><br><span class="line">---</span><br></pre></td></tr></table></figure></p>
 <p>而且中间的每一个属性，后面都要紧跟一个冒号和一个空格，否则无法正确解析  </p>
   
 	</div>
@@ -203,7 +199,7 @@
 		<ul>
 		
 		  
-			<li><a href="/categories/android/" title="android">android<sup>25</sup></a></li>
+			<li><a href="/categories/android/" title="android">android<sup>26</sup></a></li>
 		  
 		
 		  
@@ -232,7 +228,7 @@
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/android/" title="android">android<sup>26</sup></a></li>
+				<li><a href="/tags/android/" title="android">android<sup>27</sup></a></li>
 			
 		
 			

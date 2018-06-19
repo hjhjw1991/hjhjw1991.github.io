@@ -12,13 +12,15 @@
 
     
     <meta name="description" content="本文讲OkHttp. 总体来说它是一个高效简洁易用易扩展的网络库.">
+<meta name="keywords" content="android">
 <meta property="og:type" content="article">
 <meta property="og:title" content="【Android源码伴读】OkHttp源码探索">
 <meta property="og:url" content="https://hjhjw1991.github.io/android/2017/02/27/[Android源码伴读]OkHttp源码探索/index.html">
-<meta property="og:site_name" content="hjhjw1991's blog">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
 <meta property="og:description" content="本文讲OkHttp. 总体来说它是一个高效简洁易用易扩展的网络库.">
+<meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://hjhjw1991.github.io/images/blogs/okhttp_workflow.png">
-<meta property="og:updated_time" content="2017-03-05T11:15:02.011Z">
+<meta property="og:updated_time" content="2017-03-05T11:15:02.012Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="【Android源码伴读】OkHttp源码探索">
 <meta name="twitter:description" content="本文讲OkHttp. 总体来说它是一个高效简洁易用易扩展的网络库.">
@@ -101,11 +103,11 @@
 		
 		</div>
 		
-		<p><code>OkHttp</code>是一种面向<code>http</code>协议的高效网络请求库, 下面我们就来探索它的源码, 找到它高效的秘密.<br>源码github地址: <a href="https://github.com/square/okhttp" target="_blank" rel="external">https://github.com/square/okhttp</a>  </p>
-<h2 id="OkHttp的使用"><a href="#OkHttp的使用" class="headerlink" title="OkHttp的使用"></a>OkHttp的使用</h2><p>这一节是为了那些从未用过<code>OkHttp</code>而写, 如果您已经可以很熟练地使用<code>OkHttp</code>, 这节的内容不适合您.<br>可以通过配置<code>build.gradle</code>指定使用<code>OkHttp</code>.<br><code>OkHttp</code>采用<code>Builder</code>模式构造请求, 它可以做的事情在<code>public static class Builder</code>这个内部类中都告诉你了, 接口对应了<code>http</code>协议请求的内容. 也就是说, 你必须要了解<code>http</code>协议以及你想要构造的请求的具体内容, 才能很方便地使用<code>OkHttp</code>, 这就是我说<code>OkHttp</code>是面向<code>http</code>协议的请求库的原因. 直观上来说, 它把构造请求和获取响应的操作简单化了.<br>更多使用教程参见<a href="http://www.jcodecraeer.com/a/anzhuokaifa/androidkaifa/2015/0106/2275.html" target="_blank" rel="external">OkHttp使用教程</a>.  </p>
-<p>不仅如此, 查看它的<a href="http://square.github.io/okhttp/3.x/okhttp/" target="_blank" rel="external">文档</a>, 可以发现它定义了大约50个类, 除了常规的几个<code>Builder</code>类和<code>Factory</code>类以外, 其他类都是面向网络请求某一方面的. 从类名来看, 涵盖了请求, 响应, 回调, 鉴权, 加密, 证书, 连接池, Cookie, Dns, Tls, MultipartBody等方面. 可以很明显感受到它支持<code>Https</code>和<code>Http/2</code>协议. 据<a href="http://frodoking.github.io/2015/03/12/android-okhttp/" target="_blank" rel="external">OkHttp源码解析</a>所述, 它也同时支持<code>SPDY</code>.  </p>
+		<p><code>OkHttp</code>是一种面向<code>http</code>协议的高效网络请求库, 下面我们就来探索它的源码, 找到它高效的秘密.<br>源码github地址: <a href="https://github.com/square/okhttp" target="_blank" rel="noopener">https://github.com/square/okhttp</a>  </p>
+<h2 id="OkHttp的使用"><a href="#OkHttp的使用" class="headerlink" title="OkHttp的使用"></a>OkHttp的使用</h2><p>这一节是为了那些从未用过<code>OkHttp</code>而写, 如果您已经可以很熟练地使用<code>OkHttp</code>, 这节的内容不适合您.<br>可以通过配置<code>build.gradle</code>指定使用<code>OkHttp</code>.<br><code>OkHttp</code>采用<code>Builder</code>模式构造请求, 它可以做的事情在<code>public static class Builder</code>这个内部类中都告诉你了, 接口对应了<code>http</code>协议请求的内容. 也就是说, 你必须要了解<code>http</code>协议以及你想要构造的请求的具体内容, 才能很方便地使用<code>OkHttp</code>, 这就是我说<code>OkHttp</code>是面向<code>http</code>协议的请求库的原因. 直观上来说, 它把构造请求和获取响应的操作简单化了.<br>更多使用教程参见<a href="http://www.jcodecraeer.com/a/anzhuokaifa/androidkaifa/2015/0106/2275.html" target="_blank" rel="noopener">OkHttp使用教程</a>.  </p>
+<p>不仅如此, 查看它的<a href="http://square.github.io/okhttp/3.x/okhttp/" target="_blank" rel="noopener">文档</a>, 可以发现它定义了大约50个类, 除了常规的几个<code>Builder</code>类和<code>Factory</code>类以外, 其他类都是面向网络请求某一方面的. 从类名来看, 涵盖了请求, 响应, 回调, 鉴权, 加密, 证书, 连接池, Cookie, Dns, Tls, MultipartBody等方面. 可以很明显感受到它支持<code>Https</code>和<code>Http/2</code>协议. 据<a href="http://frodoking.github.io/2015/03/12/android-okhttp/" target="_blank" rel="noopener">OkHttp源码解析</a>所述, 它也同时支持<code>SPDY</code>.  </p>
 <h2 id="OkHttp源码探索"><a href="#OkHttp源码探索" class="headerlink" title="OkHttp源码探索"></a>OkHttp源码探索</h2><p>废话少说, 我们现在就开始源码探索. 在探索之前, 先对<code>OkHttp</code>工作流, 也就是它的模型有一个整体的认识, 见下图:<br><img src="/images/blogs/okhttp_workflow.png" alt="okhttp-workflow">  </p>
-<p>上图来自<a href="http://frodoking.github.io/2015/03/12/android-okhttp/" target="_blank" rel="external">这篇博客</a>, 很可惜博客已经过时了, 特别是<code>HttpEngine</code>已经被三个新的拦截器所取代, 不过架构还是没有变的.  </p>
+<p>上图来自<a href="http://frodoking.github.io/2015/03/12/android-okhttp/" target="_blank" rel="noopener">这篇博客</a>, 很可惜博客已经过时了, 特别是<code>HttpEngine</code>已经被三个新的拦截器所取代, 不过架构还是没有变的.  </p>
 <h3 id="OkHttp请求分发类Dispatcher"><a href="#OkHttp请求分发类Dispatcher" class="headerlink" title="OkHttp请求分发类Dispatcher"></a>OkHttp请求分发类Dispatcher</h3><p>以下我们将介绍<code>OkHttp</code>中的类源码, 重点来介绍<code>OkHttp</code>为了优化网络请求做了哪些工作.<br>在发起一个请求的时候, 是调用<code>OkHttpClient.newCall().enqueue(Callback)</code>来入队一个异步请求, 其中调用<code>Dispatcher.enqueue(AsyncCall)</code>执行真正的入队操作. 我们来看看<code>Dispatcher</code>的注释:  </p>
 <pre><code>
 /**
@@ -115,6 +117,7 @@
  * own executor, it should be able to run {@linkplain #getMaxRequests the configured maximum} number
  * of calls concurrently.
  */
+
 </code></pre><p>这个分发器负责调度和并发执行请求, 看描述我们大致能猜到它内部使用了<code>ExecutorService</code>去执行请求队列. 打开文件发现它是直接<code>new ThreadPoolExecutor</code>来初始化的, 不限制线程池容量, 使用<code>SynchronousQueue</code>作为底层结构, 自行维护一个<code>maxRequests</code>来限制正在执行的请求的最大数量. 调用<code>enqueue()</code>将准备好的请求加入到正在执行的请求队列中并调用<code>executorService().execute(call)</code>执行(我们知道, 这里面就是把要执行的<code>Runnable</code>加入到队列中,等待被调度到的时候调用<code>Runnable.run()</code>接口).  </p>
 <p><code>AsyncCall</code>是<code>RealCall</code>的内部类, 在<code>enqueue</code>的时候实际上就是将一个<code>AsyncCall</code>实例入队到<code>ExecutorService</code>的队列中, 反而没<code>RealCall</code>什么事. <code>AsyncCall</code>继承自<code>NamedRunnable</code>, 而<code>NamedRunnable</code>显然继承自<code>Runnable</code>, 并且在它里面把<code>run()</code>方法实现为调用<code>execute()</code>方法. 这就使得<code>ExecutorService</code>通过调用<code>run()</code>方法最终会调用到<code>AsyncCall.execute()</code>方法. 那外层的<code>RealCall</code>又有什么用呢? 其实它提供了一个同步的<code>execute()</code>方法可以让<code>RealCall</code>实例立即被加入到执行队列中, 并等待返回.<br>下面我们来看<code>RealCall</code>的代码.  </p>
 <pre><code>
@@ -177,6 +180,7 @@
        }
      }
    }
+
 </code></pre><h3 id="OkHttp请求执行和响应"><a href="#OkHttp请求执行和响应" class="headerlink" title="OkHttp请求执行和响应"></a>OkHttp请求执行和响应</h3><p> 现在我们了解了请求的并发执行, 我们再来看连接. 上述过程中好像没有看到哪里有管理连接的内容? 别急, 我们一步一步来, 先找到第一个返回<code>Response</code>的地方. 经过上述观察我们发现在<code>getResponseWithInterceptorChain</code>方法第一次得到<code>Response</code>. 在这个方法里面, 用了一系列拦截器(<code>Interceptor</code>)来初始化一个<code>RealInterceptorChain</code>实例, 并通过该实例的<code>proceed()</code>方法获得了<code>Response</code>. 打开<code>RealInterceptorChain.proceed</code>可以发现它是对<code>RealInterceptorChain</code>链上的<code>Interceptor</code>逐个地使用同一套连接参数去初始化和调用<code>intercept()</code>方法, 那么具体拦截下来做什么, 就得看具体<code>intercept</code>中的行为了. 这里可以看到拦截器链首先是添加了<code>Client</code>上的拦截器, 然后加上<code>retryAndFollowUpInterceptor</code>和另外三个拦截器. 我们看看默认的拦截器都有哪些:  </p>
 <pre><code>
 OkHttpClient(Builder builder) {
@@ -221,6 +225,7 @@ OkHttpClient(Builder builder) {
   this.writeTimeout = builder.writeTimeout;
   this.pingInterval = builder.pingInterval;
 }
+
 </code></pre><p>直接用的<code>Builder</code>的拦截器, 看一下发现是个空的<code>ArrayList</code>, 好吧, 啥都没有. 那第一个被调用<code>intercept</code>方法的就是<code>retryAndFollowUpInterceptor</code>了. 打开看看发现他是首先分配了一个<code>StreamAllocation</code>, 在流不断开的情况下不断调用传入的拦截器获得响应结果, 并与前面得到的响应结果组装起来, 在无后续响应结果的情况下返回响应.<br> 看来我们还得追踪下一个拦截器, 我估计追踪到最后一个就是实际的连接创建了. 果不其然, <code>BridgeInterceptor</code>作为桥, 将用户请求<code>Request</code>重新构造了一个<code>Request</code>并交给传入的拦截器处理, 对返回的<code>Response</code>也做了处理, 如存<code>Cookie</code>, 构造新的<code>Response</code>等. 它的下一个拦截器是<code>CacheInterceptor</code>, 这个拦截器就是处理缓存的了, 根据我们的缓存策略在缓存表中试图获取缓存的响应并判断是否只需要返回缓存就行了. 如果缓存不适用, 则调用传入的拦截器处理请求, 并根据返回的情况更新缓存时间或重写缓存. 我个人觉得需要注意它代码中多处地方都非常注意关闭缓存, 以防止内存泄漏. 下一个拦截器是<code>ConnectInterceptor</code>, 这应该就是真正发起请求的地方了, 它的代码比意料中少:  </p>
 <pre><code>
 // in file okhttp3/internal/connection/ConnectInterceptor.java
@@ -236,6 +241,7 @@ OkHttpClient(Builder builder) {
 
   return realChain.proceed(request, streamAllocation, httpCodec, connection);// #4 注意它虽然调用的是`proceed`而不是`intercept`, 但由于`RealInterceptorChain`中`proceed`的实现就是调用当前`intercept.intercept()`, 所以最终还是走到`intercept()`
 }
+
 </code></pre><p>这里关键步骤出来了: 分配IO Stream, Connect, Proceed. 这里传入的拦截器是<code>CallServerInterceptor</code>. 打开分别看看这三步对应的代码. <code>streamAllocation</code>返回的是此次连接的<code>StreamAllocation</code>, <code>connection()</code>返回的也是此次连接, 这两个值从上文可以看到是在<code>retryAndFollowUpInterceptor</code>中就已经初始化了. <code>proceed</code>最终走到<code>CallServerInterceptor.intercept</code>, 代码注释如下:  </p>
 <pre><code>
 // in file okhttp3/internal/http/CallServerInterceptor.java
@@ -295,6 +301,7 @@ OkHttpClient(Builder builder) {
 
   return response;
 }
+
 </code></pre><p>厉害了, 原来最后用的是<code>HttpCodec</code>的实例来完成的请求发送和响应接收, 查看它的继承类可以看到<code>Http1Codec</code>和<code>Http2Codec</code>, 明显就是对应两种协议了, 前面在<code>ConnectInterceptor#2</code>的时候实例化了这个编码解码器(实例化过程中通过连接池获取一个可用的连接).<br> 这一条路径下来, 请求构造-&gt;连接构造-&gt;请求发送-&gt;响应接收-&gt;响应解析都完成了, 不得不说大神的代码看起来有点吃力但是非常舒服(拦截器链这一块, 原先曾经是<code>HttpEngine.java</code>完成上文三个默认拦截器的工作, 由<code>Square</code>的另一个大神分解为三个单独的职责分明的拦截器), 逻辑清晰层次分明, 而且还有够用的注释, 吃力主要还是因为自己的抽象能力不足, 对于网络连接的场景需要做什么在心里没有一个完整的模型.<br> 代码中可以看到通过连接池对连接进行了复用, 具体的数据读写使用了<code>Okio</code>(也是<code>Square</code>家的项目).  </p>
 <h3 id="OkHttp缓存Cache"><a href="#OkHttp缓存Cache" class="headerlink" title="OkHttp缓存Cache"></a>OkHttp缓存Cache</h3><p>下面看看最后一个重点: 缓存<code>Cache</code>.<br>上文提到, 在<code>CacheInterceptor.intercept</code>中, 会在<code>InternalCache cache</code>中寻找当前请求的缓存, 并获取当前请求的缓存策略(<code>CacheStrategy.Factory(time, request, cacheCandidate).get()</code>), 如果<code>cache</code>不为<code>null</code>调用<code>cache.trackResponse</code>, 其余的判断是否请求被禁止或是否需要缓存等内容我们略过不提, 单看缓存更新<code>cache.update(cachedResponse, networkResponse)</code>和<code>cacheWritingResponse(cacheRequest, response)</code>, 这两种情况都已经访问了网络并获得了响应, 前者的响应表示未更改(状态码304), 客户端应直接读缓存, 所以我们只需要更新缓存的部分内容即可, 后者则需要更新整个缓存的<code>cacheResponse</code>. 两者代码分别如下:  </p>
 <pre><code>
@@ -377,6 +384,7 @@ void update(Response cached, Response network) {
         .body(new RealResponseBody(response.headers(), Okio.buffer(cacheWritingSource)))
         .build(); // 使用以上实现构造RealResponseBody, 传入当前响应, 构造新的响应拷贝
   }
+
 </code></pre><p>其中<code>cache</code>的值是在<code>RealCall</code>中传入<code>new CacheInterceptor(client.internalCache())</code>时初始化的, 其值默认是<code>OkHttpClient.cache.internalCache</code>, 除非<code>cache</code>为空, 彼时会使用<code>OkHttpClient.internalCache</code>. 换句话说, 如果我们初始化<code>OkHttpClient</code>时把<code>cache</code>置空则可以通过设置<code>internalCache</code>使用我们自己的缓存. 事实上<code>OkHttpClient.Builder</code>中这两个缓存正是互斥的:  </p>
 <pre><code>
 /** Sets the response cache to be used to read and write cached responses. */
@@ -391,13 +399,14 @@ public Builder cache(Cache cache) {
   this.internalCache = null;
   return this;
 }
+
 </code></pre><p>至此, <code>OkHttp</code>的主干流程已经探索得差不多了, 我们也知道了它提升<code>http</code>效率的主要手段: 复用连接, 并发请求, 缓存响应, 异步响应. 它使得<code>http</code>连接在频繁低载荷或多次连续的数据传输中, 不至于在缓存和重新建立连接上花费太多时间.  </p>
 <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
-<li><a href="https://github.com/square/okhttp" target="_blank" rel="external">OkHttp源码</a>  </li>
-<li><a href="http://square.github.io/okhttp/3.x/okhttp/" target="_blank" rel="external">OkHttp文档</a>  </li>
-<li><a href="http://www.jcodecraeer.com/a/anzhuokaifa/androidkaifa/2015/0106/2275.html" target="_blank" rel="external">OkHttp使用教程</a>  </li>
-<li><a href="http://frodoking.github.io/2015/03/12/android-okhttp/" target="_blank" rel="external">OkHttp源码解析</a>  </li>
-<li><a href="http://www.jianshu.com/p/aad5aacd79bf" target="_blank" rel="external">OkHttp3源码分析综述</a>  </li>
+<li><a href="https://github.com/square/okhttp" target="_blank" rel="noopener">OkHttp源码</a>  </li>
+<li><a href="http://square.github.io/okhttp/3.x/okhttp/" target="_blank" rel="noopener">OkHttp文档</a>  </li>
+<li><a href="http://www.jcodecraeer.com/a/anzhuokaifa/androidkaifa/2015/0106/2275.html" target="_blank" rel="noopener">OkHttp使用教程</a>  </li>
+<li><a href="http://frodoking.github.io/2015/03/12/android-okhttp/" target="_blank" rel="noopener">OkHttp源码解析</a>  </li>
+<li><a href="http://www.jianshu.com/p/aad5aacd79bf" target="_blank" rel="noopener">OkHttp3源码分析综述</a>  </li>
 </ul>
   
 	</div>
@@ -491,7 +500,7 @@ public Builder cache(Cache cache) {
 		<ul>
 		
 		  
-			<li><a href="/categories/android/" title="android">android<sup>25</sup></a></li>
+			<li><a href="/categories/android/" title="android">android<sup>26</sup></a></li>
 		  
 		
 		  
@@ -520,7 +529,7 @@ public Builder cache(Cache cache) {
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/android/" title="android">android<sup>26</sup></a></li>
+				<li><a href="/tags/android/" title="android">android<sup>27</sup></a></li>
 			
 		
 			

@@ -12,13 +12,15 @@
 
     
     <meta name="description" content="本文讲Retrofit. 总的来说它是一个面向业务流程的网络请求库, 内部默认使用面向网络协议的库OkHttp来打出成吨伤害.">
+<meta name="keywords" content="android">
 <meta property="og:type" content="article">
 <meta property="og:title" content="【Android源码伴读】Retrofit源码探秘">
 <meta property="og:url" content="https://hjhjw1991.github.io/android/2017/03/01/[Android源码伴读]Retrofit源码探秘/index.html">
-<meta property="og:site_name" content="hjhjw1991's blog">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
 <meta property="og:description" content="本文讲Retrofit. 总的来说它是一个面向业务流程的网络请求库, 内部默认使用面向网络协议的库OkHttp来打出成吨伤害.">
+<meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://hjhjw1991.github.io/images/blogs/retrofit_okhttp.png">
-<meta property="og:updated_time" content="2017-03-05T11:15:49.483Z">
+<meta property="og:updated_time" content="2017-03-05T11:15:49.484Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="【Android源码伴读】Retrofit源码探秘">
 <meta name="twitter:description" content="本文讲Retrofit. 总的来说它是一个面向业务流程的网络请求库, 内部默认使用面向网络协议的库OkHttp来打出成吨伤害.">
@@ -287,6 +289,7 @@ private ParameterHandler&lt;?&gt; parseParameterAnnotation(
   }
   return null; // Not a Retrofit annotation.
 }
+
 </code></pre><p>可见<code>Retrofit</code>对注解的处理分为两个部分: 一个是<code>Method</code>级别的<code>Annotation</code>, 所有<code>http</code>协议方法都被定义为该级别的<code>Annotation</code>, 在<code>ServiceMethod.parseHttpMethodAndPath</code>中处理(注意到, 基本方法<code>DELETE</code> <code>GET</code> <code>HEAD</code> <code>POST</code>等应该是互斥的, 但代码中没有进行判断, 而<code>Multipard</code>和<code>FormUrlEncoded</code>之间却进行了判断, 至于代码中没有对<code>Streaming</code>的处理, 是因为逻辑上它不在这一层, 而是在响应结果的解析, 所以其实是在<code>retrofit2/BuiltInConverters.java</code>中进行了处理); 另一个是<code>Parameter</code>级别的, 大多数是在进行基本预处理之后就委托给<code>ParameterHandler</code>接口的实现类进行处理.  </p>
 <p>通过对某个方法的注解的处理, 在<code>ServiceMethod.Builder.build()</code>完成后<code>ServiceMethod</code>就获取到了调用该方法发起网络请求所需要的信息, 可以开始构造<code>Call</code>了.  </p>
 <h3 id="Retrofit的Call与Response"><a href="#Retrofit的Call与Response" class="headerlink" title="Retrofit的Call与Response"></a>Retrofit的Call与Response</h3><p><code>Retrofit</code>的<code>Call</code>和<code>Response</code>是对<code>OkHttp</code>的<code>Call</code>和<code>Response</code>的封装, 为什么要进行这么一层封装呢? 接下来我们就看看它的源码.<br>我们选择从核心方法<code>Retrofit.create(Class)</code>开始.  </p>
@@ -317,7 +320,7 @@ private ParameterHandler&lt;?&gt; parseParameterAnnotation(
         }
       });
 }
-</code></pre><p>这里面一共有三个步骤, 其中前两步是用来检查接口和提前载入方法的, 第三步是关键, 生成并返回了一个代理. 实例化代理时传入了三个参数, 第三个是<code>InvocationHandler</code>的实现, 我们可以看到里面最关键的步骤是<code>#4 #5 #6</code>, 分别完成方法载入(<code>Method-&gt;ServiceMethod</code>), <code>Call</code>构造和返回<code>Call</code>代理. 这里<code>Proxy</code>及<code>InvocationHandler</code>都是<code>Java</code>中就已经存在并引入了<code>Android</code>中的机制, 即动态代理机制. 关于动态代理机制, 思想成熟战法犀利, 是相当有意思的一个东西, 可以参见<a href="http://a.codekk.com/detail/Android/Caij/%E5%85%AC%E5%85%B1%E6%8A%80%E6%9C%AF%E7%82%B9%E4%B9%8B%20Java%20%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86" target="_blank" rel="external">这篇文章</a><br>总之要使用动态代理呢, 委托类必须要实现某个接口, 而<code>Proxy</code>创建的代理类通过实现<code>InvocationHandler</code>来调用委托类的方法, 完成代理. 所有这一切都跟反射密不可分, 所以理所当然<code>Proxy</code>是在反射包下的.<br>从上面代码可以看出, <code>Platform.isDefaultMethod()</code>和<code>Object</code>的方法将被<code>InvocationHandler</code>直接代理执行, 而其他方法则被包装成<code>OkHttpCall</code>交给<code>ServiceMethod</code>的<code>CallAdapter</code>去执行. 这里也可以看出对<code>Call</code>和<code>Response</code>进行封装代理的作用: 屏蔽底层实现, 统一处理非核心逻辑, 统一接口, 令底层替换成其他网络访问库成为可能.  </p>
+</code></pre><p>这里面一共有三个步骤, 其中前两步是用来检查接口和提前载入方法的, 第三步是关键, 生成并返回了一个代理. 实例化代理时传入了三个参数, 第三个是<code>InvocationHandler</code>的实现, 我们可以看到里面最关键的步骤是<code>#4 #5 #6</code>, 分别完成方法载入(<code>Method-&gt;ServiceMethod</code>), <code>Call</code>构造和返回<code>Call</code>代理. 这里<code>Proxy</code>及<code>InvocationHandler</code>都是<code>Java</code>中就已经存在并引入了<code>Android</code>中的机制, 即动态代理机制. 关于动态代理机制, 思想成熟战法犀利, 是相当有意思的一个东西, 可以参见<a href="http://a.codekk.com/detail/Android/Caij/%E5%85%AC%E5%85%B1%E6%8A%80%E6%9C%AF%E7%82%B9%E4%B9%8B%20Java%20%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86" target="_blank" rel="noopener">这篇文章</a><br>总之要使用动态代理呢, 委托类必须要实现某个接口, 而<code>Proxy</code>创建的代理类通过实现<code>InvocationHandler</code>来调用委托类的方法, 完成代理. 所有这一切都跟反射密不可分, 所以理所当然<code>Proxy</code>是在反射包下的.<br>从上面代码可以看出, <code>Platform.isDefaultMethod()</code>和<code>Object</code>的方法将被<code>InvocationHandler</code>直接代理执行, 而其他方法则被包装成<code>OkHttpCall</code>交给<code>ServiceMethod</code>的<code>CallAdapter</code>去执行. 这里也可以看出对<code>Call</code>和<code>Response</code>进行封装代理的作用: 屏蔽底层实现, 统一处理非核心逻辑, 统一接口, 令底层替换成其他网络访问库成为可能.  </p>
 <p>下面我们来看<code>ServiceMethod</code>的构造过程, <code>OkHttpCall</code>的构造过程以及默认的<code>CallAdapter</code>的代码.<br>还记得在<code>create</code>里传入<code>loadServiceMethod</code>的是<code>Method method</code>, 它是代理方法, 通过它去访问委托(被代理)方法, 代码如下:  </p>
 <pre><code>ServiceMethod&lt;?, ?&gt; loadServiceMethod(Method method) {
   ServiceMethod&lt;?, ?&gt; result = serviceMethodCache.get(method);
@@ -486,19 +489,19 @@ ServiceMethod(Builder&lt;R, T&gt; builder) {
 }
 </code></pre><p>显然默认情况下这个适配器什么也不做, 直接把传入的<code>OkHttpCall</code>返回给你.  </p>
 <h3 id="Retrofit的Converter与CallAdapter-开始使用RxJava"><a href="#Retrofit的Converter与CallAdapter-开始使用RxJava" class="headerlink" title="Retrofit的Converter与CallAdapter: 开始使用RxJava"></a>Retrofit的Converter与CallAdapter: 开始使用RxJava</h3><p>上文已经暗示了, 对结果的解析器<code>Converter</code>可以替换, 其实发送请求的代理<code>Call</code>也可以被替换, 只要换掉<code>CallAdapter</code>就可以了, 网上都说<code>RxJava+Retrofit</code>可以打出成吨输出, 原因就在于<code>CallAdapter</code>可以换成一个返回<code>Observable</code>类型的适配器, 这使得在<code>Retrofit.create()</code>之后可以直接以<code>RxJava</code>的风格做链式调用.<br>实现起来也非常简单, 只要<code>.addConverterFactory()</code> <code>.addCallAdapterFactory()</code>即可, 因为<code>Retrofit</code>对外提供了抽象类<code>Converter.Factory</code> <code>CallAdapter.Factory</code>, 并且实例全部使用泛型来表示, 通过对外提供统一接口, 只要外部可以继承抽象工厂类并返回实现了统一接口的实例类, 就可以在不改变<code>Retrofit</code>一行代码的情况下接入其他库, 或者原有逻辑代码变动不大的情况下接入<code>Retrofit</code>.  </p>
-<p>是时候上一波图了:<br><img src="/images/blogs/retrofit_okhttp.png" alt="Retrofit, RxJava 和 OkHttp之间的关系"><br>上面这张图是我基于<a href="http://www.jianshu.com/p/45cb536be2f4" target="_blank" rel="external">Stay的这篇文章</a>改的, 荣耀归他, 另外由于图滞后于<code>Retrofit</code>版本, 所以如果有不一致的地方锅也归他(目前没看见不一致).  </p>
+<p>是时候上一波图了:<br><img src="/images/blogs/retrofit_okhttp.png" alt="Retrofit, RxJava 和 OkHttp之间的关系"><br>上面这张图是我基于<a href="http://www.jianshu.com/p/45cb536be2f4" target="_blank" rel="noopener">Stay的这篇文章</a>改的, 荣耀归他, 另外由于图滞后于<code>Retrofit</code>版本, 所以如果有不一致的地方锅也归他(目前没看见不一致).  </p>
 <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p>这篇文章分析了<code>Retrofit</code>的实现, 其优缺点即使不是一目了然, 也是足够清晰了, 希望能够帮助到正在选择网络请求框架的各位.<br>本文参考如下:  </p>
 <ul>
-<li><a href="https://github.com/android-cn/android-open-project-analysis/tree/master/tool-lib/network/retrofit" target="_blank" rel="external">Retrofit 源码解析</a>  </li>
-<li><a href="http://www.jianshu.com/p/097947afddaf" target="_blank" rel="external">Retrofit源码分析（超详细）</a>  </li>
-<li><a href="http://www.jianshu.com/p/07dac989272c" target="_blank" rel="external">Android网络框架源码分析二—Retrofit</a>  </li>
-<li><a href="https://blog.piasy.com/2016/06/25/Understand-Retrofit/" target="_blank" rel="external">拆轮子系列：拆 Retrofit</a>  </li>
-<li><a href="http://www.jianshu.com/p/45cb536be2f4" target="_blank" rel="external">Retrofit分析-漂亮的解耦套路</a>  </li>
-<li><a href="https://blog.piasy.com/2016/06/25/Understand-Retrofit/" target="_blank" rel="external">拆轮子系列：拆 Retrofit</a>  </li>
-<li><a href="https://github.com/square/retrofit" target="_blank" rel="external">Retrofit源码</a>  </li>
-<li><a href="https://square.github.io/retrofit/" target="_blank" rel="external">Retrofit官网</a>  </li>
-<li><a href="https://square.github.io/retrofit/2.x/retrofit/" target="_blank" rel="external">Retrofit文档</a>  </li>
-<li><a href="https://inthecheesefactory.com/blog/retrofit-2.0/en" target="_blank" rel="external">Retrofit 2.0：有史以来最大的改进</a>  </li>
+<li><a href="https://github.com/android-cn/android-open-project-analysis/tree/master/tool-lib/network/retrofit" target="_blank" rel="noopener">Retrofit 源码解析</a>  </li>
+<li><a href="http://www.jianshu.com/p/097947afddaf" target="_blank" rel="noopener">Retrofit源码分析（超详细）</a>  </li>
+<li><a href="http://www.jianshu.com/p/07dac989272c" target="_blank" rel="noopener">Android网络框架源码分析二—Retrofit</a>  </li>
+<li><a href="https://blog.piasy.com/2016/06/25/Understand-Retrofit/" target="_blank" rel="noopener">拆轮子系列：拆 Retrofit</a>  </li>
+<li><a href="http://www.jianshu.com/p/45cb536be2f4" target="_blank" rel="noopener">Retrofit分析-漂亮的解耦套路</a>  </li>
+<li><a href="https://blog.piasy.com/2016/06/25/Understand-Retrofit/" target="_blank" rel="noopener">拆轮子系列：拆 Retrofit</a>  </li>
+<li><a href="https://github.com/square/retrofit" target="_blank" rel="noopener">Retrofit源码</a>  </li>
+<li><a href="https://square.github.io/retrofit/" target="_blank" rel="noopener">Retrofit官网</a>  </li>
+<li><a href="https://square.github.io/retrofit/2.x/retrofit/" target="_blank" rel="noopener">Retrofit文档</a>  </li>
+<li><a href="https://inthecheesefactory.com/blog/retrofit-2.0/en" target="_blank" rel="noopener">Retrofit 2.0：有史以来最大的改进</a>  </li>
 </ul>
   
 	</div>
@@ -592,7 +595,7 @@ ServiceMethod(Builder&lt;R, T&gt; builder) {
 		<ul>
 		
 		  
-			<li><a href="/categories/android/" title="android">android<sup>25</sup></a></li>
+			<li><a href="/categories/android/" title="android">android<sup>26</sup></a></li>
 		  
 		
 		  
@@ -621,7 +624,7 @@ ServiceMethod(Builder&lt;R, T&gt; builder) {
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/android/" title="android">android<sup>26</sup></a></li>
+				<li><a href="/tags/android/" title="android">android<sup>27</sup></a></li>
 			
 		
 			

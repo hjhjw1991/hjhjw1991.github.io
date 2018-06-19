@@ -4,6 +4,26 @@
 
     
   <url>
+    <loc>https://hjhjw1991.github.io/android/2018/06/13/Android-9.0%E5%8F%98%E5%8C%96/</loc>
+    <lastmod>2018-06-14T10:48:03.788Z</lastmod>
+    <data>
+        <display>
+        <title>Android 9.0变化</title>
+        <pubTime>2018-06-12T16:00:00.000Z</pubTime>
+        
+        <tag>android</tag>
+         
+         
+           
+             
+              <breadCrumb title="android" url="https://hjhjw1991.github.io/categories/android/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
     <loc>https://hjhjw1991.github.io/blog/2018/06/04/Java%E5%B0%8F%E7%9F%A5%E8%AF%86--%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8B/</loc>
     <lastmod>2018-06-04T10:27:34.271Z</lastmod>
     <data>
@@ -27,7 +47,7 @@
     
   <url>
     <loc>https://hjhjw1991.github.io/blog/2017/08/02/Executor%E6%A1%86%E6%9E%B6/</loc>
-    <lastmod>2018-06-04T10:26:45.578Z</lastmod>
+    <lastmod>2018-06-04T10:26:45.579Z</lastmod>
     <data>
         <display>
         <title>Executor框架</title>
@@ -47,7 +67,7 @@
     
   <url>
     <loc>https://hjhjw1991.github.io/android/2018/06/04/EventBus--%E5%9F%BA%E4%BA%8E%E8%AE%A2%E9%98%85%E6%A8%A1%E5%BC%8F%E7%9A%84%E4%BA%8B%E4%BB%B6%E6%80%BB%E7%BA%BF%E5%BA%93/</loc>
-    <lastmod>2018-06-04T10:05:22.635Z</lastmod>
+    <lastmod>2018-06-04T10:05:22.636Z</lastmod>
     <data>
         <display>
         <title>EventBus--基于订阅模式的事件总线库</title>
@@ -69,7 +89,7 @@
     
   <url>
     <loc>https://hjhjw1991.github.io/android/2018/01/02/Apk%E5%AE%89%E8%A3%85%E5%8D%B8%E8%BD%BD%E5%8E%9F%E7%90%86/</loc>
-    <lastmod>2018-01-02T10:58:28.862Z</lastmod>
+    <lastmod>2018-01-02T10:58:28.863Z</lastmod>
     <data>
         <display>
         <title>Apk安装卸载原理</title>
@@ -137,7 +157,7 @@
     
   <url>
     <loc>https://hjhjw1991.github.io/android/2017/08/03/IntentService%E4%BB%80%E4%B9%88%E9%AC%BC/</loc>
-    <lastmod>2017-08-03T04:09:41.479Z</lastmod>
+    <lastmod>2017-08-03T04:09:41.480Z</lastmod>
     <data>
         <display>
         <title>IntentService什么鬼</title>
@@ -159,7 +179,7 @@
     
   <url>
     <loc>https://hjhjw1991.github.io/android/2017/08/01/Android-6-7-8-%E6%9B%B4%E6%96%B0%E5%B0%8F%E8%AE%B0/</loc>
-    <lastmod>2017-08-01T08:57:37.162Z</lastmod>
+    <lastmod>2017-08-01T08:57:37.163Z</lastmod>
     <data>
         <display>
         <title>Android 6-7-8 更新小记</title>
@@ -221,7 +241,7 @@
     
   <url>
     <loc>https://hjhjw1991.github.io/blog/2015/06/08/Python%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/</loc>
-    <lastmod>2017-05-04T10:38:43.979Z</lastmod>
+    <lastmod>2017-05-04T10:38:43.980Z</lastmod>
     <data>
         <display>
         <title>Python正则表达式</title>
@@ -243,7 +263,7 @@
     
   <url>
     <loc>https://hjhjw1991.github.io/android/2016/08/01/Android%E6%BA%90%E7%A0%81%E7%BB%93%E6%9E%84/</loc>
-    <lastmod>2017-05-04T10:37:12.043Z</lastmod>
+    <lastmod>2017-05-04T10:37:12.044Z</lastmod>
     <data>
         <display>
         <title>Android源码结构</title>
@@ -265,7 +285,7 @@
     
   <url>
     <loc>https://hjhjw1991.github.io/blog/2015/05/19/%E6%90%AC%E7%93%A6%E5%B7%A5VPS%E6%9E%B6%E8%AE%BEVPN%E6%95%99%E7%A8%8B/</loc>
-    <lastmod>2017-05-04T10:36:11.723Z</lastmod>
+    <lastmod>2017-05-04T10:36:11.724Z</lastmod>
     <data>
         <display>
         <title>搬瓦工VPS架设VPN教程</title>
@@ -289,7 +309,7 @@
     
   <url>
     <loc>https://hjhjw1991.github.io/android/2017/03/05/%5BAndroid%E6%95%99%E7%A8%8B%5DActivityManagerService%E5%85%A8%E8%A7%A3-part1/</loc>
-    <lastmod>2017-05-04T10:36:03.195Z</lastmod>
+    <lastmod>2017-05-04T10:36:03.196Z</lastmod>
     <data>
         <display>
         <title>【Android教程】ActivityManagerService全解(1/5)</title>
@@ -311,7 +331,7 @@
     
   <url>
     <loc>https://hjhjw1991.github.io/blog/2015/06/19/CentOS-6.5%E4%B8%8B%E6%90%AD%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84Git%E6%9C%8D%E5%8A%A1%E5%99%A8/</loc>
-    <lastmod>2017-05-04T10:35:53.851Z</lastmod>
+    <lastmod>2017-05-04T10:35:53.852Z</lastmod>
     <data>
         <display>
         <title>CentOS 6.5下搭建自己的Git服务器</title>
@@ -333,7 +353,7 @@
     
   <url>
     <loc>https://hjhjw1991.github.io/android/2016/08/01/build-android/</loc>
-    <lastmod>2017-05-04T10:35:43.147Z</lastmod>
+    <lastmod>2017-05-04T10:35:43.148Z</lastmod>
     <data>
         <display>
         <title>在Ubuntu 16.04 64bit上下载、编译和安装Android源码</title>
@@ -355,7 +375,7 @@
     
   <url>
     <loc>https://hjhjw1991.github.io/android/2016/08/01/build-android-sdk/</loc>
-    <lastmod>2017-05-04T10:35:34.011Z</lastmod>
+    <lastmod>2017-05-04T10:35:34.012Z</lastmod>
     <data>
         <display>
         <title>从源码编译Android SDK</title>
@@ -377,7 +397,7 @@
     
   <url>
     <loc>https://hjhjw1991.github.io/blog/2015/08/30/Mac%E4%B8%8B%E9%85%8D%E7%BD%AEssh%E8%AE%BF%E9%97%AE%E8%BF%9C%E7%A8%8B%E7%A7%81%E6%9C%89git%E6%9C%8D%E5%8A%A1%E5%99%A8/</loc>
-    <lastmod>2017-05-04T10:35:26.059Z</lastmod>
+    <lastmod>2017-05-04T10:35:26.060Z</lastmod>
     <data>
         <display>
         <title>Mac下配置ssh访问远程私有git服务器</title>
@@ -403,7 +423,7 @@
     
   <url>
     <loc>https://hjhjw1991.github.io/android/2017/02/24/%5BAndroid%E6%95%99%E7%A8%8B%5DView&ViewGroup%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB/</loc>
-    <lastmod>2017-05-04T10:35:16.571Z</lastmod>
+    <lastmod>2017-05-04T10:35:16.572Z</lastmod>
     <data>
         <display>
         <title>【Android教程】View/ViewGroup源码阅读</title>
@@ -427,7 +447,7 @@
     
   <url>
     <loc>https://hjhjw1991.github.io/android/2016/04/01/%5BAndroid%E6%95%99%E7%A8%8B%5DAIDL%E5%85%A5%E9%97%A8/</loc>
-    <lastmod>2017-05-04T10:34:56.491Z</lastmod>
+    <lastmod>2017-05-04T10:34:56.492Z</lastmod>
     <data>
         <display>
         <title>【Android教程】AIDL入门</title>
@@ -451,7 +471,7 @@
     
   <url>
     <loc>https://hjhjw1991.github.io/android/2017/01/06/%5BAndroid%E6%95%99%E7%A8%8B%5DHandler%E5%85%A8%E8%A7%A3/</loc>
-    <lastmod>2017-05-04T10:32:16.091Z</lastmod>
+    <lastmod>2017-05-04T10:32:16.092Z</lastmod>
     <data>
         <display>
         <title>【Android教程】Handler全解</title>
@@ -475,7 +495,7 @@
     
   <url>
     <loc>https://hjhjw1991.github.io/android/2017/01/10/%5BAndroid%E6%95%99%E7%A8%8B%5DBinder%E5%85%A8%E8%A7%A3/</loc>
-    <lastmod>2017-05-04T10:31:43.295Z</lastmod>
+    <lastmod>2017-05-04T10:31:43.296Z</lastmod>
     <data>
         <display>
         <title>【Android教程】Binder全解</title>
@@ -499,7 +519,7 @@
     
   <url>
     <loc>https://hjhjw1991.github.io/android/2017/01/23/%5BAndroid%E6%95%99%E7%A8%8B%5DContext%E5%85%A8%E8%A7%A3/</loc>
-    <lastmod>2017-05-04T10:31:21.711Z</lastmod>
+    <lastmod>2017-05-04T10:31:21.712Z</lastmod>
     <data>
         <display>
         <title>【Android教程】Context全解</title>
@@ -523,7 +543,7 @@
     
   <url>
     <loc>https://hjhjw1991.github.io/android/2017/01/23/%5BAndroid%E6%95%99%E7%A8%8B%5DSharedPreference%E8%AF%A6%E8%A7%A3/</loc>
-    <lastmod>2017-05-04T10:29:27.359Z</lastmod>
+    <lastmod>2017-05-04T10:29:27.360Z</lastmod>
     <data>
         <display>
         <title>【Android教程】SharedPreference详解</title>
@@ -547,7 +567,7 @@
     
   <url>
     <loc>https://hjhjw1991.github.io/android/2017/02/28/%5BAndroid%E6%95%99%E7%A8%8B%5DAndroid%E7%BD%91%E7%BB%9C%E6%9E%B6%E6%9E%84/</loc>
-    <lastmod>2017-05-04T10:27:47.147Z</lastmod>
+    <lastmod>2017-05-04T10:27:47.148Z</lastmod>
     <data>
         <display>
         <title>【Android教程】Android网络架构</title>
@@ -589,7 +609,7 @@
     
   <url>
     <loc>https://hjhjw1991.github.io/android/2017/04/28/Activity%E4%B8%ADlaunchMode%E7%9A%84%E7%90%86%E8%A7%A3/</loc>
-    <lastmod>2017-05-02T02:20:44.491Z</lastmod>
+    <lastmod>2017-05-02T02:20:44.492Z</lastmod>
     <data>
         <display>
         <title>Activity中launchMode的理解</title>
@@ -611,7 +631,7 @@
     
   <url>
     <loc>https://hjhjw1991.github.io/android/2017/03/01/%5BAndroid%E6%BA%90%E7%A0%81%E4%BC%B4%E8%AF%BB%5DRetrofit%E6%BA%90%E7%A0%81%E6%8E%A2%E7%A7%98/</loc>
-    <lastmod>2017-03-05T11:15:49.483Z</lastmod>
+    <lastmod>2017-03-05T11:15:49.484Z</lastmod>
     <data>
         <display>
         <title>【Android源码伴读】Retrofit源码探秘</title>
@@ -631,7 +651,7 @@
     
   <url>
     <loc>https://hjhjw1991.github.io/android/2017/02/27/%5BAndroid%E6%BA%90%E7%A0%81%E4%BC%B4%E8%AF%BB%5DOkHttp%E6%BA%90%E7%A0%81%E6%8E%A2%E7%B4%A2/</loc>
-    <lastmod>2017-03-05T11:15:02.011Z</lastmod>
+    <lastmod>2017-03-05T11:15:02.012Z</lastmod>
     <data>
         <display>
         <title>【Android源码伴读】OkHttp源码探索</title>
@@ -710,24 +730,6 @@
 
     
   <url>
-    <loc>https://hjhjw1991.github.io/leetcode/2016/03/21/%5BLeetcode%E9%A2%98%E8%A7%A3%5D3-Longest%20Substring%20Without%20Repeating%20Characters/</loc>
-    <lastmod>2016-08-30T08:03:26.717Z</lastmod>
-    <data>
-        <display>
-        <title>【Leetcode题解】3-Longest Substring Without Repeating Characters</title>
-        <pubTime>2016-03-20T16:00:00.000Z</pubTime>
-        
-         
-           
-             
-              <breadCrumb title="leetcode" url="https://hjhjw1991.github.io/categories/leetcode/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
     <loc>https://hjhjw1991.github.io/leetcode/2015/06/17/%5BLeetcode%E9%A2%98%E8%A7%A3%5D151-Reverse-Words-in-a-String/</loc>
     <lastmod>2016-08-30T08:03:26.717Z</lastmod>
     <data>
@@ -782,24 +784,6 @@
 
     
   <url>
-    <loc>https://hjhjw1991.github.io/leetcode/2015/08/06/%5BLeetcode%E9%A2%98%E8%A7%A3%5D136-137-260-Single-Number/</loc>
-    <lastmod>2016-08-30T08:03:26.717Z</lastmod>
-    <data>
-        <display>
-        <title>【Leetcode题解】136-137-260-Single Number类型的问题</title>
-        <pubTime>2015-08-05T16:00:00.000Z</pubTime>
-        
-         
-           
-             
-              <breadCrumb title="leetcode" url="https://hjhjw1991.github.io/categories/leetcode/"/>
-          
-        </display>
-    </data>
-    </url>
-
-    
-  <url>
     <loc>https://hjhjw1991.github.io/opinion/2015/08/06/leetcode%E5%B7%B2%E7%BB%8F%E4%B8%A7%E5%BF%83%E7%97%85%E7%8B%82%E4%BA%86/</loc>
     <lastmod>2016-08-30T08:03:26.717Z</lastmod>
     <data>
@@ -811,6 +795,24 @@
            
              
               <breadCrumb title="opinion" url="https://hjhjw1991.github.io/categories/opinion/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://hjhjw1991.github.io/leetcode/2015/08/06/%5BLeetcode%E9%A2%98%E8%A7%A3%5D136-137-260-Single-Number/</loc>
+    <lastmod>2016-08-30T08:03:26.717Z</lastmod>
+    <data>
+        <display>
+        <title>【Leetcode题解】136-137-260-Single Number类型的问题</title>
+        <pubTime>2015-08-05T16:00:00.000Z</pubTime>
+        
+         
+           
+             
+              <breadCrumb title="leetcode" url="https://hjhjw1991.github.io/categories/leetcode/"/>
           
         </display>
     </data>
@@ -1179,6 +1181,24 @@
     <data>
         <display>
         <title>【Leetcode题解】2-Add Two Sum</title>
+        <pubTime>2016-03-20T16:00:00.000Z</pubTime>
+        
+         
+           
+             
+              <breadCrumb title="leetcode" url="https://hjhjw1991.github.io/categories/leetcode/"/>
+          
+        </display>
+    </data>
+    </url>
+
+    
+  <url>
+    <loc>https://hjhjw1991.github.io/leetcode/2016/03/21/%5BLeetcode%E9%A2%98%E8%A7%A3%5D3-Longest%20Substring%20Without%20Repeating%20Characters/</loc>
+    <lastmod>2016-08-30T08:03:26.717Z</lastmod>
+    <data>
+        <display>
+        <title>【Leetcode题解】3-Longest Substring Without Repeating Characters</title>
         <pubTime>2016-03-20T16:00:00.000Z</pubTime>
         
          

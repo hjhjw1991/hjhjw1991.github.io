@@ -12,11 +12,13 @@
 
     
     <meta name="description" content="在Native开发中遇到mmap, 于是有了这篇文章.">
+<meta name="keywords" content="android">
 <meta property="og:type" content="article">
 <meta property="og:title" content="初涉mmap">
 <meta property="og:url" content="https://hjhjw1991.github.io/android/2017/05/02/初涉mmap/index.html">
-<meta property="og:site_name" content="hjhjw1991's blog">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
 <meta property="og:description" content="在Native开发中遇到mmap, 于是有了这篇文章.">
+<meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2017-05-02T06:59:27.044Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="初涉mmap">
@@ -121,17 +123,17 @@
 <li>用户空间和内核空间对同一片区域的修改都可以直接反映在对方映射区域内, 提高了交互效率.  </li>
 <li>为共享内存和IPC通信提供一种方式.  </li>
 </ol>
-<h2 id="怎么用"><a href="#怎么用" class="headerlink" title="怎么用"></a>怎么用</h2><p>mmap尽管有些优势, 但并不是万能药, 例如如果你要处理的文件大到很难为之分配一个连续的虚拟地址空间, 或者你想要访问的地址的偏移量不是物理页大小(page_size)的整数倍(此时你需要自己解决偏移量问题), 甚至有些情况下, read/write是与目标文件交互的唯一方式, 见<a href="http://stackoverflow.com/a/258097/3996521" target="_blank" rel="external">SOF: when-should-use-mmap</a>.<br>mmap可以用于实现共享内存, 如上问所述.<br>Binder的底层使用mmap, 所以Binder才能做到只拷贝一次数据.<br>在使用mmap时有些要点需要注意:  </p>
+<h2 id="怎么用"><a href="#怎么用" class="headerlink" title="怎么用"></a>怎么用</h2><p>mmap尽管有些优势, 但并不是万能药, 例如如果你要处理的文件大到很难为之分配一个连续的虚拟地址空间, 或者你想要访问的地址的偏移量不是物理页大小(page_size)的整数倍(此时你需要自己解决偏移量问题), 甚至有些情况下, read/write是与目标文件交互的唯一方式, 见<a href="http://stackoverflow.com/a/258097/3996521" target="_blank" rel="noopener">SOF: when-should-use-mmap</a>.<br>mmap可以用于实现共享内存, 如上问所述.<br>Binder的底层使用mmap, 所以Binder才能做到只拷贝一次数据.<br>在使用mmap时有些要点需要注意:  </p>
 <ol>
 <li>由于mmap的映射是基于页大小的, 所以它一定会映射整数个页面, 哪怕你用不到那么多. 比如5000 byte数据需要2*4k(2个页)空间, 但5000~8191读写不报错但不会反映到文件中, 读为0, 写丢失.  </li>
 <li>无论你声明要使用多大空间, mmap都只会映射刚好够用的页面数量, 所以访问已映射的页面之外的地址, 会报错. 比如原始文件大小5000 byte, 声明要映射15000 byte, 那么仅前5000 byte可正常读写, 5000~8191同上, 不报错但读为0写丢失. 8192~14999无法读写, 报SIGBUS错误. 15000及以上无法读写, 报SIGSEGV错误. 如果确实需要写5000以上的位置, 那么需要在写之前增加文件大小.  </li>
 </ol>
 <h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
-<li><a href="https://en.wikipedia.org/wiki/Mmap" target="_blank" rel="external">wikipedia-mmap</a>  </li>
-<li><a href="http://www.cnblogs.com/huxiao-tee/p/4660352.html" target="_blank" rel="external">认真分析mmap：是什么 为什么 怎么用</a>  </li>
-<li><a href="http://stackoverflow.com/a/258097/3996521" target="_blank" rel="external">SOF: when-should-use-mmap</a>  </li>
-<li><a href="http://blog.csdn.net/yusiguyuan/article/details/23388771" target="_blank" rel="external">linux内存映射mmap原理分析</a>  </li>
-<li><a href="http://blog.csdn.net/yinjiabin/article/details/7575653" target="_blank" rel="external">linux中mmap系统调用原理分析与实现</a>  </li>
+<li><a href="https://en.wikipedia.org/wiki/Mmap" target="_blank" rel="noopener">wikipedia-mmap</a>  </li>
+<li><a href="http://www.cnblogs.com/huxiao-tee/p/4660352.html" target="_blank" rel="noopener">认真分析mmap：是什么 为什么 怎么用</a>  </li>
+<li><a href="http://stackoverflow.com/a/258097/3996521" target="_blank" rel="noopener">SOF: when-should-use-mmap</a>  </li>
+<li><a href="http://blog.csdn.net/yusiguyuan/article/details/23388771" target="_blank" rel="noopener">linux内存映射mmap原理分析</a>  </li>
+<li><a href="http://blog.csdn.net/yinjiabin/article/details/7575653" target="_blank" rel="noopener">linux中mmap系统调用原理分析与实现</a>  </li>
 </ul>
   
 	</div>
@@ -225,7 +227,7 @@
 		<ul>
 		
 		  
-			<li><a href="/categories/android/" title="android">android<sup>25</sup></a></li>
+			<li><a href="/categories/android/" title="android">android<sup>26</sup></a></li>
 		  
 		
 		  
@@ -254,7 +256,7 @@
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/android/" title="android">android<sup>26</sup></a></li>
+				<li><a href="/tags/android/" title="android">android<sup>27</sup></a></li>
 			
 		
 			

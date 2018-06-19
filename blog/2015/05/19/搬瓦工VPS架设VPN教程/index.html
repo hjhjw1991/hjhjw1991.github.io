@@ -12,15 +12,17 @@
 
     
     <meta name="description" content="从CSDN个人博客上把这篇文章搬过来了,原文已被消失">
+<meta name="keywords" content="vpn,vps,guide">
 <meta property="og:type" content="article">
 <meta property="og:title" content="搬瓦工VPS架设VPN教程">
 <meta property="og:url" content="https://hjhjw1991.github.io/blog/2015/05/19/搬瓦工VPS架设VPN教程/index.html">
-<meta property="og:site_name" content="hjhjw1991's blog">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
 <meta property="og:description" content="从CSDN个人博客上把这篇文章搬过来了,原文已被消失">
+<meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://images.cnitblog.com/blog/264055/201501/121015062612422.jpg">
 <meta property="og:image" content="http://images.cnitblog.com/blog/264055/201412/161447160622461.jpg">
 <meta property="og:image" content="http://img.blog.csdn.net/20150610114113600">
-<meta property="og:updated_time" content="2017-05-04T10:36:11.723Z">
+<meta property="og:updated_time" content="2017-05-04T10:36:11.724Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="搬瓦工VPS架设VPN教程">
 <meta name="twitter:description" content="从CSDN个人博客上把这篇文章搬过来了,原文已被消失">
@@ -106,9 +108,9 @@
 		<blockquote>
 <p>原文已被消失, 且本文内容不再有效, 也不打算再出新的教程或者更新维护本文, 望知悉.  </p>
 </blockquote>
-<p>从CSDN个人博客上把这篇文章搬过来了，一是给自己备忘，二是方便没有CSDN账户的人留言。可以直接点击<a href="http://blog.csdn.net/hjhjw1991/article/details/45848565" target="_blank" rel="external">访问原文</a>。以下是原文。  </p>
+<p>从CSDN个人博客上把这篇文章搬过来了，一是给自己备忘，二是方便没有CSDN账户的人留言。可以直接点击<a href="http://blog.csdn.net/hjhjw1991/article/details/45848565" target="_blank" rel="noopener">访问原文</a>。以下是原文。  </p>
 <hr>
-<h2 id="0-前言"><a href="#0-前言" class="headerlink" title="0. 前言"></a>0. 前言</h2><p>有独立架设VPN用于科学上网的想法很久了，但由于种种惰性一直没有付诸实践，都是在勉强用GoAgent代理浏览器，或者修改hosts重定位IP。<br>用过这两种方式的人都知道，他们不太稳定。动了购买VPN的心思，然而几经比较后发现，综合考虑稳定性、流量，租用VPS可能更划算一些，毕竟VPN只能用于网络连接，而VPS还可以用于部署网络应用。做了一下前期调研，选择了搬瓦工的VPS，没有别的原因，就是便宜。<br>购买需注册Paypal。这不是广告。<br>ps：虽然主要参考了<a href="http://www.cnblogs.com/zuike/articles/4167182.html" target="_blank" rel="external">这篇博文</a>，但其间也是踩了一些坑，都写在本文中了。<br>转载请注明出处。  </p>
+<h2 id="0-前言"><a href="#0-前言" class="headerlink" title="0. 前言"></a>0. 前言</h2><p>有独立架设VPN用于科学上网的想法很久了，但由于种种惰性一直没有付诸实践，都是在勉强用GoAgent代理浏览器，或者修改hosts重定位IP。<br>用过这两种方式的人都知道，他们不太稳定。动了购买VPN的心思，然而几经比较后发现，综合考虑稳定性、流量，租用VPS可能更划算一些，毕竟VPN只能用于网络连接，而VPS还可以用于部署网络应用。做了一下前期调研，选择了搬瓦工的VPS，没有别的原因，就是便宜。<br>购买需注册Paypal。这不是广告。<br>ps：虽然主要参考了<a href="http://www.cnblogs.com/zuike/articles/4167182.html" target="_blank" rel="noopener">这篇博文</a>，但其间也是踩了一些坑，都写在本文中了。<br>转载请注明出处。  </p>
 <h2 id="1-安装系统"><a href="#1-安装系统" class="headerlink" title="1. 安装系统"></a>1. 安装系统</h2><p> 在注册购买好vps后，根据以下截图进入kiwivm管理面板：<br> <img src="http://images.cnitblog.com/blog/264055/201501/121015062612422.jpg" alt="kiwivm">  </p>
 <p>面板上默认可能安装的系统是CentOS 6<br>如果不是，想安装系统，从下面进入<br><img src="http://images.cnitblog.com/blog/264055/201412/161447160622461.jpg" alt="os"><br>选择相应系统就行了。我采用的默认的CentOS 6系统。<br>由于一直是用ubuntu的，对centos的yum还不是很熟悉。之后会写一篇关于在centos6上升级python到2.7的教程，centos6的yum跟python2.6有深度绑定，所以无法直接升级，需要编译源代码来升级。而且安装setuptools也是有坑的。  </p>
 <h2 id="2-安装服务（VPN-PPTP）"><a href="#2-安装服务（VPN-PPTP）" class="headerlink" title="2. 安装服务（VPN-PPTP）"></a>2. 安装服务（VPN-PPTP）</h2><h3 id="2-1-登陆系统"><a href="#2-1-登陆系统" class="headerlink" title="2.1 登陆系统"></a>2.1 登陆系统</h3><p>安装完系统后登录系统，如果你是Windows系统登录，可使用putty，xshell等登录VPS，也可以直接使用kiwivm管理界面的Root shell - interactive启动html5管理交互界面（无需输入密码）。<br>putty登陆方法：选择登陆方式为ssh登陆 ，IP地址和port填写你VPS的IP和port，点open即可。为方便以后登陆，可以起一个session名字并点击save保存配置。<br>putty登陆需要输入账号密码，默认账号是root，密码从以下界面产生<br><img src="http://img.blog.csdn.net/20150610114113600" alt="获得随机密码"></p>
@@ -146,8 +148,8 @@ wget https://acelnmp.googlecode.com/files/pptpd-1.3.4-1.rhel5.1.i386.rpm
 wget https://fastlnmp.googlecode.com/files/ppp-2.4.4-9.0.rhel5.i386.rpm
 </code></pre><h2 id="3-添加自己的VPN账号"><a href="#3-添加自己的VPN账号" class="headerlink" title="3. 添加自己的VPN账号"></a>3. 添加自己的VPN账号</h2><p>如何添加自己的vpn账户名？ 比如我想用 anonymous 这个帐号，密码设置为 abc@123 (<strong>注意，危险！仅作为演示用，千万别设置这样的密码！</strong>)  </p>
 <p>执行下面这句代码来添加vpn账户：<br><code>bash openvps_vpn_centos-5-6.sh</code><br>返回的信息选项中，选择第4项：4.add VPN user<br>根据提示输入用户名，如 anonymous，再输入密码 即可完成vpn的架设了。<br>使用时，在本地新建VPN连接，地址和端口填写VPS的地址和端口，用户名密码填写自己设置的VPN的用户名和密码，然后连接，就可以了。<br>如有疑问，请留言讨论。</p>
-<h2 id="4-reference"><a href="#4-reference" class="headerlink" title="4. reference"></a>4. reference</h2><p><a href="http://www.cnblogs.com/zuike/articles/4167182.html" target="_blank" rel="external">搬瓦工(bandwagonhost) 搭建VPN 2014.12月测试可行</a><br><a href="http://www.jjhr.net/2013/12/centos6-x-vpn-pptp-build-method/" target="_blank" rel="external">Centos6.X vpn pptp 搭建方法</a><br><a href="http://www.phpsong.com/1.html" target="_blank" rel="external">搬瓦工vps vpn架设</a>  </p>
-<h2 id="5-Appendix"><a href="#5-Appendix" class="headerlink" title="5. Appendix"></a>5. Appendix</h2><p>最近妖风太盛，所以如果自己有能力的童鞋，请移步Github的这个项目<a href="https://github.com/cloudwu/mptun" target="_blank" rel="external">MPTUN</a>自己研究怎么搭建VPN吧，当然VPS还是必要的。  </p>
+<h2 id="4-reference"><a href="#4-reference" class="headerlink" title="4. reference"></a>4. reference</h2><p><a href="http://www.cnblogs.com/zuike/articles/4167182.html" target="_blank" rel="noopener">搬瓦工(bandwagonhost) 搭建VPN 2014.12月测试可行</a><br><a href="http://www.jjhr.net/2013/12/centos6-x-vpn-pptp-build-method/" target="_blank" rel="noopener">Centos6.X vpn pptp 搭建方法</a><br><a href="http://www.phpsong.com/1.html" target="_blank" rel="noopener">搬瓦工vps vpn架设</a>  </p>
+<h2 id="5-Appendix"><a href="#5-Appendix" class="headerlink" title="5. Appendix"></a>5. Appendix</h2><p>最近妖风太盛，所以如果自己有能力的童鞋，请移步Github的这个项目<a href="https://github.com/cloudwu/mptun" target="_blank" rel="noopener">MPTUN</a>自己研究怎么搭建VPN吧，当然VPS还是必要的。  </p>
   
 	</div>
 		<footer class="article-footer clearfix">
@@ -240,7 +242,7 @@ wget https://fastlnmp.googlecode.com/files/ppp-2.4.4-9.0.rhel5.i386.rpm
 		<ul>
 		
 		  
-			<li><a href="/categories/android/" title="android">android<sup>25</sup></a></li>
+			<li><a href="/categories/android/" title="android">android<sup>26</sup></a></li>
 		  
 		
 		  
@@ -269,7 +271,7 @@ wget https://fastlnmp.googlecode.com/files/ppp-2.4.4-9.0.rhel5.i386.rpm
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/android/" title="android">android<sup>26</sup></a></li>
+				<li><a href="/tags/android/" title="android">android<sup>27</sup></a></li>
 			
 		
 			

@@ -12,11 +12,13 @@
 
     
     <meta name="description" content="Git使用过程中遇到的一些问题和技巧，方便排查">
+<meta name="keywords" content="git">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Git问题整理">
 <meta property="og:url" content="https://hjhjw1991.github.io/tips/2015/10/10/Git问题整理/index.html">
-<meta property="og:site_name" content="hjhjw1991's blog">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
 <meta property="og:description" content="Git使用过程中遇到的一些问题和技巧，方便排查">
+<meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2016-08-30T08:03:26.717Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Git问题整理">
@@ -99,11 +101,11 @@
 		
 		</div>
 		
-		<h2 id="中文文件或目录名被转码"><a href="#中文文件或目录名被转码" class="headerlink" title="中文文件或目录名被转码"></a>中文文件或目录名被转码</h2><p>git默认会对路径里超过0x80的字节进行转码，设置<code>core.quotepath</code>为<code>fasle</code>可以禁止自动转码，详情见<a href="https://www.kernel.org/pub/software/scm/git/docs/git-config.html" target="_blank" rel="external">git-config(1)</a>的<code>core.quotepath</code>部分。</p>
+		<h2 id="中文文件或目录名被转码"><a href="#中文文件或目录名被转码" class="headerlink" title="中文文件或目录名被转码"></a>中文文件或目录名被转码</h2><p>git默认会对路径里超过0x80的字节进行转码，设置<code>core.quotepath</code>为<code>fasle</code>可以禁止自动转码，详情见<a href="https://www.kernel.org/pub/software/scm/git/docs/git-config.html" target="_blank" rel="noopener">git-config(1)</a>的<code>core.quotepath</code>部分。</p>
 <pre><code>git config --global core.quotepath false
-</code></pre><h2 id="fatal-cannot-exec-Permission-denied"><a href="#fatal-cannot-exec-Permission-denied" class="headerlink" title="fatal: cannot exec .. Permission denied"></a>fatal: cannot exec .. Permission denied</h2><p>使用<code>git alias</code>命令<code>git st</code>(参考<a href="http://blog.atime.me/note/git-config.html#alias" target="_blank" rel="external">这里的配置</a>)时提示如下错误:</p>
+</code></pre><h2 id="fatal-cannot-exec-Permission-denied"><a href="#fatal-cannot-exec-Permission-denied" class="headerlink" title="fatal: cannot exec .. Permission denied"></a>fatal: cannot exec .. Permission denied</h2><p>使用<code>git alias</code>命令<code>git st</code>(参考<a href="http://blog.atime.me/note/git-config.html#alias" target="_blank" rel="noopener">这里的配置</a>)时提示如下错误:</p>
 <pre><code>fatal: cannot exec git st: Permission denied  
-</code></pre><p>参考<a href="http://stackoverflow.com/questions/7997700/git-aliases-causing-permission-denied-error" target="_blank" rel="external">stackoverflow</a>上的解答, 使用如下方法解决.  </p>
+</code></pre><p>参考<a href="http://stackoverflow.com/questions/7997700/git-aliases-causing-permission-denied-error" target="_blank" rel="noopener">stackoverflow</a>上的解答, 使用如下方法解决.  </p>
 <ul>
 <li><p>安装strace</p>
 <p>  <code>apt-get install strace</code></p>
@@ -119,7 +121,7 @@
 CAfile: /usr/ssl/certs/ca-bundle.crt
 CApath: none while accessing https://github.com/wilbur-ma/dokuwiki-tweak.git/info/refs
 fatal: HTTP request failed
-</code></pre><p>参考<a href="http://tech.idv2.com/2012/09/14/cygwin-git-error/" target="_blank" rel="external">这里</a>，解决办法是在cygwin上安装ca-certificates。</p>
+</code></pre><p>参考<a href="http://tech.idv2.com/2012/09/14/cygwin-git-error/" target="_blank" rel="noopener">这里</a>，解决办法是在cygwin上安装ca-certificates。</p>
 <h2 id="recursion-detected-in-die-handler"><a href="#recursion-detected-in-die-handler" class="headerlink" title="recursion detected in die handler"></a>recursion detected in die handler</h2><p>使用<code>git push</code>的时候遇到如下问题:</p>
 <pre><code>fatal: recursion detected in die handler  
 </code></pre><p>有时候也表现为：</p>
@@ -130,9 +132,9 @@ fatal: The remote end hung up unexpectedly
 fatal: The remote end hung up unexpectedly
 </code></pre><p>这个问题非常常见，原因是<font color="red"><strong>http.postBuffer默认上限为1M</strong></font>所致，这算是一个bug，只有当remote是http(s)方式的时候会遇到。<br>在git的配置里将<code>http.postBuffer</code>变量改大一些即可，比如将上限设为5M：</p>
 <pre><code>git config http.postBuffer 5242880  
-</code></pre><p>also @see <a href="http://idas643.blog.163.com/blog/static/167104838201482810323961/" target="_blank" rel="external">POST git-receive-pack (chunked) </a><br>and  @see <a href="http://stackoverflow.com/questions/12651749/git-push-fails-rpc-failed-result-22-http-code-411" target="_blank" rel="external">git push fails: RPC failed; result=22, HTTP code = 411</a></p>
+</code></pre><p>also @see <a href="http://idas643.blog.163.com/blog/static/167104838201482810323961/" target="_blank" rel="noopener">POST git-receive-pack (chunked) </a><br>and  @see <a href="http://stackoverflow.com/questions/12651749/git-push-fails-rpc-failed-result-22-http-code-411" target="_blank" rel="noopener">git push fails: RPC failed; result=22, HTTP code = 411</a></p>
 <h2 id="重写分支历史"><a href="#重写分支历史" class="headerlink" title="重写分支历史"></a>重写分支历史</h2><p>使用交互式变基<code>git rebase -i &lt;target_commit_hash&gt;</code>  </p>
-<h2 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h2><p><a href="http://stackoverflow.com/questions/7997700/git-aliases-causing-permission-denied-error" target="_blank" rel="external">git aliases causing permission denied error</a><br><a href="http://stackoverflow.com/questions/12651749/git-push-fails-rpc-failed-result-22-http-code-411" target="_blank" rel="external">git push fails: RPC failed; result=22, HTTP code = 411</a><br><a href="https://www.kernel.org/pub/software/scm/git/docs/git-config.html" target="_blank" rel="external">git-config(1) Manual Page</a><br><a href="http://idas643.blog.163.com/blog/static/167104838201482810323961/" target="_blank" rel="external">POST git-receive-pack (chunked) </a>  </p>
+<h2 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h2><p><a href="http://stackoverflow.com/questions/7997700/git-aliases-causing-permission-denied-error" target="_blank" rel="noopener">git aliases causing permission denied error</a><br><a href="http://stackoverflow.com/questions/12651749/git-push-fails-rpc-failed-result-22-http-code-411" target="_blank" rel="noopener">git push fails: RPC failed; result=22, HTTP code = 411</a><br><a href="https://www.kernel.org/pub/software/scm/git/docs/git-config.html" target="_blank" rel="noopener">git-config(1) Manual Page</a><br><a href="http://idas643.blog.163.com/blog/static/167104838201482810323961/" target="_blank" rel="noopener">POST git-receive-pack (chunked) </a>  </p>
   
 	</div>
 		<footer class="article-footer clearfix">
@@ -225,7 +227,7 @@ fatal: The remote end hung up unexpectedly
 		<ul>
 		
 		  
-			<li><a href="/categories/android/" title="android">android<sup>25</sup></a></li>
+			<li><a href="/categories/android/" title="android">android<sup>26</sup></a></li>
 		  
 		
 		  
@@ -254,7 +256,7 @@ fatal: The remote end hung up unexpectedly
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/android/" title="android">android<sup>26</sup></a></li>
+				<li><a href="/tags/android/" title="android">android<sup>27</sup></a></li>
 			
 		
 			

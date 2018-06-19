@@ -15,8 +15,9 @@
 <meta property="og:type" content="article">
 <meta property="og:title" content="【Leetcode题解】168-Excel Sheet Column Title">
 <meta property="og:url" content="https://hjhjw1991.github.io/leetcode/2014/12/26/[Leetcode题解]168-Excel-Sheet-Column-Title/index.html">
-<meta property="og:site_name" content="hjhjw1991's blog">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
 <meta property="og:description" content="Excel表列名转换 Level:Easy Acceptance:16.0%">
+<meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2016-08-30T08:03:26.717Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="【Leetcode题解】168-Excel Sheet Column Title">
@@ -100,9 +101,9 @@
 		</div>
 		
 		<blockquote>
-<p>本系列代码见<a href="https://github.com/hjhjw1991/leetcode" target="_blank" rel="external">我的Leetcode仓库</a></p>
+<p>本系列代码见<a href="https://github.com/hjhjw1991/leetcode" target="_blank" rel="noopener">我的Leetcode仓库</a></p>
 </blockquote>
-<h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a><a href="https://oj.leetcode.com/problems/excel-sheet-column-title/" target="_blank" rel="external">题目</a></h2><p>Given a positive integer, return its corresponding column title as appear in an Excel sheet.</p>
+<h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a><a href="https://oj.leetcode.com/problems/excel-sheet-column-title/" target="_blank" rel="noopener">题目</a></h2><p>Given a positive integer, return its corresponding column title as appear in an Excel sheet.</p>
 <p>For example:</p>
 <pre><code>1 -&gt; A
 2 -&gt; B
@@ -111,7 +112,7 @@
 26 -&gt; Z
 27 -&gt; AA
 28 -&gt; AB 
-</code></pre><p>Credits:<br>Special thanks to <a href="https://oj.leetcode.com/discuss/user/ifanchu" target="_blank" rel="external">@ifanchu</a> for adding this problem and creating all test cases</p>
+</code></pre><p>Credits:<br>Special thanks to <a href="https://oj.leetcode.com/discuss/user/ifanchu" target="_blank" rel="noopener">@ifanchu</a> for adding this problem and creating all test cases</p>
 <p>这个题被标注为Easy，事实上也的确如此，因为连官方提示都没有，但AC率只有15.8%。纳闷。</p>
 <h2 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h2><p>一眼看去有两种思路，一是map，每个数字直接映射为对应列名，马上这个思路就导致第二个思路：进制转换。仔细一看，excel的列名不就相当于一个用字母表示的26进制计数嘛，这就简单了，只需要将10进制转换为26进制。</p>
 <p>需要注意的是，直接转换是不行的，因为存在偏移量(offset)，这是这个题目唯一的陷阱。比如1映射的是A，那0呢？1~26映射的是A-Z，无进位，但26的26进制表示是10，有进位，意味着整体向右（正方向）偏移了1位，转换的时候需要减去这个偏移量。</p>
@@ -218,7 +219,7 @@
 		<ul>
 		
 		  
-			<li><a href="/categories/android/" title="android">android<sup>25</sup></a></li>
+			<li><a href="/categories/android/" title="android">android<sup>26</sup></a></li>
 		  
 		
 		  
@@ -247,7 +248,7 @@
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/android/" title="android">android<sup>26</sup></a></li>
+				<li><a href="/tags/android/" title="android">android<sup>27</sup></a></li>
 			
 		
 			

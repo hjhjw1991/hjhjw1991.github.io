@@ -12,11 +12,13 @@
 
     
     <meta name="description" content="作为配置好的环境的第一篇Blog，讲解一下如何在Github上配置Blog">
+<meta name="keywords" content="git,jekyll">
 <meta property="og:type" content="article">
 <meta property="og:title" content="如何在Github上搭建个人博客">
 <meta property="og:url" content="https://hjhjw1991.github.io/blog/2014/09/11/如何在Github上搭建个人博客/index.html">
-<meta property="og:site_name" content="hjhjw1991's blog">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
 <meta property="og:description" content="作为配置好的环境的第一篇Blog，讲解一下如何在Github上配置Blog">
+<meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2016-08-30T08:03:26.717Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="如何在Github上搭建个人博客">
@@ -105,7 +107,7 @@
 <h2 id="整体流程"><a href="#整体流程" class="headerlink" title="整体流程"></a>整体流程</h2><p>我认为先讲一讲整体过程会比较容易理解一些。本质上来说，你的blog是一个在Github上托管的repo，这个repo的内容跟一般的网站差不多，不过它用了一些工具来简化建立的过程。首先Github上可以建立特殊的repo，叫做github-pages，这在新建repo的时候有提示。其次，针对这种特殊的repo，github会采用一些插件来执行模板渲染，例如jekyll，生成静态页面，同时给我们一个域名来解析到这个静态站，同时，github会添加ignore规则，忽略repo中动态生成的_site文件夹。<br>所以在理解了jekyll的工作原理之后，我们只需要做</p>
 <pre><code>建立blog repo
 关联域名
-</code></pre><p>这两步就可以了。<br>建立blog repo要遵循一定的语法，yml配置是jekyll要求的，我直接fork的一个大神BeiYuu的<a href="https://github.com/beiyuu/Github-Pages-Example" title="Github Pages Example" target="_blank" rel="external">blog模板</a>，<a href="http://BeiYuu.com" title="BeiYuu" target="_blank" rel="external">点我查看他的博客</a>。大家也可以去选自己喜欢的模板或者自己组装自己喜欢的组件。<br>关联域名这里，需要你自己有DNS提供商，我呢嫌麻烦就直接用了Github提供的功能生成了一个域名，由于我直接用的repo名字作为域名，所以也没有测试过repo名字和域名不同时候能不能工作。（后来自己申请了一个域名，在Github项目下配置了一个CNAME做解析，配置CNAME的方法Github官网也有说，其实就是在这个叫做CNAME的文本文件里写上自己的域名就行了）<br>repo的名字我设置的是USERNAME.github.io，之所以这样是因为这个名字直接就对应我们在github上的空间，我在这个repo下默认是用master push的。github有一个自动生成pages的功能，他的默认分支名字叫做gh-pages。</p>
+</code></pre><p>这两步就可以了。<br>建立blog repo要遵循一定的语法，yml配置是jekyll要求的，我直接fork的一个大神BeiYuu的<a href="https://github.com/beiyuu/Github-Pages-Example" title="Github Pages Example" target="_blank" rel="noopener">blog模板</a>，<a href="http://BeiYuu.com" title="BeiYuu" target="_blank" rel="noopener">点我查看他的博客</a>。大家也可以去选自己喜欢的模板或者自己组装自己喜欢的组件。<br>关联域名这里，需要你自己有DNS提供商，我呢嫌麻烦就直接用了Github提供的功能生成了一个域名，由于我直接用的repo名字作为域名，所以也没有测试过repo名字和域名不同时候能不能工作。（后来自己申请了一个域名，在Github项目下配置了一个CNAME做解析，配置CNAME的方法Github官网也有说，其实就是在这个叫做CNAME的文本文件里写上自己的域名就行了）<br>repo的名字我设置的是USERNAME.github.io，之所以这样是因为这个名字直接就对应我们在github上的空间，我在这个repo下默认是用master push的。github有一个自动生成pages的功能，他的默认分支名字叫做gh-pages。</p>
 <h2 id="Fork模板"><a href="#Fork模板" class="headerlink" title="Fork模板"></a>Fork模板</h2><p>不是Fork完就完了，还要做以下几个工作（主要是改配置）：  </p>
 <ul>
 <li>保留原作者声明</li>
@@ -118,22 +120,22 @@ _config.yml配置文件
 </code></pre><p>修改诸如超链接、内容、样式等。顺便也修一下bug，或者修改一下自己不喜欢或不满意的效果。如果时间充裕，甚至完全可以使用另一套模板，例如很流行的wordpress模板来搭建。  </p>
 <h2 id="本地预览"><a href="#本地预览" class="headerlink" title="本地预览"></a>本地预览</h2><p>这里要本地预览就要安装jekyll，首先要安装ruby，推荐RailsInstaller套件，安完还得安DevKit。jekyll安完得安rdiscount，用来解析markdown，当然你也可以用它自带的解析器。安装到这里基本上就结束了，我也开始有点不耐烦。<br>不用本地预览的话……这一步可以不做。<br>在windows下我的jekyll没有安装成功，估计是makefile的原因，提示的错误是failed to build gem Native Extension,以及makefile:165.target pattern contains no ‘%’. Stop，如果有谁知道什么原因，请留言告诉我，不胜感激  </p>
 <hr>
-<p>update-2015 5 6:  经微博网友 <a href="http://weibo.com/u/1988918527" target="_blank" rel="external">jrc2012</a>的提示，在github上找到了同样的<a href="https://github.com/rubygems/rubygems/issues/977" target="_blank" rel="external">issue</a>，可能是版本原因，据称<strong>把gem降级到1.8.29, ruby1.9.3</strong>可解决。  </p>
+<p>update-2015 5 6:  经微博网友 <a href="http://weibo.com/u/1988918527" target="_blank" rel="noopener">jrc2012</a>的提示，在github上找到了同样的<a href="https://github.com/rubygems/rubygems/issues/977" target="_blank" rel="noopener">issue</a>，可能是版本原因，据称<strong>把gem降级到1.8.29, ruby1.9.3</strong>可解决。  </p>
 <hr>
-<p>update 2015 9 30:<br>按照<a href="http://jekyll-windows.juthilo.com/" target="_blank" rel="external">官方教程</a>安装好了ruby、jekyll和相关依赖包（注意教程第一页有写版本兼容性），终于可以在本地预览了，Windows就是麻烦。除了官方教程安装的包之外，还要把你自己在_config.yml中指定的插件也安装好。之后就可以打开cmd，先改变cmd的编码格式为<code>utf-8</code>，<code>chcp 65001</code>，然后进入到博客根目录，运行  </p>
+<p>update 2015 9 30:<br>按照<a href="http://jekyll-windows.juthilo.com/" target="_blank" rel="noopener">官方教程</a>安装好了ruby、jekyll和相关依赖包（注意教程第一页有写版本兼容性），终于可以在本地预览了，Windows就是麻烦。除了官方教程安装的包之外，还要把你自己在_config.yml中指定的插件也安装好。之后就可以打开cmd，先改变cmd的编码格式为<code>utf-8</code>，<code>chcp 65001</code>，然后进入到博客根目录，运行  </p>
 <pre><code>jekyll  serve -w  
 </code></pre><p>查看效果。<br>如果遇到端口被占用，<code>netstat -aop tcp</code>查看一下是哪个进程占用了4000端口。<br>然而悲伤的是本地预览的URL不支持中文，遇到中文就会404，非中文的页面就没问题，把生成的_site下中文文件夹的名字改成英文也可以直接url访问。显然是url encode的原因，悲伤。  </p>
 <hr>
-<p>update 2015 11 10<br>根据<a href="http://www.oschina.net/question/1396651_132154" target="_blank" rel="external"><br>Jekyll编译中文文件名的网页的本地预览问题</a>下的回答找到了原因及解决方法。<br>原因是ruby的包WEBrick采用了系统默认编码作为路径编码.修改方案是把本地Ruby中这个包里面有关解析路径的地方强制修改为<code>utf-8</code>格式  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">1.</div><div class="line">path = req.path_info.dup.force_encoding(Encoding.find(&quot;filesystem&quot;))</div><div class="line">path.force_encoding(&quot;UTF-8&quot;) # 加入编码</div><div class="line">if trailing_pathsep?(req.path_info)</div><div class="line">    </div><div class="line">2.</div><div class="line">while base = path_info.first</div><div class="line">break if base == &quot;/&quot;</div><div class="line">base.force_encoding(&quot;UTF-8&quot;) # 加入编码</div><div class="line">break unless File.directory?(File.expand_path(res.filename + base))</div></pre></td></tr></table></figure>
+<p>update 2015 11 10<br>根据<a href="http://www.oschina.net/question/1396651_132154" target="_blank" rel="noopener"><br>Jekyll编译中文文件名的网页的本地预览问题</a>下的回答找到了原因及解决方法。<br>原因是ruby的包WEBrick采用了系统默认编码作为路径编码.修改方案是把本地Ruby中这个包里面有关解析路径的地方强制修改为<code>utf-8</code>格式  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">1.</span><br><span class="line">path = req.path_info.dup.force_encoding(Encoding.find(&quot;filesystem&quot;))</span><br><span class="line">path.force_encoding(&quot;UTF-8&quot;) # 加入编码</span><br><span class="line">if trailing_pathsep?(req.path_info)</span><br><span class="line">    </span><br><span class="line">2.</span><br><span class="line">while base = path_info.first</span><br><span class="line">break if base == &quot;/&quot;</span><br><span class="line">base.force_encoding(&quot;UTF-8&quot;) # 加入编码</span><br><span class="line">break unless File.directory?(File.expand_path(res.filename + base))</span><br></pre></td></tr></table></figure>
 <p>改成这样有后遗症(我未验证)：如果”根目录路径”中有非ascii编码的路径会无法预览，例如C:/非ascii编码/_site，只要根目录不要挂在中文路径上就可以凑合  </p>
 <h2 id="push到github"><a href="#push到github" class="headerlink" title="push到github"></a>push到github</h2><p>在Github建立对应的Github Pages项目，有引导，不用多说。  </p>
 <h2 id="更新blog"><a href="#更新blog" class="headerlink" title="更新blog"></a>更新blog</h2><p>只需要在对应_posts目录下按照模板写md格式的blog就行了，名字按照<code>year-month-day-words-of-blog-title</code>的格式命名，然后push上github就OK<br>注意，必须要保证两个<code>---</code>及之间的内容格式完全符合模板语法，否则该blog无法解析出来。  </p>
 <h2 id="关联域名"><a href="#关联域名" class="headerlink" title="关联域名"></a>关联域名</h2><p>把你的域名绑定到github上这个blog的地址就可以了。按照我这个流程如果不绑定域名，访问域名就是USERNAME.github.io。我配置了CNAME之后访问域名是blog.hjhjw1991.net。<br>后面这个域名是我个人的域名，在DNS管理中被CNAME解析到前面这个github的地址。  </p>
-<h2 id="补充说明"><a href="#补充说明" class="headerlink" title="补充说明"></a>补充说明</h2><p>模板自带的评论插件是DISQUS，挺好用的。用他的插件需要去他官网<a href="https://disqus.com" target="_blank" rel="external">https://disqus.com</a>注册一个账号，再在自己的模板中配置一下即可。<br>这个插件允许匿名评论，也允许用google、facebook、Twitter及disqus账号登陆评论，在国内可能不太好用。大家可寻找替代插件。  </p>
+<h2 id="补充说明"><a href="#补充说明" class="headerlink" title="补充说明"></a>补充说明</h2><p>模板自带的评论插件是DISQUS，挺好用的。用他的插件需要去他官网<a href="https://disqus.com" target="_blank" rel="noopener">https://disqus.com</a>注册一个账号，再在自己的模板中配置一下即可。<br>这个插件允许匿名评论，也允许用google、facebook、Twitter及disqus账号登陆评论，在国内可能不太好用。大家可寻找替代插件。  </p>
 <p>代码高亮在模板中有jekyll的pygments插件和google的prettify.js可以使用，我选择了prettify.js，因为用起来比较简单，它直接作用于markdown语法的代码块，不需要额外添加什么，另外大多数时候它可以正确识别语言。  </p>
 <p>右上角社交用的新浪微博提供的API，叫做微博秀，可以直接去微博主页找到，至于左上角社交因素是直接链接到我的账号主页的，图标是去官网截的，60x60.  </p>
-<p>参考资料如下，百分之八十的问题都可以通过以下教程和查阅官方文档得到解决：<br><a href="http://www.ruanyifeng.com/blog/2012/08/blogging_with_jekyll.html" target="_blank" rel="external">搭建一个免费的，无限流量的Blog—-github Pages和Jekyll入门</a><br><a href="http://jekyllcn.com/" target="_blank" rel="external">Jekyllcn</a><br><a href="http://higrid.net/c-art-jeklly_template_data.htm" target="_blank" rel="external">Jekyll变量 和 Jekyll模板语法教程</a></p>
+<p>参考资料如下，百分之八十的问题都可以通过以下教程和查阅官方文档得到解决：<br><a href="http://www.ruanyifeng.com/blog/2012/08/blogging_with_jekyll.html" target="_blank" rel="noopener">搭建一个免费的，无限流量的Blog—-github Pages和Jekyll入门</a><br><a href="http://jekyllcn.com/" target="_blank" rel="noopener">Jekyllcn</a><br><a href="http://higrid.net/c-art-jeklly_template_data.htm" target="_blank" rel="noopener">Jekyll变量 和 Jekyll模板语法教程</a></p>
 <hr>
 <p>2015-10-21: 更新。发现这个blog的题目毫无信息量，于是改了一下，“如何在Github上建立个人博客”。  </p>
   
@@ -220,7 +222,7 @@ _config.yml配置文件
 		<ul>
 		
 		  
-			<li><a href="/categories/android/" title="android">android<sup>25</sup></a></li>
+			<li><a href="/categories/android/" title="android">android<sup>26</sup></a></li>
 		  
 		
 		  
@@ -249,7 +251,7 @@ _config.yml配置文件
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/android/" title="android">android<sup>26</sup></a></li>
+				<li><a href="/tags/android/" title="android">android<sup>27</sup></a></li>
 			
 		
 			

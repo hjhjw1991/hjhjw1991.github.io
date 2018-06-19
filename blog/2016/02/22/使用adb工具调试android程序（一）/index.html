@@ -12,11 +12,13 @@
 
     
     <meta name="description" content="作为adb调试android程序的第一步，需要学习如何用adb工具连接设备，安装卸载程序和getshell">
+<meta name="keywords" content="android">
 <meta property="og:type" content="article">
 <meta property="og:title" content="使用adb工具调试android程序(一)">
 <meta property="og:url" content="https://hjhjw1991.github.io/blog/2016/02/22/使用adb工具调试android程序（一）/index.html">
-<meta property="og:site_name" content="hjhjw1991's blog">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
 <meta property="og:description" content="作为adb调试android程序的第一步，需要学习如何用adb工具连接设备，安装卸载程序和getshell">
+<meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2016-08-30T08:03:26.717Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用adb工具调试android程序(一)">
@@ -110,94 +112,94 @@
 <li>管理设备或手机模拟器上的预定端口  </li>
 <li>在设备或手机模拟器上复制或粘贴文件  </li>
 </ol>
-<h2 id="一个简单的例子"><a href="#一个简单的例子" class="headerlink" title="一个简单的例子"></a>一个简单的例子</h2><p>我们想要将编译得来的或者下载得来的apk安装到目标设备上<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">adb devices # 获取在线设备</div><div class="line">adb install -r xxx.apk # 安装apk，有多个选项，-r表示replace已有的app</div></pre></td></tr></table></figure></p>
-<p>我们想上传一些文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">adb push local remote</div></pre></td></tr></table></figure></p>
-<p>我们想查看日志<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">adb logcat [ &lt;filter-spec&gt; ]</div></pre></td></tr></table></figure></p>
-<p>我们想进入设备的shell<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">adb shell</div></pre></td></tr></table></figure></p>
+<h2 id="一个简单的例子"><a href="#一个简单的例子" class="headerlink" title="一个简单的例子"></a>一个简单的例子</h2><p>我们想要将编译得来的或者下载得来的apk安装到目标设备上<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb devices # 获取在线设备</span><br><span class="line">adb install -r xxx.apk # 安装apk，有多个选项，-r表示replace已有的app</span><br></pre></td></tr></table></figure></p>
+<p>我们想上传一些文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb push local remote</span><br></pre></td></tr></table></figure></p>
+<p>我们想查看日志<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb logcat [ &lt;filter-spec&gt; ]</span><br></pre></td></tr></table></figure></p>
+<p>我们想进入设备的shell<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell</span><br></pre></td></tr></table></figure></p>
 <h2 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h2><ol>
 <li><p>显示系统中全部Android平台  </p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">android list targets</div></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">android list targets</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>显示系统中全部AVD（模拟器）  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">android list avd</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">android list avd</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>创建AVD（模拟器）  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">android create avd --name 名称 --target 平台编号</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">android create avd --name 名称 --target 平台编号</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>启动模拟器  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">emulator -avd 名称 -sdcard ~/名称.img (-skin 1280x800)</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">emulator -avd 名称 -sdcard ~/名称.img (-skin 1280x800)</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>删除AVD（模拟器）  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">android delete avd --name 名称</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">android delete avd --name 名称</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>创建SDCard  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">mksdcard 1024M ~/名称.img</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mksdcard 1024M ~/名称.img</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>AVD(模拟器)所在位置  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">Linux(~/.android/avd)</div><div class="line">Windows(C:\Documents and Settings\Administrator\.android\avd)</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Linux(~/.android/avd)</span><br><span class="line">Windows(C:\Documents and Settings\Administrator\.android\avd)</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>启动DDMS  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">ddms</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ddms</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>显示当前运行的全部模拟器  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">adb devices</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb devices</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>对某一模拟器执行命令  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">adb -s 模拟器编号 命令</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb -s 模拟器编号 命令</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>安装应用程序  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">adb install -r 应用程序.apk</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb install -r 应用程序.apk</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>获取模拟器中的文件  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">adb pull &lt;remote&gt; &lt;local&gt;</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb pull &lt;remote&gt; &lt;local&gt;</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>向模拟器中写文件  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">adb push &lt;local&gt; &lt;remote&gt;</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb push &lt;local&gt; &lt;remote&gt;</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>进入模拟器的shell模式  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">adb shell</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>启动SDK，文档，实例下载管理器  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">android</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">android</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>卸载apk包  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">adb shell</div><div class="line">cd data/app</div><div class="line">rm apk包</div><div class="line">exit</div><div class="line">adb uninstall apk包的主包名</div><div class="line">adb install -r apk包</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">adb shell</span><br><span class="line">cd data/app</span><br><span class="line">rm apk包</span><br><span class="line">exit</span><br><span class="line">adb uninstall apk包的主包名</span><br><span class="line">adb install -r apk包</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>查看adb命令帮助信息  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">adb help</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb help</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>在命令行中查看LOG信息  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">adb logcat -s 标签名</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb logcat -s 标签名</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>adb shell后面跟的命令主要来自<code>源码\system\core\toolbox目录和源码\frameworks\base\cmds</code>目录。</p>
 </li>
 <li><p>删除系统应用  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">adb remount （重新挂载系统分区，使系统分区重新可写）。</div><div class="line">adb shell</div><div class="line">cd system/app</div><div class="line">rm *.apk</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">adb remount （重新挂载系统分区，使系统分区重新可写）。</span><br><span class="line">adb shell</span><br><span class="line">cd system/app</span><br><span class="line">rm *.apk</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>获取管理员权限  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">adb root</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb root</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>启动Activity  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">adb shell am start -n 包名/包名＋类名（-n 类名,-a action,-d date,-m MIME-TYPE,-c category,-e 扩展数据,等）</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb shell am start -n 包名/包名＋类名（-n 类名,-a action,-d date,-m MIME-TYPE,-c category,-e 扩展数据,等）</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>发布端口  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"># 你可以设置任意的端口号，做为主机向模拟器或设备的请求端口。如  </div><div class="line">adb forward tcp:5555 tcp:8000</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># 你可以设置任意的端口号，做为主机向模拟器或设备的请求端口。如  </span><br><span class="line">adb forward tcp:5555 tcp:8000</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>复制文件  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"># 你可向一个设备或从一个设备中复制文件  </div><div class="line"></div><div class="line"># 复制一个文件或目录到设备或模拟器上  </div><div class="line">adb push &lt;source&gt; &lt;destination&gt;&lt;/destination&gt;&lt;/source&gt; </div><div class="line"># 如：adb push test.txt /tmp/test.txt </div><div class="line"></div><div class="line"># 从设备或模拟器上复制一个文件或目录  </div><div class="line">adb pull &lt;source&gt; &lt;destination&gt;&lt;/destination&gt;&lt;/source&gt; </div><div class="line"># 如：adb pull /addroid/lib/libwebcore.so .</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"># 你可向一个设备或从一个设备中复制文件  </span><br><span class="line"></span><br><span class="line"># 复制一个文件或目录到设备或模拟器上  </span><br><span class="line">adb push &lt;source&gt; &lt;destination&gt;&lt;/destination&gt;&lt;/source&gt; </span><br><span class="line"># 如：adb push test.txt /tmp/test.txt </span><br><span class="line"></span><br><span class="line"># 从设备或模拟器上复制一个文件或目录  </span><br><span class="line">adb pull &lt;source&gt; &lt;destination&gt;&lt;/destination&gt;&lt;/source&gt; </span><br><span class="line"># 如：adb pull /addroid/lib/libwebcore.so .</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>搜索模拟器/设备的实例  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"># 取得当前运行的模拟器/设备的实例的列表及每个实例的状态： </div><div class="line">adb devices</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># 取得当前运行的模拟器/设备的实例的列表及每个实例的状态： </span><br><span class="line">adb devices</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>查看bug报告  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">adb bugreport</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb bugreport</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>记录无线通讯日志  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"># 一般来说，无线通讯的日志非常多，在运行时没必要去记录，但我们还是可以通过命令，设置记录  </div><div class="line">adb shell  </div><div class="line">logcat -b radio</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># 一般来说，无线通讯的日志非常多，在运行时没必要去记录，但我们还是可以通过命令，设置记录  </span><br><span class="line">adb shell  </span><br><span class="line">logcat -b radio</span><br></pre></td></tr></table></figure>
 </li>
 </ol>
-<p>28、获取设备的ID和序列号<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">adb get-product </div><div class="line">adb get-serialno</div></pre></td></tr></table></figure></p>
-<p>29、访问数据库SQLite3<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">adb shell </div><div class="line">sqlite3</div></pre></td></tr></table></figure></p>
+<p>28、获取设备的ID和序列号<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb get-product </span><br><span class="line">adb get-serialno</span><br></pre></td></tr></table></figure></p>
+<p>29、访问数据库SQLite3<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb shell </span><br><span class="line">sqlite3</span><br></pre></td></tr></table></figure></p>
   
 	</div>
 		<footer class="article-footer clearfix">
@@ -290,7 +292,7 @@
 		<ul>
 		
 		  
-			<li><a href="/categories/android/" title="android">android<sup>25</sup></a></li>
+			<li><a href="/categories/android/" title="android">android<sup>26</sup></a></li>
 		  
 		
 		  
@@ -319,7 +321,7 @@
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/android/" title="android">android<sup>26</sup></a></li>
+				<li><a href="/tags/android/" title="android">android<sup>27</sup></a></li>
 			
 		
 			

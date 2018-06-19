@@ -12,11 +12,13 @@
 
     
     <meta name="description" content="协变和逆变，里氏代换原则，父类和子类">
+<meta name="keywords" content="Java">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Java中的协变和逆变">
 <meta property="og:url" content="https://hjhjw1991.github.io/blog/2016/02/25/Java中的协变和逆变/index.html">
-<meta property="og:site_name" content="hjhjw1991's blog">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
 <meta property="og:description" content="协变和逆变，里氏代换原则，父类和子类">
+<meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2016-08-30T08:03:26.717Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Java中的协变和逆变">
@@ -112,18 +114,18 @@
 <p>再看看所谓<strong>“协变(Covariance)”</strong>和<strong>“逆变(Contravariance)”</strong>这两个拗口的中文术语，其英文定义是什么：  </p>
 <blockquote>
 <p>Within the type system of a programming language, a typing rule or a type constructor is:</p>
+</blockquote>
 <ul>
 <li><strong>covariant</strong> if it preserves the ordering of types (≤), which orders types from more specific to more generic;  </li>
 <li><strong>contravariant</strong> if it reverses this ordering;  </li>
 <li><strong>bivariant</strong> if both of these apply (i.e., both <code>I&lt;A&gt;</code> ≤ <code>I&lt;B&gt;</code> and <code>I&lt;B&gt;</code> ≤ <code>I&lt;A&gt;</code> at the same time);  </li>
-<li><strong>invariant</strong> or <strong>nonvariant</strong> if neither of these applies.<br>–  <a href="https://en.wikipedia.org/wiki/Covariance_and_contravariance_(computer_science" target="_blank" rel="external">wikipedia</a>#Formal_definition)  </li>
+<li><strong>invariant</strong> or <strong>nonvariant</strong> if neither of these applies.<br>–  <a href="https://en.wikipedia.org/wiki/Covariance_and_contravariance_(computer_science" target="_blank" rel="noopener">wikipedia</a>#Formal_definition)  </li>
 </ul>
-</blockquote>
 <p>英文定义不好理解没关系，这里还有更不好理解的中文定义：  </p>
 <blockquote>
 <p><strong>协变(covariant)</strong>:当委托方法的返回类型具有的派生程度比委托签名更大时，就称为协变委托方法。因为方法的返回类型比委托签名的返回类型更具体 ，所以可以对其进行隐式转换。这样该方法就可以用作委托。协变使得创建可被类和派生类同时使用的委托方法成为可能。  </p>
 <p><strong>逆变(contravariant)</strong>:当委托方法签名具有一个或多个参数，并且这些参数的类型派生自方法参数的类型时，就称为逆变委托方法。因为委托方法签名参数比方法参数更具体，因此可以在传递给处理程序方法时对它们进行隐式转换。这样，当创建可由大量类使用的更加通用的委托方法时，使用逆变就更为简单了。  </p>
-<p>– 以上出自百度百科<a href="http://baike.baidu.com/link?url=W0J1-WTM1SjfSlVwsfkeESzHcT1NyRIS5GKtnUxB57WmF89Qv74QyDdFqx5vbx9rdc4e69xDO_ugFE54Fx9Zv_" target="_blank" rel="external">协变</a> <a href="http://baike.baidu.com/subview/302541/5594455.htm#viewPageContent" target="_blank" rel="external">逆变</a></p>
+<p>– 以上出自百度百科<a href="http://baike.baidu.com/link?url=W0J1-WTM1SjfSlVwsfkeESzHcT1NyRIS5GKtnUxB57WmF89Qv74QyDdFqx5vbx9rdc4e69xDO_ugFE54Fx9Zv_" target="_blank" rel="noopener">协变</a> <a href="http://baike.baidu.com/subview/302541/5594455.htm#viewPageContent" target="_blank" rel="noopener">逆变</a></p>
 </blockquote>
 <p>中文定义不好的地方在于，它高度概括，但对于想要从定义来理解的人可能毫无帮助。让我想起我那些线性代数教材。</p>
 <h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h2><p>在刚知道这两个概念的时候想必也对它们的含义和作用有过猜测，可能也像我一样相当糊涂，看过定义和网上各种中文的解释说明之后可能更加糊涂了。  </p>
@@ -173,7 +175,7 @@ DReturn extends CReturn D(DParameter super CParameter)
 List&lt;? extends Object&gt; list2 = new List&lt;String&gt;();
 List&lt;? super String&gt; list3 = new List&lt;Object&gt;();
 List&lt;Object&gt; list4 = new ArrayList&lt;Object&gt;();
-</code></pre><p>好了，这时候已经涉及到了函数和类型的定义，正如上文所说，函数和类型的定义中是否支持协变和逆变，这个跟具体语言有关，可以从<a href="http://www.cnblogs.com/1-2-3/archive/2010/09/27/covariance-contravariance-csharp4.html" target="_blank" rel="external">协变(Covariance)和逆变(Contravariance)的十万个为什么</a>这篇文章了解到该作者对是否需要、以及什么时候需要协变和逆变的理解。文中提到，当函数返回值是普通类型时，通常以参数逆变、返回值协变为宜。<br>另一种情况，自然是当返回值为涉及泛型的类型时，这时候参数是协变还是逆变，返回值是协变还是逆变，都取决于其使用方式是否类型安全，例子可以看<a href="http://arron-li.iteye.com/blog/673783" target="_blank" rel="external">java泛型通配符-协变与逆变</a>。  </p>
+</code></pre><p>好了，这时候已经涉及到了函数和类型的定义，正如上文所说，函数和类型的定义中是否支持协变和逆变，这个跟具体语言有关，可以从<a href="http://www.cnblogs.com/1-2-3/archive/2010/09/27/covariance-contravariance-csharp4.html" target="_blank" rel="noopener">协变(Covariance)和逆变(Contravariance)的十万个为什么</a>这篇文章了解到该作者对是否需要、以及什么时候需要协变和逆变的理解。文中提到，当函数返回值是普通类型时，通常以参数逆变、返回值协变为宜。<br>另一种情况，自然是当返回值为涉及泛型的类型时，这时候参数是协变还是逆变，返回值是协变还是逆变，都取决于其使用方式是否类型安全，例子可以看<a href="http://arron-li.iteye.com/blog/673783" target="_blank" rel="noopener">java泛型通配符-协变与逆变</a>。  </p>
 <p>在类型定义的时候，如果一个子类的函数可以比父类的函数接受更抽象的参数，并返回更具体的值，那么这个函数就可以安全替换父类中的同名函数，这就是里氏代换原则的体现，也是<code>参数值逆变，返回值协变</code>的体现。换句话说，通过支持协变和逆变，编译器保证了里氏代换原则不被打破。  </p>
 <p>总之，协变和逆变的理解可以总结如下：  </p>
 <ul>
@@ -232,7 +234,7 @@ public Form1()
     this.button1.MouseClick += this.MultiHandler;
 
 }
-</code></pre><h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="http://www.2cto.com/kf/201304/205042.html" target="_blank" rel="external">Java 协变性 逆变性 学习笔记 - 2014</a><br><a href="http://www.cnblogs.com/Ninputer/archive/2008/11/22/generic_covariant.html" target="_blank" rel="external">.NET 4.0中的泛型协变和反变 - 2008</a><br><a href="https://www.zybuluo.com/zhanjindong/note/34147" target="_blank" rel="external">再谈对协变和逆变的理解 - 2014</a><br><a href="http://blog.csdn.net/beliefer/article/details/50894265" target="_blank" rel="external">Java泛型的协变</a><br><a href="http://www.cnblogs.com/LoveJenny/archive/2012/03/13/2392747.html" target="_blank" rel="external">深入理解 C# 协变和逆变</a><br><a href="https://msdn.microsoft.com/zh-cn/library/dd233060.aspx" target="_blank" rel="external">委托中的变体（C# 和 Visual Basic）</a><br><a href="https://msdn.microsoft.com/zh-cn/library/ms173174(v=vs.140" target="_blank" rel="external">在委托中使用变体（C# 和 Visual Basic）</a>.aspx)<br><a href="https://msdn.microsoft.com/zh-cn/library/dd465122.aspx" target="_blank" rel="external">对 Func 和 Action 泛型委托使用变体（C# 和 Visual Basic）</a><br><a href="http://www.cnblogs.com/1-2-3/archive/2010/09/27/covariance-contravariance-csharp4.html" target="_blank" rel="external">协变(Covariance)和逆变(Contravariance)的十万个为什么</a><br><a href="http://hongjiang.info/scala-covariance-and-contravariance/" target="_blank" rel="external">scala类型系统：15) 协变与逆变</a>  </p>
+</code></pre><h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="http://www.2cto.com/kf/201304/205042.html" target="_blank" rel="noopener">Java 协变性 逆变性 学习笔记 - 2014</a><br><a href="http://www.cnblogs.com/Ninputer/archive/2008/11/22/generic_covariant.html" target="_blank" rel="noopener">.NET 4.0中的泛型协变和反变 - 2008</a><br><a href="https://www.zybuluo.com/zhanjindong/note/34147" target="_blank" rel="noopener">再谈对协变和逆变的理解 - 2014</a><br><a href="http://blog.csdn.net/beliefer/article/details/50894265" target="_blank" rel="noopener">Java泛型的协变</a><br><a href="http://www.cnblogs.com/LoveJenny/archive/2012/03/13/2392747.html" target="_blank" rel="noopener">深入理解 C# 协变和逆变</a><br><a href="https://msdn.microsoft.com/zh-cn/library/dd233060.aspx" target="_blank" rel="noopener">委托中的变体（C# 和 Visual Basic）</a><br><a href="https://msdn.microsoft.com/zh-cn/library/ms173174(v=vs.140" target="_blank" rel="noopener">在委托中使用变体（C# 和 Visual Basic）</a>.aspx)<br><a href="https://msdn.microsoft.com/zh-cn/library/dd465122.aspx" target="_blank" rel="noopener">对 Func 和 Action 泛型委托使用变体（C# 和 Visual Basic）</a><br><a href="http://www.cnblogs.com/1-2-3/archive/2010/09/27/covariance-contravariance-csharp4.html" target="_blank" rel="noopener">协变(Covariance)和逆变(Contravariance)的十万个为什么</a><br><a href="http://hongjiang.info/scala-covariance-and-contravariance/" target="_blank" rel="noopener">scala类型系统：15) 协变与逆变</a>  </p>
   
 	</div>
 		<footer class="article-footer clearfix">
@@ -325,7 +327,7 @@ public Form1()
 		<ul>
 		
 		  
-			<li><a href="/categories/android/" title="android">android<sup>25</sup></a></li>
+			<li><a href="/categories/android/" title="android">android<sup>26</sup></a></li>
 		  
 		
 		  
@@ -354,7 +356,7 @@ public Form1()
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/android/" title="android">android<sup>26</sup></a></li>
+				<li><a href="/tags/android/" title="android">android<sup>27</sup></a></li>
 			
 		
 			

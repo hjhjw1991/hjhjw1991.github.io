@@ -12,12 +12,14 @@
 
     
     <meta name="description" content="搭建Git服务器的教程">
+<meta name="keywords" content="git,guide">
 <meta property="og:type" content="article">
 <meta property="og:title" content="CentOS 6.5下搭建自己的Git服务器">
 <meta property="og:url" content="https://hjhjw1991.github.io/blog/2015/06/19/CentOS-6.5下搭建自己的Git服务器/index.html">
-<meta property="og:site_name" content="hjhjw1991's blog">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
 <meta property="og:description" content="搭建Git服务器的教程">
-<meta property="og:updated_time" content="2017-05-04T10:35:53.851Z">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2017-05-04T10:35:53.852Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="CentOS 6.5下搭建自己的Git服务器">
 <meta name="twitter:description" content="搭建Git服务器的教程">
@@ -100,18 +102,18 @@
 		</div>
 		
 		<h2 id="0-前言"><a href="#0-前言" class="headerlink" title="0. 前言"></a>0. 前言</h2><p>想在自己的VPS上搭建一个Git服务器，这样可以避免拙劣的代码外漏，又可以利用版本管理的好处。在网上搜了几篇教程，然后开始踩坑，专业踩坑30年。</p>
-<h2 id="1-参考教程及前方深坑"><a href="#1-参考教程及前方深坑" class="headerlink" title="1. 参考教程及前方深坑"></a>1. 参考教程及前方深坑</h2><p>这一篇博文把参考教程列在文章里面，因为没有什么技术难度，主要是坑，所以记录一下踩到的坑。<br><a href="http://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000/00137583770360579bc4b458f044ce7afed3df579123eca000" title="搭建Git服务器 - 廖雪峰的官方网站" target="_blank" rel="external">搭建Git服务器 - 廖雪峰的官方网站</a><br>廖大大的这篇是百度出来排第一的，然而他推荐的是Ubuntu或Debian系的系统，而我的VPS是CentOS系统，yum与python之间纠缠不清的关系想必遇到过的人都懂。但也不是完全没参考价值，至少我知道了git服务器搭建大致需要哪几个步骤。  </p>
-<p><a href="http://www.centoscn.com/CentosServer/ftp/2014/0414/2789.html" title="CentOS 6.5下Git服务器搭建" target="_blank" rel="external">CentOS 6.5下Git服务器搭建</a><br>主要参考了这篇教程，前面一大片关于git的介绍不用管它，注意两个地方，一是服务端的git它是从源码编译安装的，版本号跟直接安装的git不一样，二是它安装的gitosis.git地址好像不对，我访问时是403拒绝访问，用 <a href="https://github.com/tv42/gitosis.git" target="_blank" rel="external">https://github.com/tv42/gitosis.git</a> 代替就好。<br>即便完全按照教程来，也可能会遇到第一个坑：gitosis无法安装，提示没有setuptools模块。然而无论你是查看pip还是查看whereis，都可以找到setuptools模块。<br>原因：我当时使用的是<strong>另一个账号</strong>登陆的，而<strong>setuptools模块是在root下安装</strong>的，这时候即便你用当前账号安装setuptools也会提示已经有了。<br>解决：切换回root账号再次运行安装就好了。  </p>
+<h2 id="1-参考教程及前方深坑"><a href="#1-参考教程及前方深坑" class="headerlink" title="1. 参考教程及前方深坑"></a>1. 参考教程及前方深坑</h2><p>这一篇博文把参考教程列在文章里面，因为没有什么技术难度，主要是坑，所以记录一下踩到的坑。<br><a href="http://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000/00137583770360579bc4b458f044ce7afed3df579123eca000" title="搭建Git服务器 - 廖雪峰的官方网站" target="_blank" rel="noopener">搭建Git服务器 - 廖雪峰的官方网站</a><br>廖大大的这篇是百度出来排第一的，然而他推荐的是Ubuntu或Debian系的系统，而我的VPS是CentOS系统，yum与python之间纠缠不清的关系想必遇到过的人都懂。但也不是完全没参考价值，至少我知道了git服务器搭建大致需要哪几个步骤。  </p>
+<p><a href="http://www.centoscn.com/CentosServer/ftp/2014/0414/2789.html" title="CentOS 6.5下Git服务器搭建" target="_blank" rel="noopener">CentOS 6.5下Git服务器搭建</a><br>主要参考了这篇教程，前面一大片关于git的介绍不用管它，注意两个地方，一是服务端的git它是从源码编译安装的，版本号跟直接安装的git不一样，二是它安装的gitosis.git地址好像不对，我访问时是403拒绝访问，用 <a href="https://github.com/tv42/gitosis.git" target="_blank" rel="noopener">https://github.com/tv42/gitosis.git</a> 代替就好。<br>即便完全按照教程来，也可能会遇到第一个坑：gitosis无法安装，提示没有setuptools模块。然而无论你是查看pip还是查看whereis，都可以找到setuptools模块。<br>原因：我当时使用的是<strong>另一个账号</strong>登陆的，而<strong>setuptools模块是在root下安装</strong>的，这时候即便你用当前账号安装setuptools也会提示已经有了。<br>解决：切换回root账号再次运行安装就好了。  </p>
 <p>然后在生成了rsa密钥，导入的时候可能遇到第二个坑：<br><code>#sudo -H -u git gitosis-init &lt; ～/id_rsa.pub</code><br>gitosis-init命令找不到。<br>这个只要将<code>gitosis-init</code>替换为它的绝对路径即可。  </p>
-<p>如果你是windows客户端，就会遇到我遇到的第三个坑：<br>在windows客户端使用git clone的时候，<br><code>Permission denied (publickey) fatal: Could not read from remote repository</code><br>原因：显然是权限问题，windows客户端的ssh好像是telnet的服务，即便有id_rsa私钥，也需要转换一下格式才能识别。然而光是这样还不够，还需要参考教程<a href="http://zengrong.net/post/1544.htm" title="修改了SSH默认端口之后，如何配置git？" target="_blank" rel="external">修改了SSH默认端口之后，如何配置git？</a>中的ssh远端指定ssh访问端口。<br>解决：我用sourcetree的ssh助手导入id_rsa并且另存为了ppk格式的私钥，在plink中导入私钥之后，直接在sourcetree中新建仓库，远程地址写ssh://git@VPS_IP:port/gitosis-admin.git，成功发现并克隆仓库。VPS_IP和port换成你自己的。另外如果你安装了MingWin那么还有比较方便的做法，就是在.ssh目录下放上你的rsa私钥，并用config配置一下远端服务器，就可以做到ssh识别了，参见<a href="http://blog.csdn.net/hjhjw1991/article/details/48103029" target="_blank" rel="external">拉取远程私有服务器的git仓库</a>  </p>
+<p>如果你是windows客户端，就会遇到我遇到的第三个坑：<br>在windows客户端使用git clone的时候，<br><code>Permission denied (publickey) fatal: Could not read from remote repository</code><br>原因：显然是权限问题，windows客户端的ssh好像是telnet的服务，即便有id_rsa私钥，也需要转换一下格式才能识别。然而光是这样还不够，还需要参考教程<a href="http://zengrong.net/post/1544.htm" title="修改了SSH默认端口之后，如何配置git？" target="_blank" rel="noopener">修改了SSH默认端口之后，如何配置git？</a>中的ssh远端指定ssh访问端口。<br>解决：我用sourcetree的ssh助手导入id_rsa并且另存为了ppk格式的私钥，在plink中导入私钥之后，直接在sourcetree中新建仓库，远程地址写ssh://git@VPS_IP:port/gitosis-admin.git，成功发现并克隆仓库。VPS_IP和port换成你自己的。另外如果你安装了MingWin那么还有比较方便的做法，就是在.ssh目录下放上你的rsa私钥，并用config配置一下远端服务器，就可以做到ssh识别了，参见<a href="http://blog.csdn.net/hjhjw1991/article/details/48103029" target="_blank" rel="noopener">拉取远程私有服务器的git仓库</a>  </p>
 <p>注意，教程中客户端系统是CentOS，仓库中文件都是.开头的隐藏文件，但在windows下这些都不是隐藏文件了。以后配置vps git服务器的访问权限，只需要维护这个特殊的仓库就可以。教程后面是对这个仓库维护的示例，也可以单独搜索gitosis的相关文档。  </p>
 <p>现在我们已经克隆了权限管理仓库，该放在服务端的公钥、客户端的私钥也已经放好了，可以试着配置使用者。<br>按照教程配置好，先把管理仓库推送到远端（教程没有提到），然后试着建立自己的git-test仓库。<br>第四个坑出现了：推送失败，提示无权限。<br>看错误提示就知道它与第三个坑有联系，其实原因是一样的：默认连接是https，但是centos并不支持这么搞，需要指定访问方式为ssh。<br>解决：<code>git remote add origin ssh://git@VPS_IP:port/git-test.git</code><br>然后push就可以成功了。  </p>
 <p>以后只要在keydir下添加公钥，修改.conf文件添加新的仓库，再推送到服务器，就可以添加新的用户和仓库了。新用户只要配置好相应的私钥，就可以直接访问有权限的仓库。  </p>
 <h2 id="2-深坑感言"><a href="#2-深坑感言" class="headerlink" title="2. 深坑感言"></a>2. 深坑感言</h2><p>别用windows</p>
 <hr>
-<p>2015-07-17更新：<br>被OpenSSH和Putty的私钥坑得不行不行的，各种互不兼容。终于还是把gitosis搞坏了，而且gitosis很久没更新，于是全面迁移到gitolite。当然，不兼容的还是不兼容，真坑。<br>gitolite与gitosis大同小异，如果你按照之前的教程安装过gitosis，那么这里只需要安装gitolite并配置好公钥就行了，管理方式和gitosis一毛一样。如果是全新安装，<a href="http://www.ossxp.com/doc/git/gitolite.html#id6" target="_blank" rel="external">教程在此</a><br>Windows下的Putty Key Generator导入OpenSSH生成的私钥之后格式是有问题的，不太通用。Putty自身生成的SSH key 也不能直接用。格式上的问题主要在换行，本来不该换行的但是经过Putty导出之后就会换行，只要文本格式打开修复一下换行问题和文件头的类型说明，去掉莫名其妙的注释，就可以通用了。本来嘛，私钥也就是一个随机串和不对称加密之后的结果，一边保存一个串，在验证的时候用算法算一下是否相等而已，本质上就是文本。  </p>
+<p>2015-07-17更新：<br>被OpenSSH和Putty的私钥坑得不行不行的，各种互不兼容。终于还是把gitosis搞坏了，而且gitosis很久没更新，于是全面迁移到gitolite。当然，不兼容的还是不兼容，真坑。<br>gitolite与gitosis大同小异，如果你按照之前的教程安装过gitosis，那么这里只需要安装gitolite并配置好公钥就行了，管理方式和gitosis一毛一样。如果是全新安装，<a href="http://www.ossxp.com/doc/git/gitolite.html#id6" target="_blank" rel="noopener">教程在此</a><br>Windows下的Putty Key Generator导入OpenSSH生成的私钥之后格式是有问题的，不太通用。Putty自身生成的SSH key 也不能直接用。格式上的问题主要在换行，本来不该换行的但是经过Putty导出之后就会换行，只要文本格式打开修复一下换行问题和文件头的类型说明，去掉莫名其妙的注释，就可以通用了。本来嘛，私钥也就是一个随机串和不对称加密之后的结果，一边保存一个串，在验证的时候用算法算一下是否相等而已，本质上就是文本。  </p>
 <hr>
-<h2 id="3-reference"><a href="#3-reference" class="headerlink" title="3. reference"></a>3. reference</h2><p><a href="http://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000/00137583770360579bc4b458f044ce7afed3df579123eca000" title="搭建Git服务器 - 廖雪峰的官方网站" target="_blank" rel="external">搭建Git服务器 - 廖雪峰的官方网站</a><br><a href="http://www.centoscn.com/CentosServer/ftp/2014/0414/2789.html" title="CentOS 6.5下Git服务器搭建" target="_blank" rel="external">CentOS 6.5下Git服务器搭建</a><br><a href="http://zengrong.net/post/1544.htm" title="修改了SSH默认端口之后，如何配置git？" target="_blank" rel="external">修改了SSH默认端口之后，如何配置git？</a><br><a href="http://stackoverflow.com/questions/17626944/heroku-permission-denied-publickey-fatal-could-not-read-from-remote-reposito" title="StackOverflow:&#39;Permission denied (publickey) fatal: Could not read from remote repository&#39;" target="_blank" rel="external">StackOverflow:’Permission denied (publickey) fatal: Could not read from remote repository’</a>  </p>
+<h2 id="3-reference"><a href="#3-reference" class="headerlink" title="3. reference"></a>3. reference</h2><p><a href="http://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000/00137583770360579bc4b458f044ce7afed3df579123eca000" title="搭建Git服务器 - 廖雪峰的官方网站" target="_blank" rel="noopener">搭建Git服务器 - 廖雪峰的官方网站</a><br><a href="http://www.centoscn.com/CentosServer/ftp/2014/0414/2789.html" title="CentOS 6.5下Git服务器搭建" target="_blank" rel="noopener">CentOS 6.5下Git服务器搭建</a><br><a href="http://zengrong.net/post/1544.htm" title="修改了SSH默认端口之后，如何配置git？" target="_blank" rel="noopener">修改了SSH默认端口之后，如何配置git？</a><br><a href="http://stackoverflow.com/questions/17626944/heroku-permission-denied-publickey-fatal-could-not-read-from-remote-reposito" title="StackOverflow:&#39;Permission denied (publickey) fatal: Could not read from remote repository&#39;" target="_blank" rel="noopener">StackOverflow:’Permission denied (publickey) fatal: Could not read from remote repository’</a>  </p>
   
 	</div>
 		<footer class="article-footer clearfix">
@@ -148,10 +150,10 @@
 <nav class="article-nav clearfix">
  
  <div class="prev" >
- <a href="/leetcode/2015/08/06/[Leetcode题解]136-137-260-Single-Number/" title="【Leetcode题解】136-137-260-Single Number类型的问题">
+ <a href="/opinion/2015/08/06/leetcode已经丧心病狂了/" title="leetcode已经丧心病狂了">
   <strong>上一篇：</strong><br/>
   <span>
-  【Leetcode题解】136-137-260-Single Number类型的问题</span>
+  leetcode已经丧心病狂了</span>
 </a>
 </div>
 
@@ -204,7 +206,7 @@
 		<ul>
 		
 		  
-			<li><a href="/categories/android/" title="android">android<sup>25</sup></a></li>
+			<li><a href="/categories/android/" title="android">android<sup>26</sup></a></li>
 		  
 		
 		  
@@ -233,7 +235,7 @@
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/android/" title="android">android<sup>26</sup></a></li>
+				<li><a href="/tags/android/" title="android">android<sup>27</sup></a></li>
 			
 		
 			

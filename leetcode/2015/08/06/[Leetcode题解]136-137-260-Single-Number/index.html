@@ -15,8 +15,9 @@
 <meta property="og:type" content="article">
 <meta property="og:title" content="【Leetcode题解】136-137-260-Single Number类型的问题">
 <meta property="og:url" content="https://hjhjw1991.github.io/leetcode/2015/08/06/[Leetcode题解]136-137-260-Single-Number/index.html">
-<meta property="og:site_name" content="hjhjw1991's blog">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
 <meta property="og:description" content="在leetcode上看到的很有趣的位操作题">
+<meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2016-08-30T08:03:26.717Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="【Leetcode题解】136-137-260-Single Number类型的问题">
@@ -100,11 +101,11 @@
 		</div>
 		
 		<blockquote>
-<p>本系列代码见<a href="https://github.com/hjhjw1991/leetcode" target="_blank" rel="external">我的Leetcode仓库</a></p>
+<p>本系列代码见<a href="https://github.com/hjhjw1991/leetcode" target="_blank" rel="noopener">我的Leetcode仓库</a></p>
 </blockquote>
-<h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a><a href="https://leetcode.com/problems/single-number-ii/" target="_blank" rel="external">题目</a></h2><p>Given an array of integers, every element appears three times except for one. Find that single one.</p>
+<h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a><a href="https://leetcode.com/problems/single-number-ii/" target="_blank" rel="noopener">题目</a></h2><p>Given an array of integers, every element appears three times except for one. Find that single one.</p>
 <p>题目描述是leetcode的Single Number II问题，在一个数组中所有的数都出现了3次，除了其中某一个（那么这个数出现多少次呢？题目并没有说明，但从结果上来看它默认为这个Single Number只出现了一次)。题目本身难度不大，但他的推广非常有趣，所以激起了我写上博客的兴趣。</p>
-<h2 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h2><p>这个题我一开始有两个思路，一个是像<a href="https://leetcode.com/problems/single-number/" target="_blank" rel="external">Single Number那个题</a>一样，采用位操作，另外一个是像讨论区有个人的解法一样，把所有数做成集合，利用Python便捷的计算工具计算出和，再得到那个出现次数不一样的数，有点作弊的意思。<br>重点分析第一种思路。其实要解这个题最根本的在于如何记录每个数字出现的次数，如果有一种方法可以把每个出现过的数字的次数记下来，这个题自然就解决了。直接统计次数涉及到O(n)的空间和O(n)的时间，而且这些空间是不必要的，考虑用位操作来记录。  </p>
+<h2 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h2><p>这个题我一开始有两个思路，一个是像<a href="https://leetcode.com/problems/single-number/" target="_blank" rel="noopener">Single Number那个题</a>一样，采用位操作，另外一个是像讨论区有个人的解法一样，把所有数做成集合，利用Python便捷的计算工具计算出和，再得到那个出现次数不一样的数，有点作弊的意思。<br>重点分析第一种思路。其实要解这个题最根本的在于如何记录每个数字出现的次数，如果有一种方法可以把每个出现过的数字的次数记下来，这个题自然就解决了。直接统计次数涉及到O(n)的空间和O(n)的时间，而且这些空间是不必要的，考虑用位操作来记录。  </p>
 <h3 id="简化"><a href="#简化" class="headerlink" title="简化"></a>简化</h3><p>首先考虑简化版即Single Number那个问题的情况，其他数字都出现两次。那么我们可以想到，如果新的数字已经出现过了，就可以把记录中对应的内容“冲掉”，这样这个数字就被排除在外了。那么什么方式可以把已经出现的数字冲掉呢？嗯，就是异或。  </p>
 <p>好，这是相同数字连续出现的情况，如果不连续呢？我们来分析一下。任何32位的数字都可以表示成01串，也就是说，任何一个数字如果出现了两次，那么它的每一位上的0或1都出现了两次，那么所有出现过两次的数字全部异或起来，其结果一定是全0，跟数字出现的顺序无关。而妙的是，如果一个数字只出现了1次，那它跟全0的异或结果，就是它本身。  </p>
 <p>现在我们发现，如果只出现一次的那个数字在最开始或最后，就可以通过全异或来得到它了。那么它的位置有没有影响呢？结论是没有。试想，这个数字出现在任意一个位置，异或操作将它的1的位都标记了一次，而它之前或之后的数字，由于都出现了两次，所以对整个串的影响将会被异或消除掉，也就是说最后剩下来的一定是这个没有被“冲掉”的数字。至此，简化版问题就解决了。  </p>
@@ -142,8 +143,8 @@ b1=(b1^num)&amp;(~b0)
 b1=(b1^num)&amp;(~b0)
 </code></pre><p>最后，只出现一次的数字一定会停留在b1b0=01的状态，这时b0就是该数字。</p>
 <p>|状态|当前number出现次数|<br>|00|0|<br>|01|1|<br>|10|2|<br>|00|3|  </p>
-<h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">class Solution:</div><div class="line">    # @ param &#123;integer[]&#125; nums</div><div class="line">    # @ return &#123;integer&#125;</div><div class="line">    def singleNumber(self, nums):</div><div class="line">        b0=b1=0</div><div class="line">        for num in nums:</div><div class="line">            b0=(b0^num)&amp;(~b1)</div><div class="line">            b1=(b1^num)&amp;(~b0)</div><div class="line">        return b0</div></pre></td></tr></table></figure>
-<h2 id="推广"><a href="#推广" class="headerlink" title="推广"></a>推广</h2><p>前面说过，这个题的推广非常有趣，在讨论区中有人提出<a href="https://leetcode.com/discuss/31595/detailed-explanation-generalization-bitwise-operation-numbers" target="_blank" rel="external">对推广问题的思考</a>。试想一下，如果我们数组中，所有其它数字出现的次数是k次，除了某一个数字出现次数是p（p!=k）次，请问如何找到这个数字？<br>根据我之前的思路，很显然如果我们能找到足够多的位，可以表示k个状态，那么第p%k个状态就是我们要找的数字了，这里为简单起见，先<strong>假设p%k!=0</strong>，然后再推广到p%k==0的情况。  </p>
+<h2 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">class Solution:</span><br><span class="line">    # @ param &#123;integer[]&#125; nums</span><br><span class="line">    # @ return &#123;integer&#125;</span><br><span class="line">    def singleNumber(self, nums):</span><br><span class="line">        b0=b1=0</span><br><span class="line">        for num in nums:</span><br><span class="line">            b0=(b0^num)&amp;(~b1)</span><br><span class="line">            b1=(b1^num)&amp;(~b0)</span><br><span class="line">        return b0</span><br></pre></td></tr></table></figure>
+<h2 id="推广"><a href="#推广" class="headerlink" title="推广"></a>推广</h2><p>前面说过，这个题的推广非常有趣，在讨论区中有人提出<a href="https://leetcode.com/discuss/31595/detailed-explanation-generalization-bitwise-operation-numbers" target="_blank" rel="noopener">对推广问题的思考</a>。试想一下，如果我们数组中，所有其它数字出现的次数是k次，除了某一个数字出现次数是p（p!=k）次，请问如何找到这个数字？<br>根据我之前的思路，很显然如果我们能找到足够多的位，可以表示k个状态，那么第p%k个状态就是我们要找的数字了，这里为简单起见，先<strong>假设p%k!=0</strong>，然后再推广到p%k==0的情况。  </p>
 <h3 id="p-k-0"><a href="#p-k-0" class="headerlink" title="p%k!=0"></a>p%k!=0</h3><p>我们需要多少位来表示k个状态呢？显然是2^m&gt;=k -&gt; m&gt;=logk<br>于是接下来的问题就变成了，每出现一个数，状态就转移一次，注意到上面的状态转移，其实就是一个counter，对出现的数进行计数。现在可以分解为两个问题：  </p>
 <ol>
 <li>状态转移的时候，每一位怎么变化？以及  </li>
@@ -151,7 +152,7 @@ b1=(b1^num)&amp;(~b0)
 </ol>
 <p>状态转移的变化是很容易得到的：这就是一个counter=counter+1的过程，不同的是我们得用位操作来模拟，而且这里的1代表当前数字。假设我们当前状态是S=Sk-1,Sk-2,…S0=00…000，新来一个数，我们发现S0是0，于是把S0变为1，再来一个数，我们发现S0是1，S1是0，于是S1S0变为10，过程如下：  </p>
 <p>|状态|当前number出现次数|<br>|…000|0|<br>|…001|1|<br>|…010|2|<br>|…011|3|<br>|…100|4|<br>|…101|5|<br>|…110|6|<br>发现没有，任意一位Si要从0变为1的条件是，所有满足j&lt;i的Sj==1，否则Si就不变化（其实就是2进制进位规则），即Si=Si^(Si-1&amp;Si-2&amp;…&amp;S0&amp;number)，对于S0，S0=S0^number<br>于是有：  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">#注意顺序不可变，先确定高位是否改变再确定低位</div><div class="line">Sm ^= (Sm-1 &amp; ... &amp; S1 &amp; i)</div><div class="line"></div><div class="line">Sm-1 ^= (Sm-2 &amp; ... &amp; S1 &amp; i)</div><div class="line"></div><div class="line">.....</div><div class="line"></div><div class="line">S1 ^= i</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">#注意顺序不可变，先确定高位是否改变再确定低位</span><br><span class="line">Sm ^= (Sm-1 &amp; ... &amp; S1 &amp; i)</span><br><span class="line"></span><br><span class="line">Sm-1 ^= (Sm-2 &amp; ... &amp; S1 &amp; i)</span><br><span class="line"></span><br><span class="line">.....</span><br><span class="line"></span><br><span class="line">S1 ^= i</span><br></pre></td></tr></table></figure>
   
 	</div>
 		<footer class="article-footer clearfix">
@@ -183,18 +184,18 @@ b1=(b1^num)&amp;(~b0)
 <nav class="article-nav clearfix">
  
  <div class="prev" >
- <a href="/opinion/2015/08/06/leetcode已经丧心病狂了/" title="leetcode已经丧心病狂了">
+ <a href="/blog/2015/08/16/windows下使用Putty配置github-ssh-key/" title="Windows下使用Putty配置github-ssh-key">
   <strong>上一篇：</strong><br/>
   <span>
-  leetcode已经丧心病狂了</span>
+  Windows下使用Putty配置github-ssh-key</span>
 </a>
 </div>
 
 
 <div class="next">
-<a href="/blog/2015/06/19/CentOS-6.5下搭建自己的Git服务器/"  title="CentOS 6.5下搭建自己的Git服务器">
+<a href="/opinion/2015/08/06/leetcode已经丧心病狂了/"  title="leetcode已经丧心病狂了">
  <strong>下一篇：</strong><br/> 
- <span>CentOS 6.5下搭建自己的Git服务器
+ <span>leetcode已经丧心病狂了
 </span>
 </a>
 </div>
@@ -239,7 +240,7 @@ b1=(b1^num)&amp;(~b0)
 		<ul>
 		
 		  
-			<li><a href="/categories/android/" title="android">android<sup>25</sup></a></li>
+			<li><a href="/categories/android/" title="android">android<sup>26</sup></a></li>
 		  
 		
 		  
@@ -268,7 +269,7 @@ b1=(b1^num)&amp;(~b0)
 		<ul class="clearfix">
 		
 			
-				<li><a href="/tags/android/" title="android">android<sup>26</sup></a></li>
+				<li><a href="/tags/android/" title="android">android<sup>27</sup></a></li>
 			
 		
 			
