@@ -1,0 +1,1792 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+  
+    <title>【Android教程】Binder全解 | hjhjw1991&#39;s blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="hjhjw1991">
+    
+
+    
+    <meta name="description" content="又叫【花样劝退教程】。本文讲Binder机制">
+<meta name="keywords" content="guide,android,interview">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【Android教程】Binder全解">
+<meta property="og:url" content="https://hjhjw1991.github.io/android/2017/01/10/[Android教程]Binder全解/index.html">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
+<meta property="og:description" content="又叫【花样劝退教程】。本文讲Binder机制">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://hjhjw1991.github.io/images/blogs/binder_native_stack.png">
+<meta property="og:updated_time" content="2019-02-20T16:36:35.392Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="【Android教程】Binder全解">
+<meta name="twitter:description" content="又叫【花样劝退教程】。本文讲Binder机制">
+<meta name="twitter:image" content="https://hjhjw1991.github.io/images/blogs/binder_native_stack.png">
+
+    
+    <link rel="alternative" href="/atom.xml" title="hjhjw1991&#39;s blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/author.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/author.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="hjhjw1991&#39;s blog" title="hjhjw1991&#39;s blog"></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="hjhjw1991&#39;s blog">hjhjw1991&#39;s blog</a></h1>
+				<h2 class="blog-motto">Coder, Learn</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="http://zhannei.baidu.com/cse/search" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value="8741923514077570040"><input type="text" name="q" size="30" placeholder="搜索"><br>
+						</form>
+					
+					</li>
+				</ul>
+			</ul></nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/android/2017/01/10/[Android教程]Binder全解/" title="【Android教程】Binder全解" itemprop="url">【Android教程】Binder全解</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="hjhjw1991" target="_blank" itemprop="author">hjhjw1991</a>
+		
+  </p><p class="article-time">
+    <time datetime="2017-01-09T16:00:00.000Z" itemprop="datePublished"> 发表于 2017-01-10</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#某渣的凭印象回-hu-顾-zhou"><span class="toc-number">1.</span> <span class="toc-text">某渣的凭印象回(hu)顾(zhou)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Binder的设计思想-工作原理"><span class="toc-number">2.</span> <span class="toc-text">Binder的设计思想/工作原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Binder实践"><span class="toc-number">3.</span> <span class="toc-text">Binder实践</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Service的启动过程"><span class="toc-number">3.1.</span> <span class="toc-text">Service的启动过程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Binder驱动的实现"><span class="toc-number">3.2.</span> <span class="toc-text">Binder驱动的实现</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#调用mRemote-transact时进到了BinderProxy并在其中调用native方法android-os-BinderProxy-transact"><span class="toc-number">3.2.1.</span> <span class="toc-text">调用mRemote.transact时进到了BinderProxy并在其中调用native方法android_os_BinderProxy_transact()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#jni中的target-gt-transact调用进到BpBinder-再进到IPCThreadState"><span class="toc-number">3.2.2.</span> <span class="toc-text">jni中的target-&gt;transact调用进到BpBinder, 再进到IPCThreadState</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#IPCThreadState-waitForResponse-在一个-while-循环里不断的调用-talkWithDriver-并检查是否有数据返回"><span class="toc-number">3.2.3.</span> <span class="toc-text">IPCThreadState::waitForResponse() 在一个 while 循环里不断的调用 talkWithDriver() 并检查是否有数据返回</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#IPCThreadState-talkWithDriver-函数是真正与-binder-驱动交互的实现"><span class="toc-number">3.2.4.</span> <span class="toc-text">IPCThreadState::talkWithDriver() 函数是真正与 binder 驱动交互的实现</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#IPCThreadState-executeCommand-int32-t-cmd-处理返回命令"><span class="toc-number">3.2.5.</span> <span class="toc-text">IPCThreadState::executeCommand(int32_t cmd) 处理返回命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Binder设备驱动实现"><span class="toc-number">3.2.6.</span> <span class="toc-text">Binder设备驱动实现</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#结语"><span class="toc-number">4.</span> <span class="toc-text">结语</span></a></li></ol>
+		
+		</div>
+		
+		<h2 id="某渣的凭印象回-hu-顾-zhou"><a href="#某渣的凭印象回-hu-顾-zhou" class="headerlink" title="某渣的凭印象回(hu)顾(zhou)"></a>某渣的凭印象回(hu)顾(zhou)</h2><p>Binder是Android提供的一种RPC机制, 它是C/S架构, 可以远程调用服务, 调用其他进程甚至其他App的服务. 它利用AIDL描述服务接口, 通过bind和unbind绑定和解绑具体服务, 其内部使用代理完成服务功能的调用. 调用方需要知道AIDL, 被调用方需要实现AIDL. Android系统的服务就是通过Binder机制来使用的.  </p>
+<h2 id="Binder的设计思想-工作原理"><a href="#Binder的设计思想-工作原理" class="headerlink" title="Binder的设计思想/工作原理"></a>Binder的设计思想/工作原理</h2><p>Binder是一种进程间通讯的机制, 不同于Handler的线程间通讯, 由于进程间没有共享区域, 所以Handler那种消息队列的机制在进程之间进行就会变得比较麻烦(进程A将消息拷贝到内核缓存空间, 另一进程B从内核缓存空间取消息), 特别是当进程间通讯涉及到接口调用等业务流程时. 出于安全性考虑, 一个进程的空间只对进程内部开放, 外部想要访问进程内的数据, 就只能曲线救国. Binder就是其中一种方式.  </p>
+<p>Binder是一种特化的AIDL服务, 换句话说, AIDL是对Binder机制的上层封装, 它可以快速实现进程间通讯, 所以要想理解Binder就必须理解AIDL. 关于AIDL可以看我的博文<a href="http://hjhjw1991.github.io/android/2016/04/01/[Android%E6%95%99%E7%A8%8B]AIDL%E5%85%A5%E9%97%A8/">AIDL入门</a>, 简单来说, AIDL是服务的接口描述文件, 它在服务端和客户端都共同存在且内容相同, SDK的aidl工具可以帮助我们把<code>.aidl</code>文件转换成同名的<code>.java</code>文件, 只要我们手工调用该工具转换一下, 并看一看转换后的文件, 我相信就能够完全理解aidl的使用原理了(其实跟Hessian之类的RPC框架大同小异). 具体到Binder, 我们可以去看看Binder的实现源码和Binder驱动的源码, 说白了就是系统为我们实现了一套基于Binder接口的获取/绑定/解绑/释放服务代理的业务逻辑, 我们只需要负责将具体的服务传给Binder就可以了. 如果没有Binder, 进行进程间通讯就必须要自己实现基于AIDL的业务逻辑, 实际上这样也是行得通的, 只不过系统服务都是基于Binder实现的, 所以我们有必要了解Binder的实现原理.<br>在最下层, Binder驱动通过Native代码实现, 它是Binder接口的最终实现, 关于Binder驱动的源码可以看这篇博客<a href="https://github.com/xdtianyu/SourceAnalysis/blob/master/Binder%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md" target="_blank" rel="noopener">Binder 源码分析</a>, 尤其是其代码注释.  </p>
+<p>在Linux中有很多进程间通讯的方式, 为什么Android唯独自己实现了一个Binder机制? 我认为主要原因是现有的Linux进程间通讯方式都太”重”了, 含有许多虽然好但是在Android环境下并不实用的特性. 可以明确的是, 现有的进程间通讯方式肯定可以应用在Android这个基于Linux系统内核的操作系统上. 相比之下, Binder的设计使得它只进行一次数据拷贝, 传输更加高效, 而且发送方和接收方都互相知道对方身份, 更加安全.  </p>
+<h2 id="Binder实践"><a href="#Binder实践" class="headerlink" title="Binder实践"></a>Binder实践</h2><p>依旧, 如果只想用Binder, 那直接继承它并实现相应接口即可, 这里的实践指的是看Binder源码. 默认大家已经看过并理解了AIDL的相关内容.<br>不同于上层Framework, 这里要理解Binder需要涉及到底层native代码, 所以我们要提前准备好Android系统源码, 当然前面看Java层代码时不需要. 这里我以4.0源码为基础.<br>照惯例我们先从Binder源码看起. 打开<code>frameworks/base/core/java/android/os/Binder.java</code>, 先来看看它都有哪些主要内容:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line">/**</span><br><span class="line">注释, 大意是说这个类是一个用于远程调用的基类, 是IBinder中定义的轻量级RPC的核心部分, 提供了远程对象本地实现的标准支持, 多数情况下开发者不需要直接实现Binder类, 而是利用aidl工具描述服务接口, 让aidl自动生成合适的Binder子类, 但是开发这当然可以直接继承Binder来实现自己的RPC协议或者仅仅是实例化一个Binder对象作为token在进程之间共享.</span><br><span class="line">*/</span><br><span class="line">public class Binder implements IBinder&#123;// Binder类实现IBinder接口</span><br><span class="line">private int mObject;</span><br><span class="line">private IInterface mOwner;</span><br><span class="line">private String mDescriptor;</span><br><span class="line"></span><br><span class="line">public static final native int getCallingPid();// 调用者进程ID, 可以用来检查权限</span><br><span class="line">public static final native int getCallingUid();// 返回与进程绑定的调用者用户ID, 可以用来检查权限</span><br><span class="line">public static final native long clearCallingIdentity();// 重置调用者ID, 当你需要调用别的Interface的时候, 为了让被调用的Interface检查你自己的权限, 你需要重置调用者ID. 它返回的token可以通过下面这个方法恢复调用者ID  </span><br><span class="line">public static final native void restoreCallingIdentity(long token);// 恢复调用者ID</span><br><span class="line">public static final native void setThreadStrictModePolicy(int policyMask);// 设置native层StrictMode策略</span><br><span class="line">public static final native int getThreadStrictModePolicy();// 获取native层StrictMode策略</span><br><span class="line">public static final native void flushPendingCommands();// 把等待中的命令刷到内核驱动. 如果将要执行一个可能阻塞很长时间的命令, 那么本方法可以将线程中等待的命令刷到内核驱动, 以防止本线程过久地持有等待中命令的引用</span><br><span class="line">public static final native void joinThreadPool();// 把调用者线程加入IPC线程池, 该方法仅在进程退出时返回</span><br><span class="line"></span><br><span class="line">public Binder() &#123;</span><br><span class="line">	init();// native method</span><br><span class="line">	// code to check potential leaks</span><br><span class="line">&#125;</span><br><span class="line">public void attachInterface(IInterface owner, String descriptor);// 绑定IInterface和对应的descriptor</span><br><span class="line">public String getInterfaceDescriptor();</span><br><span class="line">public boolean pingBinder();// 默认返回true</span><br><span class="line">public boolean isBinderAlive();// 默认返回true</span><br><span class="line">public IInterface queryLocalInterface(String descriptor);// 返回descriptor对应的IInterface或者null</span><br><span class="line">protected boolean onTransact(int code, Parcel data, Parcel reply, int flags);// 真正的事务执行函数, 希望子类重写</span><br><span class="line">public final boolean transact(int code, Parcel data, Parcel reply, int flags);// 事务执行函数, 里面回调onTransact</span><br><span class="line">private boolean execTransact(int code, int dataObj, int replyObj, int flags);// 回调onTrasact, 如果抛出异常则返回true</span><br><span class="line">public void linkToDeath(DeathRecipient recipient, int flags);// 本地实现无内容</span><br><span class="line">public boolean unlinkToDeath(DeathRecipient recipient, int flags);// 本地实现无内容</span><br><span class="line"></span><br><span class="line">private native final void init();</span><br><span class="line">private native final void destroy();</span><br><span class="line">&#125;// Binder类</span><br><span class="line"></span><br><span class="line">final class BinderProxy implements IBinder &#123;// BinderProxy类</span><br><span class="line">    BinderProxy() &#123;</span><br><span class="line">        mSelf = new WeakReference(this);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // 以下六个方法都成了native方法</span><br><span class="line">    public native boolean pingBinder();</span><br><span class="line">    public native boolean isBinderAlive();</span><br><span class="line">    public native String getInterfaceDescriptor();</span><br><span class="line">    public native boolean transact(int code, Parcel data, Parcel reply, int flags);</span><br><span class="line">    public native void linkToDeath(DeathRecipient recipient, int flags);</span><br><span class="line">    public native boolean unlinkToDeath(DeathRecipient recipient, int flags);</span><br><span class="line"></span><br><span class="line">    final private WeakReference mSelf;// 指向自身的弱引用</span><br><span class="line">    private int mObject;</span><br><span class="line">    private int mOrgue;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>看完源码至少有三个疑问: 1. IInterface和IBinder定义了哪些接口? 2. BinderProxy是什么, 怎么用的? 3. <code>Binder.java</code>中涉及到的那些native方法, 是怎么实现的?<br>打开<code>frameworks/base/core/java/android/os/IBinder.java</code>:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">/** 注释中详细讲述了IBinder的设计思路. 核心API是transact(), 与Binder的onTransact成对. 作为本地对象的它发送一个调用到远程IBinder对象, 同时作为远程对象的它可以接受一个调用并放到一个Binder对象中. 这个API是同步的, 以保证仅在远程onTransact返回后, 本地transact才返回, 这是所期望的行为.  </span><br><span class="line">系统在每个进程中维护一个事务线程池, 用于分发所有从外部进程进来的IPC. Binder系统允许递归调用, 比如A调用B, B的onTransact中又调用了A. */</span><br><span class="line">    // 定义了用户可以使用的事务代码</span><br><span class="line">    int FIRST_CALL_TRANSACTION  = 0x00000001;</span><br><span class="line">    int LAST_CALL_TRANSACTION   = 0x00ffffff;</span><br><span class="line"></span><br><span class="line">    // IBinder协议的事务代码</span><br><span class="line">    int PING_TRANSACTION        = (&apos;_&apos;&lt;&lt;24)|(&apos;P&apos;&lt;&lt;16)|(&apos;N&apos;&lt;&lt;8)|&apos;G&apos;;</span><br><span class="line">    int DUMP_TRANSACTION        = (&apos;_&apos;&lt;&lt;24)|(&apos;D&apos;&lt;&lt;16)|(&apos;M&apos;&lt;&lt;8)|&apos;P&apos;;</span><br><span class="line">    int INTERFACE_TRANSACTION   = (&apos;_&apos;&lt;&lt;24)|(&apos;N&apos;&lt;&lt;16)|(&apos;T&apos;&lt;&lt;8)|&apos;F&apos;;</span><br><span class="line">    int TWEET_TRANSACTION   = (&apos;_&apos;&lt;&lt;24)|(&apos;T&apos;&lt;&lt;16)|(&apos;W&apos;&lt;&lt;8)|&apos;T&apos;;</span><br><span class="line">    int LIKE_TRANSACTION   = (&apos;_&apos;&lt;&lt;24)|(&apos;L&apos;&lt;&lt;16)|(&apos;I&apos;&lt;&lt;8)|&apos;K&apos;;// 告诉app调用者喜欢它. 可选命令, 应用不必处理, 没啥卵用. 默认实现啥也不做.  </span><br><span class="line">    int SYSPROPS_TRANSACTION = (&apos;_&apos;&lt;&lt;24)|(&apos;S&apos;&lt;&lt;16)|(&apos;P&apos;&lt;&lt;8)|&apos;R&apos;;// hide</span><br><span class="line"></span><br><span class="line">    // transact的标记, 表示这是一个单向调用, 调用者不等待被调用者的结果, 而是立即返回</span><br><span class="line">    int FLAG_ONEWAY             = 0x00000001;</span><br><span class="line">    public static final int MAX_IPC_SIZE = 64 * 1024;// hide</span><br><span class="line"></span><br><span class="line">    public String getInterfaceDescriptor();</span><br><span class="line">    // 查询Binder是否可用有三种方式, 当Binder不可用时, transact()会抛出RemoteException, pingBinder()会返回false, linkToDeath()预先连接一个DeathRecipient, 不可用时会回调这个DeathRecipient的binderDied()</span><br><span class="line">    public boolean pingBinder();</span><br><span class="line">    public boolean isBinderAlive();</span><br><span class="line"></span><br><span class="line">    public IInterface queryLocalInterface(String descriptor);</span><br><span class="line"></span><br><span class="line">    public boolean transact(int code, Parcel data, Parcel reply, int flags);</span><br><span class="line"></span><br><span class="line">    public interface DeathRecipient &#123;</span><br><span class="line">        public void binderDied();</span><br><span class="line">    &#125;</span><br><span class="line">    public void linkToDeath(DeathRecipient recipient, int flags);// 连接一个DeathRecipient接收器, 当Binder不可用时回调</span><br><span class="line">    public boolean unlinkToDeath(DeathRecipient recipient, int flags);</span><br></pre></td></tr></table></figure></p>
+<p>可见, IBinder定义了一套Transaction协议用于指明发起的Transaction类型, 定义了<code>transact()</code>核心接口, 该接口与Binder中的<code>onTransact</code>配合使用才能完成远程调用的功能. 定义了查询接口, 返回一个<code>IInterface</code>实例. 下面看看这个接口定义:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">public interface IInterface</span><br><span class="line">&#123;</span><br><span class="line">    public IBinder asBinder();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>就这一个接口方法, 返回<code>IBinder</code>实例. 注释中说该方法返回与该Interface绑定的Binder实例.<br>以上这些内容, 定义了一个基本的Binder系统框架, 即通过同一套<code>Binder &amp; IBinder &amp; IInterface</code>接口, 本地以<code>transact()</code>发起远程调用, 远程在<code>onTransact()</code>中处理相应调用. 本地以<code>asInterface()</code>获取远程服务的实例(实际获得的是服务的代理, 代理内对每个服务接口中的方法, 调用远程服务的transact方法, 传递一个约定好的事务代码和方法参数, 远程服务的onTransact会对每个约定好的事务代码, 生成相应的switch case, 调用真正的服务接口实现. 由于客户端和服务端对服务接口的定义是相同的, 故生成的服务接口也相同, 可以在本地aidl生成的java文件中查看onTransact的实现), 远程以<code>asBinder()</code>返回远程服务的实例, 本地通过asInterface返回的代理来调用远程服务的方法, 跟调用本地服务方法表面上看起来没有差别.  </p>
+<h3 id="Service的启动过程"><a href="#Service的启动过程" class="headerlink" title="Service的启动过程"></a>Service的启动过程</h3><p>离开具体实现的Binder是无法工作的, 我们自己当然可以自行继承Binder来写自己的远程服务. AIDL是Android为我们提供的一种方便快捷生成Binder实现的方式和工具, 而Service是由系统实现了服务端的Binder. 我们以它为例, 说明如何启动服务, 以及其中哪里用到了Binder.<br>我们知道, 要获取服务(系统服务除外, 其实系统服务就是提供了一个通过descriptor获取服务的接口), 首先我们要知道服务的全名, 在Intent中设定服务全名, 并指定一个ServiceConnection回调, 调用<code>bindService(Intent, ServiceConnection, CONTEXT_OPTION)</code>绑定服务(其中第三个参数的含义稍后解释), 在<code>ServiceConnection</code>中获取到服务实例. 我们已经知道<code>ServiceConnection</code>的回调方法被调用时已经得到了服务实例, 下面我们看看<code>bindService</code>如何绑定服务获取服务实例.<br>[Android应用程序绑定服务(bindService)的过程源代码分析]: <a href="http://blog.csdn.net/luoshengyang/article/details/6745181" target="_blank" rel="noopener">http://blog.csdn.net/luoshengyang/article/details/6745181</a><br><code>bindService</code>方法的定义来自于<code>Context</code>, <code>Activity</code>的<code>bindService</code>调用的是<code>ContextWrapper.bindService</code>, 其默认实现是调用<code>mBase.bindService</code>, <code>mBase</code>是一个<code>Context</code>类型的成员变量, 这里的<code>mBase</code>是一个<code>ContextImpl</code>实例变量. 在<code>ContextImpl.java</code>中, <code>bindService</code>是这么定义的:  </p>
+<pre><code>class ContextImpl extends Context {
+    ......
+
+    @Override
+    public boolean bindService(Intent service, ServiceConnection conn,
+            int flags) {  
+        IServiceConnection sd;  
+        if (mPackageInfo != null) {  
+            sd = mPackageInfo.getServiceDispatcher(conn, getOuterContext(),  
+                mMainThread.getHandler(), flags);  
+        } else {  
+            ......  
+        }  
+        try {  
+            int res = ActivityManagerNative.getDefault().bindService(  
+                mMainThread.getApplicationThread(), getActivityToken(),  
+                service, service.resolveTypeIfNeeded(getContentResolver()),  
+                sd, flags);  
+            ......  
+            return res != 0;  
+        } catch (RemoteException e) {  
+            return false;  
+        }
+    }
+    ......
+}
+</code></pre><p>这里的mMainThread是一个<code>ActivityThread</code>实例, 通过它的<code>getHandler</code>函数可以获得一个Handler对象(这里返回的Handler是在<code>ActivityThread</code>类内部从Handler类继承下来的一个H类实例变量), 有了这个Handler对象后, 就可以把消息分发到<code>ActivityThread</code>所在的线程消息队列中去了.<br>获得了这个Handler对象后, 就调用<code>mPackageInfo.getServiceDispatcher</code>函数来获得一个<code>IServiceConnection</code>接口, 这里的<code>mPackageInfo</code>的类型是<code>LoadedApk</code>, 它的<code>getServiceDispatcher</code>函数比较长我就不贴了, 大致上它先以传进来的context为key查找<code>mServices</code>成员中是否已经有对应的<code>ServiceDispatcher</code>, 没有则新建一个, 将传进来的<code>ServiceConnection</code>和Handler都保存在<code>ServiceDispatcher</code>内部, 并创建一个<code>InnerConnection</code>, <font color="red">这是一个Binder对象!</font> 最后返回给sd的就是这个<code>InnerConnection</code>对象.  </p>
+<div id="LoadedApk.ServiceDispatcher.InnerConnection"></div><br>接着调用<code>ActivityManagerNative.getDefault().bindService()</code>, 在<code>frameworks/base/core/java/android/app/ActivityManagerNative.java</code>文件中, 函数定义如下:<br><br><div id="ActivityManagerService-bindService"></div>  
+
+<pre><code>class ActivityManagerProxy implements IActivityManager  
+{  
+    ......  
+
+    public int bindService(IApplicationThread caller, IBinder token,  
+            Intent service, String resolvedType, IServiceConnection connection,  
+            int flags) throws RemoteException {  
+        Parcel data = Parcel.obtain();  
+        Parcel reply = Parcel.obtain();  
+        data.writeInterfaceToken(IActivityManager.descriptor);  
+        data.writeStrongBinder(caller != null ? caller.asBinder() : null);
+        data.writeStrongBinder(token);  
+        service.writeToParcel(data, 0);  
+        data.writeString(resolvedType);  
+        data.writeStrongBinder(connection.asBinder());// 被调用的服务的Binder作为数据传输给服务端
+        data.writeInt(flags);  
+        mRemote.transact(BIND_SERVICE_TRANSACTION, data, reply, 0);// 调用了transact, 进Binder驱动
+        reply.readException();  
+        int res = reply.readInt();  
+        data.recycle();  
+        reply.recycle();  
+        return res;  
+    }  
+
+    ......  
+}  
+</code></pre><p>这个函数通过Binder驱动程序就进入到<code>ActivityManagerService</code>的<code>bindService</code>函数去了(到此为止, 代码执行就从Binder客户端进入到了Binder服务端), 它的定义在<code>frameworks/base/services/java/com/android/server/am/ActivityManagerService.java</code>文件中, 代码比较长就不贴了. 主要做了以下这些事:<br>函数首先根据传进来的参数token(是调用者Activity在<code>ActivityManagerService</code>里面的令牌), 将这个代表调用者Activity的<code>ActivityRecord</code>取回来.<br>接着通过<code>retrieveServiceLocked</code>函数, 得到一个<code>ServiceRecord</code>, 这个<code>ServiceReocrd</code>描述的是一个Service对象,这是根据传进来的参数service的内容获得的(service是个Intent, 带有我们要用的具体Service的信息).<br>接着把传进来的connection参数封装成一个<code>ConnectionRecord</code>对象, 并保存了它的一个引用到<code>activity.connections</code>中以方便后续取用.<br>最后, 传进来的第四个参数flags是有限的几种<code>BindServiceFlags</code>中的一种, 它决定了具体行为. 以<code>BIND_AUTO_CREATE</code>为例, 它会走到<code>private final boolean bringUpServiceLocked(ServiceRecord r, int intentFlags, boolean whileRestarting)</code>, 第一个参数就是前面的Intent service, 第二个参数通过<code>service.getFlags()</code>得到, 第三个参数传的false. 该函数中, 首先判断应用进程是否存在, 如果存在则调用<code>realStartServiceLocked(r, app)</code>, app是通过进程名和uid获取到的<code>ProcessRecord</code>(如果不存在则启动新进程, 并将服务压栈等待进程启动完成, 在这个新进程上执行serivce). 来看这个函数实现:  </p>
+<pre><code>public final class ActivityManagerService extends ActivityManagerNative
+        implements Watchdog.Monitor, BatteryStatsImpl.BatteryCallback {  
+    ......
+    private final void realStartServiceLocked(ServiceRecord r,
+            ProcessRecord app) throws RemoteException {  
+        ......  
+        r.app = app;  
+        ......  
+
+        app.services.add(r);
+        ......  
+
+        try {  
+            ......  
+            app.thread.scheduleCreateService(r, r.serviceInfo);  
+            ......  
+        } finally {  
+            ......  
+        }  
+
+        requestServiceBindingsLocked(r);  
+
+        ......  
+    }
+    ......
+}
+</code></pre><p>这个函数执行了两个操作, 一个是<code>app.thread.scheduleCreateService(r, r.serviceInfo)</code>在应用程序进程内部创建Service, 这个操作会导致Service的<code>onCreate</code>被调用; 另一个操作是调用<code>requestServiceBindingsLocked</code>函数向服务获取一个Binder对象, 这个操作会导致Service的<code>onBind</code>函数被调用. 可能有读者觉得有点偏题了, 实际不然, 这两个操作都依赖Binder机制. 先来看前者:  </p>
+<pre><code>class ApplicationThreadProxy implements IApplicationThread {  
+    ......  
+
+    public final void scheduleCreateService(IBinder token, ServiceInfo info)  
+            throws RemoteException {  
+        Parcel data = Parcel.obtain();  
+        data.writeInterfaceToken(IApplicationThread.descriptor);  
+        data.writeStrongBinder(token);  
+        info.writeToParcel(data, 0);  
+        mRemote.transact(SCHEDULE_CREATE_SERVICE_TRANSACTION, data, null,  
+            IBinder.FLAG_ONEWAY);// 又一次Binder调用, 进入到的是ApplicationThread.scheduleCreateService, flag引人注目
+        data.recycle();  
+    }  
+
+    ......  
+}  
+</code></pre><p>这里通过Binder驱动程序就进入到<code>ApplicationThread</code>的<code>scheduleCreateService</code>函数去了. 它的定义在<code>frameworks/base/core/java/android/app/ActivityThread.java</code>文件中:  </p>
+<pre><code>public final class ActivityThread {  
+    ......  
+
+    private final class ApplicationThread extends ApplicationThreadNative {  
+        ......  
+
+        public final void scheduleCreateService(IBinder token,  
+            ServiceInfo info) {  
+            CreateServiceData s = new CreateServiceData();  
+            s.token = token;  
+            s.info = info;  
+
+            queueOrSendMessage(H.CREATE_SERVICE, s);  
+        }  
+
+        ......  
+    }  
+    ......  
+}  
+</code></pre><p>其中<code>queueOrSendMessage</code>是<code>ActivityThread</code>的方法, 它用Handler把创建服务的操作放到了Activity线程的消息队列中, 在<code>handleMessage</code>时调用<code>handleCreateService</code>处理该消息, 代码如下:  </p>
+<pre><code>public final class ActivityThread {  
+    ......  
+
+    private final void handleCreateService(CreateServiceData data) {  
+        ......  
+
+        LoadedApk packageInfo = getPackageInfoNoCheck(  
+        data.info.applicationInfo);  
+        Service service = null;  
+        try {  
+            java.lang.ClassLoader cl = packageInfo.getClassLoader();  
+            service = (Service) cl.loadClass(data.info.name).newInstance();  // 加载类, 获得实例
+        } catch (Exception e) {  
+            ......  
+        }  
+
+        try {  
+            ......  
+
+            ContextImpl context = new ContextImpl();  
+            context.init(packageInfo, null, this);  
+
+            Application app = packageInfo.makeApplication(false, mInstrumentation);  
+            context.setOuterContext(service);  
+            service.attach(context, this, data.info.name, data.token, app,  
+                ActivityManagerNative.getDefault());  // 绑定服务
+
+            service.onCreate();  // 进入onCreate生命周期
+            mServices.put(data.token, service); // 保存服务映射
+            ......  
+        } catch (Exception e) {  
+            ......  
+        }  
+    }  
+    ......  
+}  
+</code></pre><p>至此, 服务实例就创建出来了. 下面回到<code>realStartServiceLocked</code>看<code>requestServiceBindingsLocked</code>, 它的定义在<code>frameworks/base/services/java/com/android/server/am/ActivityManagerService.java</code>中:  </p>
+<pre><code>public final class ActivityManagerService extends ActivityManagerNative  
+        implements Watchdog.Monitor, BatteryStatsImpl.BatteryCallback {  
+    ......  
+
+    private final void requestServiceBindingsLocked(ServiceRecord r) {  
+        Iterator&lt;IntentBindRecord&gt; bindings = r.bindings.values().iterator();  
+        while (bindings.hasNext()) {  
+            IntentBindRecord i = bindings.next();  
+            if (!requestServiceBindingLocked(r, i, false)) {  
+                break;  
+            }  
+        }  
+    }  
+
+    private final boolean requestServiceBindingLocked(ServiceRecord r,  
+            IntentBindRecord i, boolean rebind) {  
+        ......  
+        if ((!i.requested || rebind) &amp;&amp; i.apps.size() &gt; 0) {  
+          try {  
+              ......  
+              r.app.thread.scheduleBindService(r, i.intent.getIntent(), rebind);  
+              ......  
+          } catch (RemoteException e) {  
+              ......  
+          }  
+        }  
+        return true;  
+    }  
+
+    ......  
+}  
+</code></pre><p>(下回分解)<br>1月9日, 继续分解Service启动过程.<br>前面说到经过<code>handleCreateService</code>之后, <code>Service</code>实例就通过ClassLoader载入到内存, 并通过newInstance创建了实例, 且进入到<code>onCreate</code>周期. 创建完毕后, 接着调用<code>requestServiceBindingsLocked</code>, 这个方法从名字看应该是要绑定服务了, 打开源码发现它实际调用了<code>app.thread.scheduleBindService</code>, 传的参数<code>ServiceRecord r</code>代表我们启动的自定义服务. <code>app.thread</code>是一个Binder对象的远程接口, 它的类型是<code>ApplicationThreadProxy</code>, 这一点从前面也看得出来. 通过代理和Binder驱动, 我们就进入到<code>ApplicationThread</code>的<code>scheduleBindService</code>中了:  </p>
+<pre><code>class ApplicationThreadProxy implements IApplicationThread {  
+    ......  
+
+    public final void scheduleBindService(IBinder token, Intent intent, boolean rebind)  throws RemoteException {  
+        Parcel data = Parcel.obtain();  
+        data.writeInterfaceToken(IApplicationThread.descriptor);  
+        data.writeStrongBinder(token);  
+        intent.writeToParcel(data, 0);  
+        data.writeInt(rebind ? 1 : 0);  
+        mRemote.transact(SCHEDULE_BIND_SERVICE_TRANSACTION, data, null,  
+            IBinder.FLAG_ONEWAY);  
+        data.recycle();  
+    }  
+
+    ......  
+}  
+</code></pre><p>那么, 我们来看看<code>ApplicationThread</code>中<code>scheduleBindService</code>是怎么实现的:  </p>
+<pre><code>public final class ActivityThread {  
+    ......  
+
+    public final void scheduleBindService(IBinder token, Intent intent,  
+            boolean rebind) {  
+        BindServiceData s = new BindServiceData();  
+        s.token = token;  
+        s.intent = intent;  
+        s.rebind = rebind;  
+
+        queueOrSendMessage(H.BIND_SERVICE, s);  
+    }  
+
+    ......  
+}  
+</code></pre><p>很眼熟对不对? 相信不用我说你也知道之后是什么了:  </p>
+<div id="Service.onBind"></div>  
+
+<pre><code>switch (msg.what) {  
+......  
+case BIND_SERVICE:  
+    handleBindService((BindServiceData)msg.obj);  
+    break;  
+......  
+}  
+
+...
+private final void handleBindService(BindServiceData data) {  
+    Service s = mServices.get(data.token);  
+    if (s != null) {  
+        try {  
+            data.intent.setExtrasClassLoader(s.getClassLoader());  
+            try {  
+                if (!data.rebind) {  
+                    IBinder binder = s.onBind(data.intent);  
+                    ActivityManagerNative.getDefault().publishService(  
+                        data.token, data.intent, binder);  
+                } else {  
+                    ......  
+                }  
+                ......  
+            } catch (RemoteException ex) {  
+            }  
+        } catch (Exception e) {  
+            ......  
+        }  
+    }  
+}
+</code></pre><p>首先将前面保存在<code>mServices</code>中的服务通过<code>data.token</code>取出来放到本地变量, 然后让它执行<code>onBind</code>获得一个Binder对象, 接着将这个对象传递给<code>ActivityManagerService.getDefa().publishService()</code>. <code>onBind</code>是自定义服务自己重写的, 就是返回一个实现了IBinder接口的Binder对象. <code>publishSerivce</code> 定义在<code>frameworks/base/core/java/android/app/ActivityManagerNative.java</code>中, 如下:  </p>
+<pre><code>class ActivityManagerProxy implements IActivityManager  
+{  
+    ......  
+    public void publishService(IBinder token,  
+    Intent intent, IBinder service) throws RemoteException {  
+        Parcel data = Parcel.obtain();  
+        Parcel reply = Parcel.obtain();  
+        data.writeInterfaceToken(IActivityManager.descriptor);  
+        data.writeStrongBinder(token);  
+        intent.writeToParcel(data, 0);  
+        data.writeStrongBinder(service);  
+        mRemote.transact(PUBLISH_SERVICE_TRANSACTION, data, reply, 0);// 眼熟不?  
+        reply.readException();  
+        data.recycle();  
+        reply.recycle();  
+    }  
+    ......  
+}  
+</code></pre><p>再来看<code>publishService</code>的实现, 理所当然它的定义在<code>frameworks/base/services/java/com/android/server/am/ActivityManagerService.java</code>中:  </p>
+<pre><code>public final class ActivityManagerService extends ActivityManagerNative  
+        implements Watchdog.Monitor, BatteryStatsImpl.BatteryCallback {  
+    ......  
+
+    public void publishService(IBinder token, Intent intent, IBinder service) {  
+        ......  
+        synchronized(this) {  
+            ......  
+            ServiceRecord r = (ServiceRecord)token;  
+            ......  
+
+            ......  
+            if (r != null) {  
+                Intent.FilterComparison filter  
+                    = new Intent.FilterComparison(intent);  
+                IntentBindRecord b = r.bindings.get(filter);  
+                if (b != null &amp;&amp; !b.received) {  
+                    b.binder = service;  
+                    b.requested = true;  
+                    b.received = true;  
+                    if (r.connections.size() &gt; 0) {  
+                        Iterator&lt;ArrayList&lt;ConnectionRecord&gt;&gt; it  
+                            = r.connections.values().iterator();  
+                        while (it.hasNext()) {  
+                            ArrayList&lt;ConnectionRecord&gt; clist = it.next();  
+                            for (int i=0; i&lt;clist.size(); i++) {  
+                                ConnectionRecord c = clist.get(i);  
+                                ......  
+                                try {  
+                                    c.conn.connected(r.name, service);  
+                                } catch (Exception e) {  
+                                    ......  
+                                }  
+                            }  
+                        }  
+                    }  
+                }  
+
+                ......  
+            }  
+        }  
+    }  
+
+    ......  
+}  
+</code></pre><p>这里传进来的service不出意外的话就是我们自定义<code>onBinder</code>返回的那个东西了, 也就是我们自定义服务的实例. 这里的<code>token</code>是一个<code>ServiceRecord</code>对象, 是在前面<a href="#ActivityManagerService-bindService">bindService</a>中中创建的. 在那里, 我们保存了自定义服务的一个<code>ConnectionRecord</code>在这个<code>ServiceRecord.connections</code>列表中, 因此这里可以通过<code>r.connections</code>取出那个<code>ConnectionRecord</code>.<br>取出<code>ConnectionRecord</code>之后, 调用成员变量的函数<code>conn.connected()</code>. 这个conn是一个<code>IServiceConnection</code>类型, 它是一个Binder对象的远程接口, 这个Binder对象, 就是我们在<a href="#LoadedApk.ServiceDispatcher.InnerConnection">前面</a>创建的<code>LoadedApk.ServiceDispatcher.InnerConnection</code>对象. 因此, 这里的<code>connected</code>就到了<code>InnerConnection.connected</code>:  </p>
+<pre><code>// in file frameworks/base/core/java/android/app/LoadedApk.java
+final class LoadedApk {  
+    ......  
+
+    static final class ServiceDispatcher {  
+        ......  
+
+        private static class InnerConnection extends IServiceConnection.Stub {  
+            ......  
+
+            public void connected(ComponentName name, IBinder service) throws RemoteException {  
+                LoadedApk.ServiceDispatcher sd = mDispatcher.get();  
+                if (sd != null) {  
+                    sd.connected(name, service);  // 转到了外层ServiceDispatcher类中的connected
+                }  
+            }  
+            ......  
+        }  
+        ......  
+
+        public void connected(ComponentName name, IBinder service) {  
+            if (mActivityThread != null) {  
+                mActivityThread.post(new RunConnection(name, service, 0)); // 放到ActivityThread的消息队列中. mActivityThread是一个Handler实例  
+            } else {  
+                ......  
+            }  
+        }  
+        ......  
+
+        private final class RunConnection implements Runnable {  
+            ......  
+
+            public void run() {  
+                if (mCommand == 0) {  
+                    doConnected(mName, mService);  
+                } else if (mCommand == 1) {  
+                    ......  
+                }  
+            }  
+            ......  
+        }  
+        ......  
+
+        public void doConnected(ComponentName name, IBinder service) {  
+            ......  
+
+            // If there is a new service, it is now connected.  
+            if (service != null) {  
+                mConnection.onServiceConnected(name, service);  
+            }  
+        }  
+    }  
+    ......  
+}  
+</code></pre><p>新建了一个<code>RunConnection</code>并调用<code>H.post</code>放到了<code>ActivityThread</code>的消息队列中. 当处理该消息时, 会运行的<code>RunConnection</code>的<code>run()</code>来处理, 原因见我另一篇文章<a href="./handler.md">Handler原理</a>. 此时<code>mCommand==0</code>, 最后就会执行到<code>mConnection.onServiceConnected</code>函数. 这里的<code>mConnection</code>的类型是<code>ServiceConnection</code>, 它是在<a href="#ActivityManagerService-bindService">前面</a>设置好的, 它是我们调用<code>bindService</code>时传入的<code>ServiceConnection</code>实例, 在前面我们用它通过<code>ServiceDispatcher</code>换得了一个<code>IServiceConnection</code>对象.<br>传入的第二个参数<code>service</code>是一个IBinder对象, 它其实就是我们<a href="#Service.onBind">前面</a>从自定义Service中得到的自定义Binder对象, 因此这里我们可以直接强转成那个自定义Binder类型, 并通过它的<code>getService</code>接口获取到自定义服务的接口. 至此, 我们经过<code>onServiceConnection</code>, 调用<code>getService</code>, 绑定并获取了自定义服务.  </p>
+<h3 id="Binder驱动的实现"><a href="#Binder驱动的实现" class="headerlink" title="Binder驱动的实现"></a>Binder驱动的实现</h3><p>上面多次提到”进入了Binder驱动”, 可见Binder驱动在这个设计中具有重要的桥梁作用. 那么除了上面看到的那些, Binder驱动到底是什么样子呢? 接下来让我们深入Binder驱动源码.<br>首先我们要知道是哪里进入到Native Binder驱动的:<br><code>IYourService.Stub.Proxy.YOUR_API()</code>中, 调用<code>android.os.IBinder(实现在 android.os.Binder.BinderProxy).transact()</code>发送<code>Stub.TRANSACTION_YOUR_API</code> ==&gt; <strong><code>BinderProxy.transact()</code>进入Native层</strong> ==&gt; 由jni转到<code>android_os_BinderProxy_transact()</code>函数 ==&gt; 调用<code>IBinder-&gt;transact</code>函数.  </p>
+<h4 id="调用mRemote-transact时进到了BinderProxy并在其中调用native方法android-os-BinderProxy-transact"><a href="#调用mRemote-transact时进到了BinderProxy并在其中调用native方法android-os-BinderProxy-transact" class="headerlink" title="调用mRemote.transact时进到了BinderProxy并在其中调用native方法android_os_BinderProxy_transact()"></a>调用mRemote.transact时进到了BinderProxy并在其中调用native方法android_os_BinderProxy_transact()</h4><p>直到jni为止的内容我们前面已经了解过了, 下面来看<code>android_os_BinderProxy_transact()</code>函数:  </p>
+<pre><code>// in file frameworks/base/core/jni/android_util_Binder.cpp
+
+......
+
+static jboolean android_os_BinderProxy_transact(JNIEnv* env, jobject obj,
+        jint code, jobject dataObj, jobject replyObj, jint flags) // throws RemoteException
+{
+    // check and parse data
+    ......
+
+    IBinder* target = (IBinder*)
+        env-&gt;GetLongField(obj, gBinderProxyOffsets.mObject);// 获取mObject指向的本地对象
+
+    status_t err = target-&gt;transact(code, *data, reply, flags);// 调用本地代码的transact
+
+    if (err == NO_ERROR) {
+        return JNI_TRUE;
+    } else if (err == UNKNOWN_TRANSACTION) {
+        return JNI_FALSE;
+    }
+
+    signalExceptionForError(env, obj, err, true /*canThrowRemoteException*/, data-&gt;dataSize());
+    return JNI_FALSE;
+}
+......
+
+static const JNINativeMethod gBinderProxyMethods[] = {
+     /* name, signature, funcPtr */
+    {&quot;pingBinder&quot;,          &quot;()Z&quot;, (void*)android_os_BinderProxy_pingBinder},
+    {&quot;isBinderAlive&quot;,       &quot;()Z&quot;, (void*)android_os_BinderProxy_isBinderAlive},
+    {&quot;getInterfaceDescriptor&quot;, &quot;()Ljava/lang/String;&quot;, (void*)android_os_BinderProxy_getInterfaceDescriptor},
+    {&quot;transactNative&quot;,      &quot;(ILandroid/os/Parcel;Landroid/os/Parcel;I)Z&quot;, (void*)android_os_BinderProxy_transact},
+    {&quot;linkToDeath&quot;,         &quot;(Landroid/os/IBinder$DeathRecipient;I)V&quot;, (void*)android_os_BinderProxy_linkToDeath},
+    {&quot;unlinkToDeath&quot;,       &quot;(Landroid/os/IBinder$DeathRecipient;I)Z&quot;, (void*)android_os_BinderProxy_unlinkToDeath},
+    {&quot;destroy&quot;,             &quot;()V&quot;, (void*)android_os_BinderProxy_destroy},
+};
+......
+
+</code></pre><p>其中, <code>gBinderProxyOffsets.mObject</code>是在Java层调用<code>IBinder.getContextObject()</code>时, 在<code>javaObjectForIBinder</code>函数中设置的:  </p>
+<pre><code>// in file frameworks/base/core/jni/android_util_Binder.cpp
+......
+
+static jobject android_os_BinderInternal_getContextObject(JNIEnv* env, jobject clazz)
+{
+    sp&lt;IBinder&gt; b = ProcessState::self()-&gt;getContextObject(NULL);
+    return javaObjectForIBinder(env, b);
+}
+
+jobject javaObjectForIBinder(JNIEnv* env, const sp&lt;IBinder&gt;&amp; val)
+{
+    ...
+    LOGDEATH(&quot;objectForBinder %p: created new proxy %p !\n&quot;, val.get(), object);
+    // The proxy holds a reference to the native object.
+    env-&gt;SetLongField(object, gBinderProxyOffsets.mObject, (jlong)val.get());// 设置本地IBinder对象, 令mObject指向它
+    val-&gt;incStrong((void*)javaObjectForIBinder);
+    ...
+}
+
+.....
+########################################################################
+
+// in file frameworks/native/libs/binder/ProcessState.cpp
+......
+
+sp&lt;IBinder&gt; ProcessState::getContextObject(const sp&lt;IBinder&gt;&amp; /*caller*/)
+{
+    return getStrongProxyForHandle(0);
+}
+
+sp&lt;IBinder&gt; ProcessState::getStrongProxyForHandle(int32_t handle)
+{
+    sp&lt;IBinder&gt; result;
+    ...
+    b = new BpBinder(handle);
+    result = b;
+    ...
+    return result;
+}
+</code></pre><p>可见, <code>android_os_BinderProxy_transact()</code>函数实际上调用的是 <code>BpBinder::transact()</code> 函数.  </p>
+<h4 id="jni中的target-gt-transact调用进到BpBinder-再进到IPCThreadState"><a href="#jni中的target-gt-transact调用进到BpBinder-再进到IPCThreadState" class="headerlink" title="jni中的target-&gt;transact调用进到BpBinder, 再进到IPCThreadState"></a>jni中的target-&gt;transact调用进到BpBinder, 再进到IPCThreadState</h4><p>来看看<code>BpBinder::transact()</code>, 它位于<code>frameworks/native/libs/binder/BpBinder.cpp</code>:  </p>
+<pre><code>status_t BpBinder::transact(
+    uint32_t code, const Parcel&amp; data, Parcel* reply, uint32_t flags)
+{
+    // Once a binder has died, it will never come back to life.
+    if (mAlive) {
+        status_t status = IPCThreadState::self()-&gt;transact(
+            mHandle, code, data, reply, flags);// 调用IPCThreadState::self()-&gt;transact
+        if (status == DEAD_OBJECT) mAlive = 0;
+        return status;
+    }
+
+    return DEAD_OBJECT;
+}
+</code></pre><p><code>IPCThreadState</code>中是这么写的:  </p>
+<pre><code>status_t IPCThreadState::transact(int32_t handle,
+                                  uint32_t code, const Parcel&amp; data,
+                                  Parcel* reply, uint32_t flags)
+{
+    status_t err = data.errorCheck();
+
+    flags |= TF_ACCEPT_FDS;
+
+    if (err == NO_ERROR) {
+        LOG_ONEWAY(&quot;&gt;&gt;&gt;&gt; SEND from pid %d uid %d %s&quot;, getpid(), getuid(),
+            (flags &amp; TF_ONE_WAY) == 0 ? &quot;READ REPLY&quot; : &quot;ONE WAY&quot;);
+        err = writeTransactionData(BC_TRANSACTION, flags, handle, code, data, NULL);
+    }
+
+    if ((flags &amp; TF_ONE_WAY) == 0) {
+        if (reply) {
+            err = waitForResponse(reply);
+        } else {
+            Parcel fakeReply;
+            err = waitForResponse(&amp;fakeReply);
+        }
+    } else {
+        err = waitForResponse(NULL, NULL);
+    }
+
+    return err;
+}
+
+status_t IPCThreadState::writeTransactionData(int32_t cmd, uint32_t binderFlags,
+    int32_t handle, uint32_t code, const Parcel&amp; data, status_t* statusBuffer)
+{
+    binder_transaction_data tr;
+
+    tr.target.ptr = 0; /* Don&apos;t pass uninitialized stack data to a remote process */
+    tr.target.handle = handle;
+    tr.code = code;
+    ...
+
+    mOut.writeInt32(cmd);
+    mOut.write(&amp;tr, sizeof(tr));
+
+    return NO_ERROR;
+}
+</code></pre><p>由函数内容可以看出, 数据再一次通过 <code>writeTransactionData()</code> 传递给 <code>mOut</code> 进行写入操作. <code>mOut</code> 是一个 <code>Parcel</code> 对象, 声明在 <code>IPCThreadState.h</code> 文件中. 之后则调用 <code>waitForResponse()</code> 函数.</p>
+<h4 id="IPCThreadState-waitForResponse-在一个-while-循环里不断的调用-talkWithDriver-并检查是否有数据返回"><a href="#IPCThreadState-waitForResponse-在一个-while-循环里不断的调用-talkWithDriver-并检查是否有数据返回" class="headerlink" title="IPCThreadState::waitForResponse() 在一个 while 循环里不断的调用 talkWithDriver() 并检查是否有数据返回"></a>IPCThreadState::waitForResponse() 在一个 while 循环里不断的调用 talkWithDriver() 并检查是否有数据返回</h4><!-- 此处插代码 -->  
+<pre><code>// in file frameworks/base/libs/binder/IPCThreadState.cpp
+......
+
+status_t IPCThreadState::waitForResponse(Parcel *reply, status_t *acquireResult)
+{
+    int32_t cmd;
+    int32_t err;
+
+    while (1) { // 永真循环
+        if ((err=talkWithDriver()) &lt; NO_ERROR) break; // 调用talkWithDriver, 当返回负时退出循环
+        err = mIn.errorCheck();
+        if (err &lt; NO_ERROR) break;
+        if (mIn.dataAvail() == 0) continue;
+
+        cmd = mIn.readInt32(); // 读取命令
+
+        IF_LOG_COMMANDS() {
+            alog &lt;&lt; &quot;Processing waitForResponse Command: &quot;
+                &lt;&lt; getReturnString(cmd) &lt;&lt; endl;
+        }
+
+        switch (cmd) {
+        case BR_TRANSACTION_COMPLETE:
+            if (!reply &amp;&amp; !acquireResult) goto finish;
+            break;
+
+        case BR_DEAD_REPLY:
+            err = DEAD_OBJECT;
+            goto finish;
+
+        case BR_FAILED_REPLY:
+            err = FAILED_TRANSACTION;
+            goto finish;
+
+        case BR_ACQUIRE_RESULT:
+            {
+                LOG_ASSERT(acquireResult != NULL, &quot;Unexpected brACQUIRE_RESULT&quot;);
+                const int32_t result = mIn.readInt32();
+                if (!acquireResult) continue;
+                *acquireResult = result ? NO_ERROR : INVALID_OPERATION;
+            }
+            goto finish;
+
+        case BR_REPLY:
+            {
+                binder_transaction_data tr;
+                err = mIn.read(&amp;tr, sizeof(tr));// 读取远端返回的数据
+                LOG_ASSERT(err == NO_ERROR, &quot;Not enough command data for brREPLY&quot;);
+                if (err != NO_ERROR) goto finish;
+
+                if (reply) {
+                    if ((tr.flags &amp; TF_STATUS_CODE) == 0) {
+                        reply-&gt;ipcSetDataReference(
+                            reinterpret_cast&lt;const uint8_t*&gt;(tr.data.ptr.buffer),
+                            tr.data_size,
+                            reinterpret_cast&lt;const size_t*&gt;(tr.data.ptr.offsets),
+                            tr.offsets_size/sizeof(size_t),
+                            freeBuffer, this);
+                    } else {
+                        err = *static_cast&lt;const status_t*&gt;(tr.data.ptr.buffer);
+                        freeBuffer(NULL,
+                            reinterpret_cast&lt;const uint8_t*&gt;(tr.data.ptr.buffer),
+                            tr.data_size,
+                            reinterpret_cast&lt;const size_t*&gt;(tr.data.ptr.offsets),
+                            tr.offsets_size/sizeof(size_t), this);
+                    }
+                } else {
+                    freeBuffer(NULL,
+                        reinterpret_cast&lt;const uint8_t*&gt;(tr.data.ptr.buffer),
+                        tr.data_size,
+                        reinterpret_cast&lt;const size_t*&gt;(tr.data.ptr.offsets),
+                        tr.offsets_size/sizeof(size_t), this);
+                    continue;
+                }
+            }
+            goto finish;
+
+        default:
+            err = executeCommand(cmd); // 处理其他命令, 例如NO_ERROR
+            if (err != NO_ERROR) goto finish;
+            break;
+        }
+    }
+
+finish:
+    if (err != NO_ERROR) {
+        if (acquireResult) *acquireResult = err;
+        if (reply) reply-&gt;setError(err);
+        mLastError = err;
+    }
+
+    return err;
+}
+......
+</code></pre><p><div id="talkWithDriver"></div></p>
+<h4 id="IPCThreadState-talkWithDriver-函数是真正与-binder-驱动交互的实现"><a href="#IPCThreadState-talkWithDriver-函数是真正与-binder-驱动交互的实现" class="headerlink" title="IPCThreadState::talkWithDriver() 函数是真正与 binder 驱动交互的实现"></a>IPCThreadState::talkWithDriver() 函数是真正与 binder 驱动交互的实现</h4><!-- 此处插代码 -->  
+<pre><code>......
+
+status_t IPCThreadState::talkWithDriver(bool doReceive)
+{
+    LOG_ASSERT(mProcess-&gt;mDriverFD &gt;= 0, &quot;Binder driver is not opened&quot;);
+
+    binder_write_read bwr;
+
+    // Is the read buffer empty?
+    const bool needRead = mIn.dataPosition() &gt;= mIn.dataSize();
+
+    // We don&apos;t want to write anything if we are still reading
+    // from data left in the input buffer and the caller
+    // has requested to read the next data.
+    const size_t outAvail = (!doReceive || needRead) ? mOut.dataSize() : 0;
+
+    // 写入数据
+    bwr.write_size = outAvail;
+    bwr.write_buffer = (long unsigned int)mOut.data();
+
+    // This is what we&apos;ll read.
+    // 读取数据
+    if (doReceive &amp;&amp; needRead) {
+        bwr.read_size = mIn.dataCapacity();
+        bwr.read_buffer = (long unsigned int)mIn.data();
+    } else {
+        bwr.read_size = 0;
+    }
+
+    IF_LOG_COMMANDS() {
+        TextOutput::Bundle _b(alog);
+        if (outAvail != 0) {
+            alog &lt;&lt; &quot;Sending commands to driver: &quot; &lt;&lt; indent;
+            const void* cmds = (const void*)bwr.write_buffer;
+            const void* end = ((const uint8_t*)cmds)+bwr.write_size;
+            alog &lt;&lt; HexDump(cmds, bwr.write_size) &lt;&lt; endl;
+            while (cmds &lt; end) cmds = printCommand(alog, cmds);
+            alog &lt;&lt; dedent;
+        }
+        alog &lt;&lt; &quot;Size of receive buffer: &quot; &lt;&lt; bwr.read_size
+            &lt;&lt; &quot;, needRead: &quot; &lt;&lt; needRead &lt;&lt; &quot;, doReceive: &quot; &lt;&lt; doReceive &lt;&lt; endl;
+    }
+
+    // Return immediately if there is nothing to do.
+    if ((bwr.write_size == 0) &amp;&amp; (bwr.read_size == 0)) return NO_ERROR;
+
+    bwr.write_consumed = 0;
+    bwr.read_consumed = 0;
+    status_t err;
+    do {
+        IF_LOG_COMMANDS() {
+            alog &lt;&lt; &quot;About to read/write, write size = &quot; &lt;&lt; mOut.dataSize() &lt;&lt; endl;
+        }
+#if defined(HAVE_ANDROID_OS)
+        // 使用系统调用 ioctl 向 /dev/binder 发送 BINDER_WRITE_READ 命令
+        // 该过程在下一节详述
+        if (ioctl(mProcess-&gt;mDriverFD, BINDER_WRITE_READ, &amp;bwr) &gt;= 0)
+            err = NO_ERROR;
+        else
+            err = -errno;
+#else
+        err = INVALID_OPERATION;
+#endif
+        IF_LOG_COMMANDS() {
+            alog &lt;&lt; &quot;Finished read/write, write size = &quot; &lt;&lt; mOut.dataSize() &lt;&lt; endl;
+        }
+    } while (err == -EINTR);
+
+    IF_LOG_COMMANDS() {
+        alog &lt;&lt; &quot;Our err: &quot; &lt;&lt; (void*)err &lt;&lt; &quot;, write consumed: &quot;
+            &lt;&lt; bwr.write_consumed &lt;&lt; &quot; (of &quot; &lt;&lt; mOut.dataSize()
+            &lt;&lt; &quot;), read consumed: &quot; &lt;&lt; bwr.read_consumed &lt;&lt; endl;
+    }
+
+    if (err &gt;= NO_ERROR) {
+        if (bwr.write_consumed &gt; 0) {
+            if (bwr.write_consumed &lt; (ssize_t)mOut.dataSize())
+                mOut.remove(0, bwr.write_consumed);
+            else
+                mOut.setDataSize(0);
+        }
+        if (bwr.read_consumed &gt; 0) {
+            mIn.setDataSize(bwr.read_consumed);
+            mIn.setDataPosition(0);
+        }
+        IF_LOG_COMMANDS() {
+            TextOutput::Bundle _b(alog);
+            alog &lt;&lt; &quot;Remaining data size: &quot; &lt;&lt; mOut.dataSize() &lt;&lt; endl;
+            alog &lt;&lt; &quot;Received commands from driver: &quot; &lt;&lt; indent;
+            const void* cmds = mIn.data();
+            const void* end = mIn.data() + mIn.dataSize();
+            alog &lt;&lt; HexDump(cmds, mIn.dataSize()) &lt;&lt; endl;
+            while (cmds &lt; end) cmds = printReturnCommand(alog, cmds);
+            alog &lt;&lt; dedent;
+        }
+        return NO_ERROR;
+    }
+
+    return err;
+}
+......
+
+</code></pre><p><code>ioctl(mProcess-&gt;mDriverFD, BINDER_WRITE_READ, &amp;bwr)</code> 就是使用系统调用函数 <code>ioctl</code> 向 <code>binder</code> 设备文件 <code>/dev/binder</code> 发送 <code>BINDER_WRITE_READ</code> 命令.<br>回到上一步<code>waitForResponse</code>, 获取到<code>talkWithDriver</code>返回的命令<code>cmd</code>后默认执行<code>executeCommand(cmd)</code>, 来处理返回命令  </p>
+<h4 id="IPCThreadState-executeCommand-int32-t-cmd-处理返回命令"><a href="#IPCThreadState-executeCommand-int32-t-cmd-处理返回命令" class="headerlink" title="IPCThreadState::executeCommand(int32_t cmd) 处理返回命令"></a>IPCThreadState::executeCommand(int32_t cmd) 处理返回命令</h4><p>除了在switch case中处理的命令以外, 其他的命令都通过调用<code>executeCommand</code>来处理, 它的实现如下:<br><!-- 此处插代码 -->  </p>
+<pre><code>......
+
+status_t IPCThreadState::executeCommand(int32_t cmd)
+{
+    BBinder* obj;
+    RefBase::weakref_type* refs;
+    status_t result = NO_ERROR;
+
+    switch (cmd) {
+    // switch能处理的命令很多, 我们省略掉其他命令, 重点看正常数据处理
+    ...
+    case BR_TRANSACTION:
+        {
+            binder_transaction_data tr;
+            result = mIn.read(&amp;tr, sizeof(tr));
+            LOG_ASSERT(result == NO_ERROR,
+                &quot;Not enough command data for brTRANSACTION&quot;);
+            if (result != NO_ERROR) break;
+
+            Parcel buffer;
+            buffer.ipcSetDataReference(
+                reinterpret_cast&lt;const uint8_t*&gt;(tr.data.ptr.buffer),
+                tr.data_size,
+                reinterpret_cast&lt;const size_t*&gt;(tr.data.ptr.offsets),
+                tr.offsets_size/sizeof(size_t), freeBuffer, this);
+
+            // 判断和设置优先级
+            ...
+
+            Parcel reply;
+            if (tr.target.ptr) {
+                sp&lt;BBinder&gt; b((BBinder*)tr.cookie);
+                const status_t error = b-&gt;transact(tr.code, buffer, &amp;reply, tr.flags);// 实际执行的是 BBinder.transact() !
+                if (error &lt; NO_ERROR) reply.setError(error);
+
+            } else {
+                const status_t error = the_context_object-&gt;transact(tr.code, buffer, &amp;reply, tr.flags);
+                if (error &lt; NO_ERROR) reply.setError(error);
+            }
+
+            if ((tr.flags &amp; TF_ONE_WAY) == 0) {
+                LOG_ONEWAY(&quot;Sending reply to %d!&quot;, mCallingPid);
+                sendReply(reply, 0);
+            } else {
+                LOG_ONEWAY(&quot;NOT sending reply to %d!&quot;, mCallingPid);
+            }
+            ...
+        }
+        break;
+    ...
+    return result;
+}
+......
+</code></pre><p>可见它调用了<code>BBinder::transact()</code>来处理数据, 该函数定义如下:  </p>
+<pre><code>// in file frameworks/base/libs/binder/Binder.cpp
+status_t BBinder::transact(
+    uint32_t code, const Parcel&amp; data, Parcel* reply, uint32_t flags)
+{
+    data.setDataPosition(0);
+
+    status_t err = NO_ERROR;
+    switch (code) {
+        case PING_TRANSACTION:
+            reply-&gt;writeInt32(pingBinder());
+            break;
+        default:
+            err = onTransact(code, data, reply, flags);// 调用onTransact
+            break;
+    }
+
+    if (reply != NULL) {
+        reply-&gt;setDataPosition(0);
+    }
+
+    return err;
+}
+</code></pre><p>在此处<code>b-&gt;transact</code>调用时, <code>b</code>是一个<code>JavaBBinder</code>实例, <code>JavaBBinder</code>继承了<code>BBinder</code>类, 重写了<code>onTransact</code>, 所以这里实际调用的是<code>JavaBBinder.onTransact</code>, 定义见<code>frameworks/base/core/jni/android_util_Binder.cpp</code>:  </p>
+<pre><code>virtual status_t onTransact(
+    uint32_t code, const Parcel&amp; data, Parcel* reply, uint32_t flags = 0)
+{
+    JNIEnv* env = javavm_to_jnienv(mVM);
+    ...
+    jboolean res = env-&gt;CallBooleanMethod(mObject, gBinderOffsets.mExecTransact,
+        code, (int32_t)&amp;data, (int32_t)reply, flags);// 调用gBinderOffsets.mExecTransact
+    ...
+    return res != JNI_FALSE ? NO_ERROR : UNKNOWN_TRANSACTION;
+}
+
+
+static int int_register_android_os_Binder(JNIEnv* env)
+{
+    jclass clazz;
+
+    clazz = env-&gt;FindClass(kBinderPathName);
+    LOG_FATAL_IF(clazz == NULL, &quot;Unable to find class android.os.Binder&quot;);
+    ...
+    gBinderOffsets.mExecTransact
+        = env-&gt;GetMethodID(clazz, &quot;execTransact&quot;, &quot;(IIII)Z&quot;);
+    ...
+    return AndroidRuntime::registerNativeMethods(
+        env, kBinderPathName,
+        gBinderMethods, NELEM(gBinderMethods));
+}
+</code></pre><p>由上可见, <code>JavaBBinder</code>通过JNI的<code>gBinderOffsets.mExecTransact</code>调用java方法<code>android.os.Binder.execTransact</code>. 执行的实际上是<code>android.os.Binder.onTransact</code>. 它的实现如下:  </p>
+<pre><code>// in file frameworks/base/core/java/android/os/Binder.java
+
+// Entry point from android_util_Binder.cpp&apos;s onTransact
+private boolean execTransact(int code, int dataObj, int replyObj,
+        int flags) {
+    Parcel data = Parcel.obtain(dataObj);
+    Parcel reply = Parcel.obtain(replyObj);
+    // theoretically, we should call transact, which will call onTransact,
+    // but all that does is rewind it, and we just got these from an IPC,
+    // so we&apos;ll just call it directly.
+    boolean res;
+    try {
+        res = onTransact(code, data, reply, flags);
+    }
+    // catch clauses
+    ...
+    reply.recycle();
+    data.recycle();
+    return res;
+}
+
+protected boolean onTransact(int code, Parcel data, Parcel reply,
+       int flags) throws RemoteException {
+   if (code == INTERFACE_TRANSACTION) {
+       reply.writeString(getInterfaceDescriptor());
+       return true;
+   } else if (code == DUMP_TRANSACTION) {
+       ParcelFileDescriptor fd = data.readFileDescriptor();
+       String[] args = data.readStringArray();
+       if (fd != null) {
+           try {
+               dump(fd.getFileDescriptor(), args);
+           } finally {
+               try {
+                   fd.close();
+               } catch (IOException e) {
+                   // swallowed, not propagated back to the caller
+               }
+           }
+       }
+       // Write the StrictMode header.
+       if (reply != null) {
+           reply.writeNoException();
+       } else {
+           StrictMode.clearGatheredViolations();
+       }
+       return true;
+   }
+   return false;
+}
+</code></pre><p>由此可见, 经过Binder驱动之后, 最终会在服务端进程的<code>android.os.Binder.onTransact</code>处理命令和数据. 而我们在服务端的<code>IYourService.Stub</code>中, 重写了<code>onTransact</code>来调用服务接口的服务端实现(大多数情况下, 这个重写是aidl工具帮你完成的). 至此, Binder驱动下的IPC通讯过程已全部明了(除了中间处理进程状态的过程以及打开Binder设备文件进行数据读写的过程以外).  </p>
+<p>一句话总结就是: 客户端发送<code>BC_TRANSACTION</code>命令到Binder驱动-&gt;服务端进程监听<code>BR_TRANSACTION</code>命令并处理;如果是服务端返回数据, 过程类似, 但发送的命令是<code>BC_REPLY</code>命令-&gt;客户端监听<code>BR_REPLY</code>命令  </p>
+<h4 id="Binder设备驱动实现"><a href="#Binder设备驱动实现" class="headerlink" title="Binder设备驱动实现"></a>Binder设备驱动实现</h4><p>在<a href="#talkWithDriver">上一节中</a>, 我们只简单提了一下<code>ioctl</code>系统调用是对<code>/dev/binder</code>设备文件进行读写操作, 这一节详述该过程.  </p>
+<p>首先, <code>ioctl</code>第一个参数<code>mProcess-&gt;mDriverFD</code>是Binder驱动的文件描述符(File Descriptor), 它是在<code>ProcessState</code>初始化时由函数<code>open_driver()</code>初始化的, <code>open_driver</code>代码如下:  </p>
+<pre><code>// in file frameworks/base/libs/binder/ProcessState.cpp
+static int open_driver()
+{
+    int fd = open(&quot;/dev/binder&quot;, O_RDWR);
+    if (fd &gt;= 0) {
+        fcntl(fd, F_SETFD, FD_CLOEXEC);
+        int vers;
+        // 获取驱动版本
+        status_t result = ioctl(fd, BINDER_VERSION, &amp;vers);
+        if (result == -1) {
+            LOGE(&quot;Binder ioctl to obtain version failed: %s&quot;, strerror(errno));
+            close(fd);
+            fd = -1;
+        }
+        // 检查驱动版本是否一致
+        if (result != 0 || vers != BINDER_CURRENT_PROTOCOL_VERSION) {
+            LOGE(&quot;Binder driver protocol does not match user space protocol!&quot;);
+            close(fd);
+            fd = -1;
+        }
+        // 设置最多15个线程
+        size_t maxThreads = 15;
+        result = ioctl(fd, BINDER_SET_MAX_THREADS, &amp;maxThreads);
+        if (result == -1) {
+            LOGE(&quot;Binder ioctl to set max threads failed: %s&quot;, strerror(errno));
+        }
+    } else {
+        LOGW(&quot;Opening &apos;/dev/binder&apos; failed: %s\n&quot;, strerror(errno));
+    }
+    return fd;
+}
+</code></pre><p>初始化后文件描述符保存在<code>mDriverFD</code>中, 以后通过它就可以和设备文件交互.  </p>
+<p>其次, 在经过<code>ioctl(mProcess-&gt;mDriverFD, BINDER_WRITE_READ, &amp;bwr)</code>调用后, 对设备驱动文件的读写操作就被完全封装在了结构体<code>binder_write_read</code>中. 具体的读写过程见<a href="#talkWithDriver">talkWithDriver的实现代码</a>及我的注释.<br>可见, 真正的数据读写都是通过<code>/dev/binder</code>来执行的, 其上封了命令<code>BINDER_WRITE_READ</code>用一个数据结构<code>binder_write_read</code>来存储读取和写入的数据, 再上封了<code>transact</code>处理不同逻辑概念下的事务. 再上通过<code>BBinder</code>接口联系到JNI代码和Java代码.  </p>
+<p>最后, 让我们看看<code>/dev/binder</code>这个驱动程序的实现. 它是Binder的最终实现.<br>在看驱动代码前, 我们需要了解一些背景知识. 作为一个特殊的字符型设备, Binder的挂载节点是<code>/dev/binder</code>, 遵循Linux设备驱动模型, 在驱动实现过程中主要通过<code>binder_ioctl</code>函数与用户空间的进程交换数据. Android中的Service都是通过它来完成IPC的, 具体来说, 在Android虚拟机启动前, 系统会先启动<code>ServiceManager</code>进程, 它负责打开Binder驱动程序, 并告诉驱动程序自己将作为系统服务的管理者(通过特殊命令<code>BINDER_SET_CONTEXT_MGR</code>, 此后<code>ServiceManager</code>也通过Binder驱动与其他进程进行通讯), 然后<code>ServiceManager</code>进入循环, 等待处理来自其他进程的数据.<br>在Android系统中共有三种IPC机制:  </p>
+<ul>
+<li>标准Linux Kernel IPC 接口  </li>
+<li>标准D-BUS 接口  </li>
+<li>Binder接口  </li>
+</ul>
+<p>由于我没有了解过其他两种方式, 所以这里我就不评价孰优孰劣了, 在Android系统中大部分程序都使用了Binder接口. Binder是OpenBinder的精简实现, 包含一个Binder驱动程序, 一个Binder服务器, 一个Binder客户端.  </p>
+<p>清楚了以上背景之后, 让我们看一下Binder驱动程序的实现. Android中Binder协议的定义在头文件<code>binder.h</code>中, 不同版本源码的路径不太一样, 4.0的路径在<code>external/kernel-headers/original/linux/binder.h</code>, 定义了五种Binder类型(<code>bhd</code>分别表示<code>binder</code> <code>handle</code> <code>FD</code>三个大类):  </p>
+<pre><code>enum {
+    BINDER_TYPE_BINDER    = B_PACK_CHARS(&apos;s&apos;, &apos;b&apos;, &apos;*&apos;, B_TYPE_LARGE),
+    BINDER_TYPE_WEAK_BINDER    = B_PACK_CHARS(&apos;w&apos;, &apos;b&apos;, &apos;*&apos;, B_TYPE_LARGE),
+    BINDER_TYPE_HANDLE    = B_PACK_CHARS(&apos;s&apos;, &apos;h&apos;, &apos;*&apos;, B_TYPE_LARGE),
+    BINDER_TYPE_WEAK_HANDLE    = B_PACK_CHARS(&apos;w&apos;, &apos;h&apos;, &apos;*&apos;, B_TYPE_LARGE),
+    BINDER_TYPE_FD        = B_PACK_CHARS(&apos;f&apos;, &apos;d&apos;, &apos;*&apos;, B_TYPE_LARGE),
+};
+</code></pre><p>同样是在这个头文件中, 定义了用于进程间传输的数据结构, 称作Binder Object, 它是一个<code>flat_binder_object</code>结构体, 定义如下(为方便理解我把注释也放上来了):  </p>
+<pre><code>/*
+ * This is the flattened representation of a Binder object for transfer
+ * between processes.  The &apos;offsets&apos; supplied as part of a binder transaction
+ * contains offsets into the data where these structures occur.  The Binder
+ * driver takes care of re-writing the structure type and data as it moves
+ * between processes.
+ */
+struct flat_binder_object {
+    /* 8 bytes for large_flat_header. */
+    unsigned long        type;// Binder对象类型, 即前面Binder协议中五种类型的一种
+    unsigned long        flags;// 传输方式, 见下面transaction_flags
+
+    /* 8 bytes of data. */
+    union {
+        void        *binder;    /* local object */
+        signed long    handle;        /* remote object */
+    };
+
+    /* extra data associated with local object */
+    void            *cookie;
+};
+
+...
+enum transaction_flags {
+    TF_ONE_WAY    = 0x01,    /* this is a one-way call: async, no return */
+    TF_ROOT_OBJECT    = 0x04,    /* contents are the component&apos;s root object */
+    TF_STATUS_CODE    = 0x08,    /* contents are a 32-bit status code */
+    TF_ACCEPT_FDS    = 0x10,    /* allow replies with file descriptors */
+};
+</code></pre><p>从注释可以知道, <code>flat_binder_object</code>中的union结构存的就是要传输的数据, 当类型为<code>Binder</code>时, 数据是一个本地对象<code>*binder</code>, 当类型为<code>Handle</code>时, 数据是一个远程对象<code>handle</code>. Binder对象在进程间传递时, Binder驱动会修改它的类型和数据.<br>正如Binder的客户端和服务端是相对而言的一样, 这里的本地Binder和远程Handle对象也是相对而言的, 其实他们都指向同一个对象, 所以他们共用一个union空间, 只不过A的本地对象binder对于另一进程B来说就是远程对象handle.  </p>
+<p>虽然<code>flat_binder_object</code>是要传输的Binder对象, 但实际上Binder驱动并不直接操作它, 而是将它封装成了一个<code>binder_transaction_data</code>, 操作的直接对象是这个封装的数据. 该封装的定义如下:  </p>
+<pre><code>struct binder_transaction_data {
+    /* The first two are only used for bcTRANSACTION and brTRANSACTION,
+     * identifying the target and contents of the transaction.
+     */
+    union {
+        size_t    handle;    /* target descriptor of command transaction */
+        void    *ptr;    /* target descriptor of return transaction */
+    } target;
+    void        *cookie;    /* target object cookie */
+    unsigned int    code;        /* transaction command */
+
+    /* General information about the transaction. */
+    unsigned int    flags;
+    pid_t        sender_pid;
+    uid_t        sender_euid;
+    size_t        data_size;    /* number of bytes of data */
+    size_t        offsets_size;    /* number of bytes of offsets */
+
+    /* If this transaction is inline, the data immediately
+     * follows here; otherwise, it ends with a pointer to
+     * the data buffer.
+     */
+    union {
+        struct {
+            /* transaction data */
+            const void    *buffer;// flat_binder_object被封装在*buffer中
+            /* offsets from buffer to flat_binder_object structs */
+            const void    *offsets;
+        } ptr;
+        uint8_t    buf[8];
+    } data;
+};
+</code></pre><p><hr><br>了解了真正传输的数据结构之后, 让我们来深入Binder生命周期. 以下内容涉及到: Binder设备创建, Binder启动, Binder释放,  Binder数据关联, Binder接口及命令含义. 我尽量从我自己追踪代码的习惯来讲解, 这样虽然效率比较低但是好处是更容易理解和回忆. 以下内容与源码实现紧密关联, 再次声明, 本文基于<code>Android4.0</code>源码写就, 不适用于其他版本.  </p>
+<ol>
+<li><p>Binder设备创建<br> 作为一个特殊的符号设备, Binder设备也是需要进行创建的. 可以合理猜测系统有一个统一的创建驱动设备的过程, Binder作为其中一个设备一起被创建(如果不对, 就追踪调用栈, 看哪里引用了<code>frameworks/base/cmds/servicemanager/binder.c</code>, 特别是调用了里面的<code>binder_open</code>). 在这种猜测下, 我们来找一下符号设备的创建(我假设你跟我一样不知道Android下启动过程是否跟Linux一样). 到源码目录搜索<code>/dev/binder</code>, 除了前面提到的<code>ProcessState.open_driver</code>以外, 在以下三个文件中还出现了<code>/dev/binder</code>: <code>frameworks/base/cmds/servicemanager/binder.c</code>, <code>system/core/rootdir/ueventd.rc</code>, <code>system/extras/tests/fstest/perm_checker.conf</code>. 好像没有看出哪个是创建binder设备? 别急, 如果你看过老罗的&lt;<a href="http://blog.csdn.net/luoshengyang/article/details/6568411" target="_blank" rel="noopener">在Ubuntu上为Android系统编写Linux内核驱动程序</a>&gt;一文, 就可能猜测, 在文件<code>frameworks/base/cmds/servicemanager/binder.c</code>中, 有完整的<code>binder_open</code> <code>binder_release</code> <code>binder_write</code>实现, 正好这三个操作是实现Linux设备驱动时需要定义的基本操作的一部分, 这意味着该文件很可能就是Binder设备驱动文件. 我们假设它的确是, 那么应该有设备注册和初始化操作(模块加载, 卸载方法), 但很遗憾搜索之后发现没有. 难道Binder设备不用注册吗? 不是的, 进一步在整个源码范围搜索binder注册函数<code>binder_init</code>, 发现它匹配到了<code>prebuilt/android-arm/kernel/vmlinux-qemu</code>, 而这个我们知道是预编译好的Linux内核, 看来应该是在Linux内核源码里实现的设备注册, 遗憾的是直接下载Android源码的话是不带内核源码的, 我只好去下载了对应的内核源码(4.0系统对应3.0内核, 2.2系统对应2.6内核, 4.2~4.3系统对应3.4内核). 本文不讲怎么下载Android内核代码, 直接给出相关代码片段:  </p>
+<pre><code>// in file kernel/goldfish/drivers/staging/android/binder.c
+
+// 定义文件操作函数
+static const struct file_operations binder_fops = {
+    .owner = THIS_MODULE,
+    .poll = binder_poll,
+    .unlocked_ioctl = binder_ioctl,
+    .mmap = binder_mmap,
+    .open = binder_open,
+    .flush = binder_flush,
+    .release = binder_release,
+};
+
+static struct workqueue_struct *binder_deferred_workqueue;
+
+// 初始化函数
+static int __init binder_init(void)
+{
+    int ret;
+
+    // 创建了一个内核工作队列对象workqueue, 用于执行可以延期执行的工作任务
+    binder_deferred_workqueue = create_singlethread_workqueue(&quot;binder&quot;);
+    if (!binder_deferred_workqueue)
+        return -ENOMEM;
+
+    // 创建调试目录 /sys/kernel/debug/binder
+    binder_debugfs_dir_entry_root = debugfs_create_dir(&quot;binder&quot;, NULL);
+    if (binder_debugfs_dir_entry_root)
+        binder_debugfs_dir_entry_proc = debugfs_create_dir(&quot;proc&quot;,
+                         binder_debugfs_dir_entry_root);
+    // 注册字符设备
+    ret = misc_register(&amp;binder_miscdev);
+    // 创建调试文件
+    if (binder_debugfs_dir_entry_root) {
+        debugfs_create_file(&quot;state&quot;,
+                    S_IRUGO,
+                    binder_debugfs_dir_entry_root,
+                    NULL,
+                    &amp;binder_state_fops);
+                    ...
+    }
+    return ret;
+}
+
+// 调用初始化函数加载内核, 基本等价于不支持动态编译驱动模块的module_init, 如果需要把Binder改成动态的内核模块, 直接把这个device_initcall改成module_init, 同时添加驱动卸载接口函数 module_exit即可
+device_initcall(binder_init);
+</code></pre><p>可见在系统装载设备的时候, 就加载了Binder设备模块, 并绑定了设备操作对应的函数.  </p>
+<p>好奇心重一点的读者可能会去自行发掘Linux设备模块怎么编写. Linux驱动程序的一个主要功能就是向用户空间的程序提供操作接口, 这个接口是标准的, Binder包含的接口有:  </p>
+<pre><code>-Proc接口（/proc/binder）
+    . /proc/binder/state
+    . /proc/binder/stats
+    . /proc/binder/transactions
+    . /proc/binder/transaction_log
+    . /proc/binder/failed_transaction_log
+    . /proc/binder/proc/
+
+-设备接口（/dev/binder）
+    . binder_open
+    . binder_release
+    . binder_flush
+    . binder_mmap
+    . binder_poll
+    . binder_ioctl
+</code></pre></li>
+<li><p>Binder启动<br> 在<code>frameworks/base/cmds/servicemanager/binder.c</code>中定义了binder设备打开的函数<code>binder_open</code>:  </p>
+<pre><code>struct binder_state *binder_open(unsigned mapsize)
+{
+    struct binder_state *bs;
+
+    bs = malloc(sizeof(*bs));
+    if (!bs) {
+        errno = ENOMEM;
+        return 0;
+    }
+
+    bs-&gt;fd = open(&quot;/dev/binder&quot;, O_RDWR);
+    if (bs-&gt;fd &lt; 0) {
+        fprintf(stderr,&quot;binder: cannot open device (%s)\n&quot;,
+                strerror(errno));
+        goto fail_open;
+    }
+
+    bs-&gt;mapsize = mapsize;
+    bs-&gt;mapped = mmap(NULL, mapsize, PROT_READ, MAP_PRIVATE, bs-&gt;fd, 0);
+    if (bs-&gt;mapped == MAP_FAILED) {
+        fprintf(stderr,&quot;binder: cannot map device (%s)\n&quot;,
+                strerror(errno));
+        goto fail_map;
+    }
+
+        /* TODO: check version */
+
+    return bs;
+
+fail_map:
+    close(bs-&gt;fd);
+fail_open:
+    free(bs);
+    return 0;
+}
+</code></pre><p> 这个函数作用是把设备映射到内存, 在Binder设备驱动中还有一个同名函数负责打开Binder设备和设置引用计数, 如下:  </p>
+<pre><code>// in file kernel/goldfish/drivers/staging/android/binder.c
+
+static int binder_open(struct inode *nodp, struct file *filp)
+{
+    struct binder_proc *proc;
+
+    // 初始化, 分配 binder_proc 数据结构内存
+    proc = kzalloc(sizeof(*proc), GFP_KERNEL);
+    if (proc == NULL)
+        return -ENOMEM;
+
+    // 增加当前线程/进程的引用计数并赋值给proc-&gt;tsk
+    get_task_struct(current);
+    proc-&gt;tsk = current;
+    // 初始化binder_proc队列和默认优先级
+    INIT_LIST_HEAD(&amp;proc-&gt;todo);
+    init_waitqueue_head(&amp;proc-&gt;wait);
+    proc-&gt;default_priority = task_nice(current);
+
+    binder_lock(__func__);
+
+    // 增加 BINDER_STAT_PROC对象计数
+    binder_stats_created(BINDER_STAT_PROC);
+    // 添加进程节点proc_node到binder_procs的全局列表中, 任何进程都可以访问其他进程的binder_proc对象
+    hlist_add_head(&amp;proc-&gt;proc_node, &amp;binder_procs);
+    // 保存进程id
+    proc-&gt;pid = current-&gt;group_leader-&gt;pid;
+    INIT_LIST_HEAD(&amp;proc-&gt;delivered_death);
+    // 驱动文件的private_data指向proc
+    filp-&gt;private_data = proc;
+
+    binder_unlock(__func__);
+    ...
+
+    return 0;
+}
+</code></pre></li>
+<li><p>Binder释放<br> 同样是在<code>frameworks/base/cmds/servicemanager/binder.c</code>文件中定义了设备释放函数<code>binder_release</code>:  </p>
+<pre><code>void binder_release(struct binder_state *bs, void *ptr)
+{
+    uint32_t cmd[2];
+    cmd[0] = BC_RELEASE;
+    cmd[1] = (uint32_t) ptr;
+    binder_write(bs, cmd, sizeof(cmd));
+}
+</code></pre><p> 可见只是发送了一个释放命令给Binder驱动, 那么可以肯定驱动中也有一个释放函数, 正好前面看到过设备操作的接口中有一个就是<code>binder_release</code>与这里的函数同名, 不会是巧合. <code>kernel/goldfish/drivers/staging/android/binder.c</code>中相关代码片段如下:  </p>
+<pre><code>static int binder_release(struct inode *nodp, struct file *filp)
+{
+    struct binder_proc *proc = filp-&gt;private_data;
+    debugfs_remove(proc-&gt;debugfs_entry);
+    binder_defer_work(proc, BINDER_DEFERRED_RELEASE);
+
+    return 0;
+}
+</code></pre><p> 好嘛, 释放操作给了<code>binder_defer_work</code>, 这又是嘛? 其实前面我们在初始化的时候就有内容涉及到它: 在<code>create_singlethread_workqueue</code>的时候创建了一个叫做<code>binder_deferred_workqueue</code>的队列, 该队列用来调度执行<code>binder_deferred_work</code>, 而两者发生联系就是在函数<code>binder_defer_work</code>中, <code>queue_work</code>使用了他们作为函数参数. 前面说过这个队列里都是可以延期执行的任务, 而<code>binder_deferred_work</code>有三种类型, 即枚举变量<code>binder_deferred_state</code>中定义的<code>PUT_FILES</code> <code>FLUSH</code> <code>RELEASE</code>.<br> 显然, 释放的具体操作就要看<code>queue_work</code>函数了, 很可惜我查的资料里没有详述这个函数做了啥. 它的定义在<code>kernel/goldfish/kernel/workqueue.c</code>中, 粗略看了下, 理解不一定对, 感觉它跟Handler类似, 在入队work的时候获取执行work的worker, 而由别的过程控制出队和实际执行, 只不过它所处的层次更靠近硬件.  </p>
+</li>
+<li>Binder数据关联<br> 前面说过, 传输对象中<code>binder</code>和<code>handle</code>其实指向的是同一个对象, 现在来解释一下为什么. 在一次调用中, 对于客户端进程来说, handle存储的索引是一个远端对象的句柄, 当数据经由Binder驱动传达到服务端的时候, 服务端就会把这个索引解释为本地对象的地址, 对于第三方来说, 客户端的handle和服务端的binder都是指向了服务端的那个Binder对象. 对于Binder来说, 对象的索引和映射是通过<code>binder_node</code>和<code>binder_ref</code>两个核心数据结构来完成的, 两个定义都可以在文件<code>kernel/goldfish/drivers/staging/android/binder.c</code>中看到. 对于Binder本地对象, 对象的Binder地址保存在<code>binder_node-&gt;ptr</code>里, 对于远程对象, 索引保存在<code>binder_ref-&gt;desc</code>里, 每一个<code>binder_node</code>都有一个<code>binder_ref</code>与之对应, 他们通过<code>ptr</code>和<code>desc</code>来做映射. 前面说过进程间传递的Binder对象实际上是<code>flat_binder_object</code>这个数据结构, 每个<code>flat_binder_object</code>在内核都有一个唯一的<code>binder_node</code>对象与之对应, 这个对象挂载在<code>binder_proc</code>的一棵二叉树上, 而每一个<code>binder_node</code>又有唯一一个<code>binder_ref</code>对象与之对应. 可以这么理解, <code>binder_ref-&gt;desc</code> <code>binder_node-&gt;ptr</code> <code>binder_node-&gt;cookie</code> <code>flat_binder_object-&gt;handle</code>四者都指向同一个对象, 其中<code>binder_node-&gt;ptr</code> <code>binder_node-&gt;cookie</code>的<code>binder_node</code>位于服务端. <code>binder_ref</code>按照node和desc两种方式映射到<code>binder_proc</code>对象上, 因此可以通过<code>binder_node</code>或者<code>desc</code>查找到<code>binder_ref</code>或<code>binder_node</code>. 对于一个<code>flat_binder_object</code>对象来说, 它的<code>binder, cookie, handle</code>都指向的同一个<code>binder_node</code>对象.<br> Binder驱动中, flush操作在关闭一个设备文件描述符拷贝时被调用, 这里不做探究. 另一个操作mmap(memory map)负责把设备内存映射到用户进程地址空间中, 用户进程可以像操作内存一样操作设备. 一般的设备驱动, 设备内存是设备本身具有的, 或者在驱动初始化时由<code>vmalloc</code>或<code>kmalloc</code>等内核函数分配好, Binder不同于此, 它的设备内存是由mmap操作来分配的, 分配方法是现在内核虚拟映射表上获取一段可用区域, 再分配物理页, 并把物理页映射到获取的虚拟地址区域. 每个进程/线程只能做一次mmap操作, 其后重复操作都会返回错误. mmap分配内存的代码见文件<code>kernel/goldfish/drivers/staging/android/binder.c#binder_mmap</code>片段, 过程大致是先做检查调用合法性等准备工作, 然后申请虚拟内存空间, 再使用<code>binder_update_page_range</code>分配物理空间(实际是分配了1个页的物理内存用来存储指针buffer, 1个物理页是4K, 1个指针是4字节, 所以1页最多可存1K个指针, 每个指针对应一个物理页, 所以对应最多4M物理空间, 这是一次mmap最多可以分配的物理内存量, 这里不管实际申请了多大的物理内存, 内核总是提供1页物理内存用来放buffer指针, 即每次都允许申请最多的物理页), 在该函数中利用Linux系统中内存相关函数完成具体分配任务, 完成后由<code>binder_buffer</code>负责管理该内存区域, <code>binder_buffer</code>放到了<code>proc-&gt;buffers</code>链表中, 今后就可以通过这段内存区域完成设备数据读写了. 更形象的插图见<a href="http://blog.csdn.net/yangwen123/article/details/9316987" target="_blank" rel="noopener">深入分析Android Binder 驱动</a>相关章节, 本段主要参考该文和内核代码完成.  </li>
+<li>Binder接口及命令<br> Binder能得以正确工作, 首先要依赖于一致的Binder协议. 其中Binder类型在前文<code>external/kernel-headers/original/linux/binder.h</code>中提到过, 一共3大类5小类. 其实该文件中还定义了Binder驱动支持的命令格式和数据定义, 分为客户端的<code>BinderDriverCommandProtocol</code>和服务端的<code>BinderDriverReturnProtocol</code>, 两个都是枚举类型, 很可惜以我现在的C水平, 看不懂枚举成员<code>BC_TRANSACTION = _IOW_BAD(&#39;c&#39;, 0, struct binder_transaction_data)</code>的写法是什么意思, 大概猜测是第一个参数是访问模式, 第二个参数是指令, 第三个参数是数据指针. 客户端命令(BC)中第一个参数都是’c’, 宏<code>_IOR_BAD</code>根据资料应该是指向的<code>ioctl</code>的, 也就是说这里的参数传给了<code>ioctl</code>. 服务端返回(BR)的第一个参数都是’r’, 表示read. 两个数据结构定义了Binder客户端和服务端可以执行的全部命令. 既然有协议, 自然就有版本, 细心的读者可能发现, 前文<code>binder_open</code>函数里面就隐藏了一段注释, 说明以后会有<code>check version</code>的步骤.  </li>
+</ol>
+<p>本节主要参考:  </p>
+<ul>
+<li><a href="http://blog.csdn.net/yangwen123/article/details/9316987" target="_blank" rel="noopener">深入分析Android Binder 驱动</a>  </li>
+<li><a href="https://github.com/xdtianyu/SourceAnalysis/blob/master/Binder%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90.md" target="_blank" rel="noopener">Binder 源码分析</a>  </li>
+<li><a href="http://www.angryredplanet.com/~hackbod/openbinder/docs/html/BinderIPCMechanism.html" target="_blank" rel="noopener">BinderIPC原理</a>  </li>
+<li><a href="http://blog.csdn.net/luoshengyang/article/details/6568411" target="_blank" rel="noopener">在Ubuntu上为Android系统编写Linux内核驱动程序</a>  </li>
+</ul>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>给两个主要结论和一个图(图不是我画的, 但来源记不得了), 方便大家按图索骥.  </p>
+<p><img src="/images/blogs/binder_native_stack.png" alt="binder native stack">  </p>
+<ol>
+<li><p>Binder的实现从上到下涉及到Java层(Application层)/JNI层/Native层(Runtime层)/Linux kernel层, 可以说涉及到了Android的整个架构, 说是它的核心之一一点不过分. 系统服务的注册/获取/使用/Intent传递都通过Binder驱动, 对它的深入理解将会起到提纲挈领的效果.  </p>
+</li>
+<li><p>上层的<code>android.os.Binder</code>是对Binder的一层封装, 一般不直接使用. 如果定义服务, 使用系统提供的<code>Service</code>接口即可(它完成了一个默认的<code>android.os.Binder</code>实现), 如果是自定义跨进程服务, 使用<code>AIDL</code>将是更快的方式, 它本质是一个对Binder操作进行封装的工具. 如果不嫌麻烦, 直接使用<code>android.os.Binder</code>来定义客户端和服务端也是完全可行的.  </p>
+</li>
+</ol>
+<p>说实话这篇文章写得有点吃力, 一个是时间拉太长, 记忆跟不上, 另一个是这个内容本身比较难用平白的语言讲清楚. 感谢大家阅读, 难免理解有误或以讹传讹, 欢迎大家指正.  </p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/guide/">guide</a><a href="/tags/android/">android</a><a href="/tags/interview/">interview</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://hjhjw1991.github.io/android/2017/01/10/[Android教程]Binder全解/" data-title="【Android教程】Binder全解 | hjhjw1991&#39;s blog" data-tsina="1304671950" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev">
+ <a href="/android/2017/01/23/[Android教程]SharedPreference详解/" title="【Android教程】SharedPreference详解">
+  <strong>上一篇：</strong><br>
+  <span>
+  【Android教程】SharedPreference详解</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/android/2017/01/06/[Android教程]Handler全解/" title="【Android教程】Handler全解">
+ <strong>下一篇：</strong><br> 
+ <span>【Android教程】Handler全解
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#某渣的凭印象回-hu-顾-zhou"><span class="toc-number">1.</span> <span class="toc-text">某渣的凭印象回(hu)顾(zhou)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Binder的设计思想-工作原理"><span class="toc-number">2.</span> <span class="toc-text">Binder的设计思想/工作原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Binder实践"><span class="toc-number">3.</span> <span class="toc-text">Binder实践</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Service的启动过程"><span class="toc-number">3.1.</span> <span class="toc-text">Service的启动过程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Binder驱动的实现"><span class="toc-number">3.2.</span> <span class="toc-text">Binder驱动的实现</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#调用mRemote-transact时进到了BinderProxy并在其中调用native方法android-os-BinderProxy-transact"><span class="toc-number">3.2.1.</span> <span class="toc-text">调用mRemote.transact时进到了BinderProxy并在其中调用native方法android_os_BinderProxy_transact()</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#jni中的target-gt-transact调用进到BpBinder-再进到IPCThreadState"><span class="toc-number">3.2.2.</span> <span class="toc-text">jni中的target-&gt;transact调用进到BpBinder, 再进到IPCThreadState</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#IPCThreadState-waitForResponse-在一个-while-循环里不断的调用-talkWithDriver-并检查是否有数据返回"><span class="toc-number">3.2.3.</span> <span class="toc-text">IPCThreadState::waitForResponse() 在一个 while 循环里不断的调用 talkWithDriver() 并检查是否有数据返回</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#IPCThreadState-talkWithDriver-函数是真正与-binder-驱动交互的实现"><span class="toc-number">3.2.4.</span> <span class="toc-text">IPCThreadState::talkWithDriver() 函数是真正与 binder 驱动交互的实现</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#IPCThreadState-executeCommand-int32-t-cmd-处理返回命令"><span class="toc-number">3.2.5.</span> <span class="toc-text">IPCThreadState::executeCommand(int32_t cmd) 处理返回命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Binder设备驱动实现"><span class="toc-number">3.2.6.</span> <span class="toc-text">Binder设备驱动实现</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#结语"><span class="toc-number">4.</span> <span class="toc-text">结语</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="hjhjw1991" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js"></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/android/" title="android">android<sup>26</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/blog/" title="blog">blog<sup>15</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/leetcode/" title="leetcode">leetcode<sup>9</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/opinion/" title="opinion">opinion<sup>4</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/tips/" title="tips">tips<sup>4</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/android/" title="android">android<sup>27</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guide/" title="guide">guide<sup>21</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/interview/" title="interview">interview<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/windows/" title="windows">windows<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/jekyll/" title="jekyll">jekyll<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vps/" title="vps">vps<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ssh/" title="ssh">ssh<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vpn/" title="vpn">vpn<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/regex/" title="regex">regex<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/uwsgi/" title="uwsgi">uwsgi<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ios/" title="ios">ios<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/linux/" title="linux">linux<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://google.com" target="_blank" title="Google">Google</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.goldenfrog.com/vyprvpn/refer-a-friend/get-a-free-month?ar=8betlkaq2h638_1" target="_blank" title="VyprVPN">VyprVPN</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="120" class="share_self" frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=1304671950&verifier=64e7ae81&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer">
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Huang Jun. <br>
+			This is my blog.</p>
+	</section>
+	 
+	<div class="social-font">
+		
+		<a href="http://weibo.com/1304671950" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/hjhjw1991" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:hjhjw1991@gmail.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="hjhjw1991">hjhjw1991</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'hjhjw1991';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?cd0e561542c22cc83da2e311ec57da84";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

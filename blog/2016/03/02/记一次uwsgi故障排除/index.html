@@ -1,0 +1,640 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+  
+    <title>记一次uwsgi故障排除 | hjhjw1991&#39;s blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="hjhjw1991">
+    
+
+    
+    <meta name="description" content="更新flask应用版本后，uwsgi运行出错提示sqlite3_stmt_readonly未知标志位">
+<meta name="keywords" content="vps,uwsgi">
+<meta property="og:type" content="article">
+<meta property="og:title" content="记一次uwsgi故障排除">
+<meta property="og:url" content="https://hjhjw1991.github.io/blog/2016/03/02/记一次uwsgi故障排除/index.html">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
+<meta property="og:description" content="更新flask应用版本后，uwsgi运行出错提示sqlite3_stmt_readonly未知标志位">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-02-20T16:36:35.389Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="记一次uwsgi故障排除">
+<meta name="twitter:description" content="更新flask应用版本后，uwsgi运行出错提示sqlite3_stmt_readonly未知标志位">
+
+    
+    <link rel="alternative" href="/atom.xml" title="hjhjw1991&#39;s blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/author.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/author.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="hjhjw1991&#39;s blog" title="hjhjw1991&#39;s blog"></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="hjhjw1991&#39;s blog">hjhjw1991&#39;s blog</a></h1>
+				<h2 class="blog-motto">Coder, Learn</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="http://zhannei.baidu.com/cse/search" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value="8741923514077570040"><input type="text" name="q" size="30" placeholder="搜索"><br>
+						</form>
+					
+					</li>
+				</ul>
+			</ul></nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/blog/2016/03/02/记一次uwsgi故障排除/" title="记一次uwsgi故障排除" itemprop="url">记一次uwsgi故障排除</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="hjhjw1991" target="_blank" itemprop="author">hjhjw1991</a>
+		
+  </p><p class="article-time">
+    <time datetime="2016-03-01T16:00:00.000Z" itemprop="datePublished"> 发表于 2016-03-02</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#应用升级使用sqlite3数据库，引起访问出错"><span class="toc-number">1.</span> <span class="toc-text">应用升级使用sqlite3数据库，引起访问出错</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#解决问题的关键步骤-编译安装最新版uwsgi"><span class="toc-number">2.</span> <span class="toc-text">解决问题的关键步骤:编译安装最新版uwsgi</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#意外收获"><span class="toc-number">3.</span> <span class="toc-text">意外收获</span></a></li></ol>
+		
+		</div>
+		
+		<blockquote>
+<p>我在本地调试了一个flask应用，本地跑得好好的，部署到远程centos6 32位vps上就出了问题。<br>问题非常隐蔽，因此也走了不少弯路，甚至最后都不知道是哪一步起了关键作用。因此记一下。</p>
+</blockquote>
+<h2 id="应用升级使用sqlite3数据库，引起访问出错"><a href="#应用升级使用sqlite3数据库，引起访问出错" class="headerlink" title="应用升级使用sqlite3数据库，引起访问出错"></a>应用升级使用sqlite3数据库，引起访问出错</h2><p>应用采用nginx+uwsgi+flask的结构  </p>
+<p>应用最新版本中引入了sqlite3数据库，就这一步出了问题。在要访问数据库的时候返回<code>502  bad gateway</code>，查uwsgi日志，记录提示pysqlite中出了错，找不到symbol<code>sqlite3_stmt_readonly</code>什么的(对了这个信息需要在flask开启debug模式才会被记录下来)。查了vps的sqlite3，是3.6版本，我开发机是3.8版本，在以<code>undefined symbol sqlite3_stmt_readonly</code>为关键词反复搜索信息的过程中知道了这个标志是3.7以后的版本才有的，猜想是不是sqlite版本问题。找到了pysqlite的github仓库中一个<a href="https://github.com/ghaering/pysqlite/issues/85" target="_blank" rel="noopener">issue</a>，也是同样的错误。根据下面开发者的回答进行了操作，然而并没有什么用。  </p>
+<p>又有说没有安装uwsgi的python插件，我用pip和yum都装了一下，也没有用。(<code>pip install uwsgi</code>, <code>yum install uwsgi-plugin-python</code>)  </p>
+<p>最后还弄出新的问题: 包_sqlite找不到。显然是包管理出问题了。中间各种麻烦，一气之下将python2.7.11源码下载编译安装，然后编译安装了easy_setup和pip，幸好自己以前写过教程。然后重新安装了应用的requirements，幸好之前有更新requirements。  </p>
+<p>这下出现了新问题，所有的python位置和版本都是2.7.11了，但重启uwsgi后竟然直接找不到flask包，一看发现日志记录的python版本还是之前的2.7.8，这个锅看来uwsgi非背不可了。又是一阵折腾python更新和uwsgi配置未果(包括设置虚拟python环境)。  </p>
+<h2 id="解决问题的关键步骤-编译安装最新版uwsgi"><a href="#解决问题的关键步骤-编译安装最新版uwsgi" class="headerlink" title="解决问题的关键步骤:编译安装最新版uwsgi"></a>解决问题的关键步骤:编译安装最新版uwsgi</h2><p>后来想起来，特么这个uwsgi不是我装的啊，我当初下载的是2.0.10版本，这个运行的是2.0.12版本，这货好像是vps自带的！被vps坑过的我表示，这锅你就背了吧！而且当初还是在root下搞的uwsgi，正好一并改过来。  </p>
+<p>下载了uwsgi2.0.12版本的源码，进入源码目录，什么配置都不改<br><code>python uwsgiconfig.py --build</code><br>安装成功。(如果失败或者提示权限问题，就把涉及到的文件权限改成自己的)<br><code>python setup.py install</code><br>这一步是手动安装python uwsgi 包<br>然后设置bin，将<code>/usr/local/bin/uwsgi</code>软连接到python包里面那个uwsgi，别忘了把<code>/usr/local/bin</code>放在环境变量<code>$PATH</code>的最前面以优先载入  </p>
+<p>好了，试运行一下uwsgi，检查正常运行，版本号无误。  </p>
+<p>查看应用的config文件，没有变动，运行uwsgi，访问应用，可以访问，访问数据库，可以访问，查看uwsgi日志，没有错误。完美。感动哭。  </p>
+<p>一声不吭正常运行的nginx目睹了整个过程。谢天谢地幸好你一直正常运行。  </p>
+<h2 id="意外收获"><a href="#意外收获" class="headerlink" title="意外收获"></a>意外收获</h2><p>中间有些意外收获。  </p>
+<ol>
+<li><p>先是编译的uwsgi-2.0.10的源码，安装好之后，运行提示我找不到应用，找不到python，逗我呢？后来一想原先的版本好像是2.0.12，不管是不是vps自带的，我自己下载编译总可以吧？于是这么做之后就好了  </p>
+</li>
+<li><p>后来觉得<code>sudo nginx</code>有点危险，查看nginx发现普通用户有运行权限，切换普通用户运行结果提示我<code>bind() 0.0.0.0:80 permission denied</code>，确信没有应用在用那个端口，一查才知道linux要求1024以下的端口都必须以sudo级别才可以绑定。老老实实改回sudo。按理说conf里配置8080端口应该也可以，但还是以后再说吧，如果有多个应用了再来配置别的访问端口。  </p>
+</li>
+<li><p>nginx的conf里面可以直接配置uwsgi_param传给uwsgi，因此如果要配置多个应用，那么就要在<code>conf/nginx.conf</code>而不是单独的配置文件(对uwsgi来说,单独的配置文件就是用参数指定的xml或者ini格式的配置文件)中指定pythonpath和callable之类的参数。  </p>
+</li>
+<li><p>nginx和uwsgi都是服务端程序，不同的是nginx主要负责前端显示，uwsgi主要负责后端数据处理。  </p>
+</li>
+</ol>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/blog/">blog</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/vps/">vps</a><a href="/tags/uwsgi/">uwsgi</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://hjhjw1991.github.io/blog/2016/03/02/记一次uwsgi故障排除/" data-title="记一次uwsgi故障排除 | hjhjw1991&#39;s blog" data-tsina="1304671950" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev">
+ <a href="/tips/2016/03/08/未能同步苹果，因为这台电脑不再被授权使用在此苹果上购买的项目/" title="未能同步苹果，因为这台电脑不再被授权使用在此苹果上购买的项目">
+  <strong>上一篇：</strong><br>
+  <span>
+  未能同步苹果，因为这台电脑不再被授权使用在此苹果上购买的项目</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/blog/2016/02/25/Java中的协变和逆变/" title="Java中的协变和逆变">
+ <strong>下一篇：</strong><br> 
+ <span>Java中的协变和逆变
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#应用升级使用sqlite3数据库，引起访问出错"><span class="toc-number">1.</span> <span class="toc-text">应用升级使用sqlite3数据库，引起访问出错</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#解决问题的关键步骤-编译安装最新版uwsgi"><span class="toc-number">2.</span> <span class="toc-text">解决问题的关键步骤:编译安装最新版uwsgi</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#意外收获"><span class="toc-number">3.</span> <span class="toc-text">意外收获</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="hjhjw1991" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js"></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/android/" title="android">android<sup>26</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/blog/" title="blog">blog<sup>15</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/leetcode/" title="leetcode">leetcode<sup>9</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/opinion/" title="opinion">opinion<sup>4</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/tips/" title="tips">tips<sup>4</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/android/" title="android">android<sup>27</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guide/" title="guide">guide<sup>21</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/interview/" title="interview">interview<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/windows/" title="windows">windows<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/jekyll/" title="jekyll">jekyll<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vps/" title="vps">vps<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ssh/" title="ssh">ssh<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vpn/" title="vpn">vpn<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/regex/" title="regex">regex<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/uwsgi/" title="uwsgi">uwsgi<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ios/" title="ios">ios<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/linux/" title="linux">linux<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://google.com" target="_blank" title="Google">Google</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.goldenfrog.com/vyprvpn/refer-a-friend/get-a-free-month?ar=8betlkaq2h638_1" target="_blank" title="VyprVPN">VyprVPN</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="120" class="share_self" frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=1304671950&verifier=64e7ae81&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer">
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Huang Jun. <br>
+			This is my blog.</p>
+	</section>
+	 
+	<div class="social-font">
+		
+		<a href="http://weibo.com/1304671950" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/hjhjw1991" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:hjhjw1991@gmail.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="hjhjw1991">hjhjw1991</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'hjhjw1991';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?cd0e561542c22cc83da2e311ec57da84";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

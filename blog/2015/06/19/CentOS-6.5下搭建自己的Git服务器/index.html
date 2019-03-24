@@ -1,0 +1,629 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+  
+    <title>CentOS 6.5下搭建自己的Git服务器 | hjhjw1991&#39;s blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="hjhjw1991">
+    
+
+    
+    <meta name="description" content="搭建Git服务器的教程">
+<meta name="keywords" content="git,guide">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CentOS 6.5下搭建自己的Git服务器">
+<meta property="og:url" content="https://hjhjw1991.github.io/blog/2015/06/19/CentOS-6.5下搭建自己的Git服务器/index.html">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
+<meta property="og:description" content="搭建Git服务器的教程">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-02-20T16:36:35.386Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CentOS 6.5下搭建自己的Git服务器">
+<meta name="twitter:description" content="搭建Git服务器的教程">
+
+    
+    <link rel="alternative" href="/atom.xml" title="hjhjw1991&#39;s blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/author.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/author.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="hjhjw1991&#39;s blog" title="hjhjw1991&#39;s blog"></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="hjhjw1991&#39;s blog">hjhjw1991&#39;s blog</a></h1>
+				<h2 class="blog-motto">Coder, Learn</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="http://zhannei.baidu.com/cse/search" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value="8741923514077570040"><input type="text" name="q" size="30" placeholder="搜索"><br>
+						</form>
+					
+					</li>
+				</ul>
+			</ul></nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/blog/2015/06/19/CentOS-6.5下搭建自己的Git服务器/" title="CentOS 6.5下搭建自己的Git服务器" itemprop="url">CentOS 6.5下搭建自己的Git服务器</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="hjhjw1991" target="_blank" itemprop="author">hjhjw1991</a>
+		
+  </p><p class="article-time">
+    <time datetime="2015-06-18T16:00:00.000Z" itemprop="datePublished"> 发表于 2015-06-19</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0-前言"><span class="toc-number">1.</span> <span class="toc-text">0. 前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-参考教程及前方深坑"><span class="toc-number">2.</span> <span class="toc-text">1. 参考教程及前方深坑</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-深坑感言"><span class="toc-number">3.</span> <span class="toc-text">2. 深坑感言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-reference"><span class="toc-number">4.</span> <span class="toc-text">3. reference</span></a></li></ol>
+		
+		</div>
+		
+		<h2 id="0-前言"><a href="#0-前言" class="headerlink" title="0. 前言"></a>0. 前言</h2><p>想在自己的VPS上搭建一个Git服务器，这样可以避免拙劣的代码外漏，又可以利用版本管理的好处。在网上搜了几篇教程，然后开始踩坑，专业踩坑30年。</p>
+<h2 id="1-参考教程及前方深坑"><a href="#1-参考教程及前方深坑" class="headerlink" title="1. 参考教程及前方深坑"></a>1. 参考教程及前方深坑</h2><p>这一篇博文把参考教程列在文章里面，因为没有什么技术难度，主要是坑，所以记录一下踩到的坑。<br><a href="http://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000/00137583770360579bc4b458f044ce7afed3df579123eca000" title="搭建Git服务器 - 廖雪峰的官方网站" target="_blank" rel="noopener">搭建Git服务器 - 廖雪峰的官方网站</a><br>廖大大的这篇是百度出来排第一的，然而他推荐的是Ubuntu或Debian系的系统，而我的VPS是CentOS系统，yum与python之间纠缠不清的关系想必遇到过的人都懂。但也不是完全没参考价值，至少我知道了git服务器搭建大致需要哪几个步骤。  </p>
+<p><a href="http://www.centoscn.com/CentosServer/ftp/2014/0414/2789.html" title="CentOS 6.5下Git服务器搭建" target="_blank" rel="noopener">CentOS 6.5下Git服务器搭建</a><br>主要参考了这篇教程，前面一大片关于git的介绍不用管它，注意两个地方，一是服务端的git它是从源码编译安装的，版本号跟直接安装的git不一样，二是它安装的gitosis.git地址好像不对，我访问时是403拒绝访问，用 <a href="https://github.com/tv42/gitosis.git" target="_blank" rel="noopener">https://github.com/tv42/gitosis.git</a> 代替就好。<br>即便完全按照教程来，也可能会遇到第一个坑：gitosis无法安装，提示没有setuptools模块。然而无论你是查看pip还是查看whereis，都可以找到setuptools模块。<br>原因：我当时使用的是<strong>另一个账号</strong>登陆的，而<strong>setuptools模块是在root下安装</strong>的，这时候即便你用当前账号安装setuptools也会提示已经有了。<br>解决：切换回root账号再次运行安装就好了。  </p>
+<p>然后在生成了rsa密钥，导入的时候可能遇到第二个坑：<br><code>#sudo -H -u git gitosis-init &lt; ～/id_rsa.pub</code><br>gitosis-init命令找不到。<br>这个只要将<code>gitosis-init</code>替换为它的绝对路径即可。  </p>
+<p>如果你是windows客户端，就会遇到我遇到的第三个坑：<br>在windows客户端使用git clone的时候，<br><code>Permission denied (publickey) fatal: Could not read from remote repository</code><br>原因：显然是权限问题，windows客户端的ssh好像是telnet的服务，即便有id_rsa私钥，也需要转换一下格式才能识别。然而光是这样还不够，还需要参考教程<a href="http://zengrong.net/post/1544.htm" title="修改了SSH默认端口之后，如何配置git？" target="_blank" rel="noopener">修改了SSH默认端口之后，如何配置git？</a>中的ssh远端指定ssh访问端口。<br>解决：我用sourcetree的ssh助手导入id_rsa并且另存为了ppk格式的私钥，在plink中导入私钥之后，直接在sourcetree中新建仓库，远程地址写ssh://git@VPS_IP:port/gitosis-admin.git，成功发现并克隆仓库。VPS_IP和port换成你自己的。另外如果你安装了MingWin那么还有比较方便的做法，就是在.ssh目录下放上你的rsa私钥，并用config配置一下远端服务器，就可以做到ssh识别了，参见<a href="http://blog.csdn.net/hjhjw1991/article/details/48103029" target="_blank" rel="noopener">拉取远程私有服务器的git仓库</a>  </p>
+<p>注意，教程中客户端系统是CentOS，仓库中文件都是.开头的隐藏文件，但在windows下这些都不是隐藏文件了。以后配置vps git服务器的访问权限，只需要维护这个特殊的仓库就可以。教程后面是对这个仓库维护的示例，也可以单独搜索gitosis的相关文档。  </p>
+<p>现在我们已经克隆了权限管理仓库，该放在服务端的公钥、客户端的私钥也已经放好了，可以试着配置使用者。<br>按照教程配置好，先把管理仓库推送到远端（教程没有提到），然后试着建立自己的git-test仓库。<br>第四个坑出现了：推送失败，提示无权限。<br>看错误提示就知道它与第三个坑有联系，其实原因是一样的：默认连接是https，但是centos并不支持这么搞，需要指定访问方式为ssh。<br>解决：<code>git remote add origin ssh://git@VPS_IP:port/git-test.git</code><br>然后push就可以成功了。  </p>
+<p>以后只要在keydir下添加公钥，修改.conf文件添加新的仓库，再推送到服务器，就可以添加新的用户和仓库了。新用户只要配置好相应的私钥，就可以直接访问有权限的仓库。  </p>
+<h2 id="2-深坑感言"><a href="#2-深坑感言" class="headerlink" title="2. 深坑感言"></a>2. 深坑感言</h2><p>别用windows</p>
+<hr>
+<p>2015-07-17更新：<br>被OpenSSH和Putty的私钥坑得不行不行的，各种互不兼容。终于还是把gitosis搞坏了，而且gitosis很久没更新，于是全面迁移到gitolite。当然，不兼容的还是不兼容，真坑。<br>gitolite与gitosis大同小异，如果你按照之前的教程安装过gitosis，那么这里只需要安装gitolite并配置好公钥就行了，管理方式和gitosis一毛一样。如果是全新安装，<a href="http://www.ossxp.com/doc/git/gitolite.html#id6" target="_blank" rel="noopener">教程在此</a><br>Windows下的Putty Key Generator导入OpenSSH生成的私钥之后格式是有问题的，不太通用。Putty自身生成的SSH key 也不能直接用。格式上的问题主要在换行，本来不该换行的但是经过Putty导出之后就会换行，只要文本格式打开修复一下换行问题和文件头的类型说明，去掉莫名其妙的注释，就可以通用了。本来嘛，私钥也就是一个随机串和不对称加密之后的结果，一边保存一个串，在验证的时候用算法算一下是否相等而已，本质上就是文本。  </p>
+<hr>
+<h2 id="3-reference"><a href="#3-reference" class="headerlink" title="3. reference"></a>3. reference</h2><p><a href="http://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000/00137583770360579bc4b458f044ce7afed3df579123eca000" title="搭建Git服务器 - 廖雪峰的官方网站" target="_blank" rel="noopener">搭建Git服务器 - 廖雪峰的官方网站</a><br><a href="http://www.centoscn.com/CentosServer/ftp/2014/0414/2789.html" title="CentOS 6.5下Git服务器搭建" target="_blank" rel="noopener">CentOS 6.5下Git服务器搭建</a><br><a href="http://zengrong.net/post/1544.htm" title="修改了SSH默认端口之后，如何配置git？" target="_blank" rel="noopener">修改了SSH默认端口之后，如何配置git？</a><br><a href="http://stackoverflow.com/questions/17626944/heroku-permission-denied-publickey-fatal-could-not-read-from-remote-reposito" title="StackOverflow:&#39;Permission denied (publickey) fatal: Could not read from remote repository&#39;" target="_blank" rel="noopener">StackOverflow:’Permission denied (publickey) fatal: Could not read from remote repository’</a>  </p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/blog/">blog</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/git/">git</a><a href="/tags/guide/">guide</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://hjhjw1991.github.io/blog/2015/06/19/CentOS-6.5下搭建自己的Git服务器/" data-title="CentOS 6.5下搭建自己的Git服务器 | hjhjw1991&#39;s blog" data-tsina="1304671950" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev">
+ <a href="/leetcode/2015/08/06/[Leetcode题解]136-137-260-Single-Number/" title="【Leetcode题解】136-137-260-Single Number类型的问题">
+  <strong>上一篇：</strong><br>
+  <span>
+  【Leetcode题解】136-137-260-Single Number类型的问题</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/leetcode/2015/06/17/[Leetcode题解]151-Reverse-Words-in-a-String/" title="【Leetcode题解】151-Reverse Words in a String">
+ <strong>下一篇：</strong><br> 
+ <span>【Leetcode题解】151-Reverse Words in a String
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0-前言"><span class="toc-number">1.</span> <span class="toc-text">0. 前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-参考教程及前方深坑"><span class="toc-number">2.</span> <span class="toc-text">1. 参考教程及前方深坑</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-深坑感言"><span class="toc-number">3.</span> <span class="toc-text">2. 深坑感言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-reference"><span class="toc-number">4.</span> <span class="toc-text">3. reference</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="hjhjw1991" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js"></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/android/" title="android">android<sup>26</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/blog/" title="blog">blog<sup>15</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/leetcode/" title="leetcode">leetcode<sup>9</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/opinion/" title="opinion">opinion<sup>4</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/tips/" title="tips">tips<sup>4</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/android/" title="android">android<sup>27</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guide/" title="guide">guide<sup>21</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/interview/" title="interview">interview<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/windows/" title="windows">windows<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/jekyll/" title="jekyll">jekyll<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vps/" title="vps">vps<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ssh/" title="ssh">ssh<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vpn/" title="vpn">vpn<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/regex/" title="regex">regex<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/uwsgi/" title="uwsgi">uwsgi<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ios/" title="ios">ios<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/linux/" title="linux">linux<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://google.com" target="_blank" title="Google">Google</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.goldenfrog.com/vyprvpn/refer-a-friend/get-a-free-month?ar=8betlkaq2h638_1" target="_blank" title="VyprVPN">VyprVPN</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="120" class="share_self" frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=1304671950&verifier=64e7ae81&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer">
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Huang Jun. <br>
+			This is my blog.</p>
+	</section>
+	 
+	<div class="social-font">
+		
+		<a href="http://weibo.com/1304671950" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/hjhjw1991" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:hjhjw1991@gmail.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="hjhjw1991">hjhjw1991</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'hjhjw1991';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?cd0e561542c22cc83da2e311ec57da84";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

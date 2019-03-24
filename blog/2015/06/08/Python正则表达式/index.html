@@ -1,0 +1,694 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+  
+    <title>Python正则表达式 | hjhjw1991&#39;s blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="hjhjw1991">
+    
+
+    
+    <meta name="description" content="Python正则表达式基本使用">
+<meta name="keywords" content="python,regex">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python正则表达式">
+<meta property="og:url" content="https://hjhjw1991.github.io/blog/2015/06/08/Python正则表达式/index.html">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
+<meta property="og:description" content="Python正则表达式基本使用">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://img.blog.csdn.net/20130730194819359">
+<meta property="og:updated_time" content="2019-02-20T16:36:35.385Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Python正则表达式">
+<meta name="twitter:description" content="Python正则表达式基本使用">
+<meta name="twitter:image" content="http://img.blog.csdn.net/20130730194819359">
+
+    
+    <link rel="alternative" href="/atom.xml" title="hjhjw1991&#39;s blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/author.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/author.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="hjhjw1991&#39;s blog" title="hjhjw1991&#39;s blog"></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="hjhjw1991&#39;s blog">hjhjw1991&#39;s blog</a></h1>
+				<h2 class="blog-motto">Coder, Learn</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="http://zhannei.baidu.com/cse/search" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value="8741923514077570040"><input type="text" name="q" size="30" placeholder="搜索"><br>
+						</form>
+					
+					</li>
+				</ul>
+			</ul></nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/blog/2015/06/08/Python正则表达式/" title="Python正则表达式" itemprop="url">Python正则表达式</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="hjhjw1991" target="_blank" itemprop="author">hjhjw1991</a>
+		
+  </p><p class="article-time">
+    <time datetime="2015-06-07T16:00:00.000Z" itemprop="datePublished"> 发表于 2015-06-08</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#用法"><span class="toc-number">2.</span> <span class="toc-text">用法</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#先compile后match"><span class="toc-number">2.1.</span> <span class="toc-text">先compile后match</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#直接匹配"><span class="toc-number">2.2.</span> <span class="toc-text">直接匹配</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#match与search"><span class="toc-number">2.3.</span> <span class="toc-text">match与search</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#特殊符号"><span class="toc-number">2.4.</span> <span class="toc-text">特殊符号</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#正则表达式的规则"><span class="toc-number">3.</span> <span class="toc-text">正则表达式的规则</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#字符串操作"><span class="toc-number">4.</span> <span class="toc-text">字符串操作</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#reference"><span class="toc-number">5.</span> <span class="toc-text">reference</span></a></li></ol>
+		
+		</div>
+		
+		<blockquote>
+<p>原载于CSDN，但维护起来不方便，就移过来了。</p>
+</blockquote>
+<h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>发现自己在使用python的正则模块的时候，经常忘记具体的使用方法，搜索的话很快能得到解答，但过不了一阵就又忘记，而官方API文档有时候查找也是个麻烦。所以也就写个备忘，按照用途来归纳一下网上有的一些使用RE模块的经验。注意，<strong>本篇不讲述基本概念</strong>。<br>首先当然是要<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br></pre></td></tr></table></figure></p>
+<h1 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h1><h2 id="先compile后match"><a href="#先compile后match" class="headerlink" title="先compile后match"></a>先compile后match</h2><p>适用于模式需要多次使用<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">p = re.compile(<span class="string">'ab*'</span>)<span class="comment"># p:re.RegexObject</span></span><br><span class="line">p.match(<span class="string">"abbbb"</span>)<span class="comment">#将返回一个 MatchObject</span></span><br></pre></td></tr></table></figure></p>
+<p>compile方法可以接受一些标志常量作为第二个参数，例如<code>re.IGNORECASE</code><br>返回的<code>MatchObject</code>可以做进一步操作：  </p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">方法/属性</th>
+<th style="text-align:left">作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">group()</td>
+<td style="text-align:left">返回被 RE 匹配的字符串</td>
+</tr>
+<tr>
+<td style="text-align:left">start()</td>
+<td style="text-align:left">返回匹配开始的位置</td>
+</tr>
+<tr>
+<td style="text-align:left">end()</td>
+<td style="text-align:left">返回匹配结束的位置</td>
+</tr>
+<tr>
+<td style="text-align:left">span()</td>
+<td style="text-align:left">返回一个元组包含匹配 (开始,结束) 的位置</td>
+</tr>
+</tbody>
+</table>
+<p>具体效果用一次就知道。  </p>
+<h2 id="直接匹配"><a href="#直接匹配" class="headerlink" title="直接匹配"></a>直接匹配</h2><p>如果模式不需要多次使用，直接匹配即可：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">re.match(patternString, text)<span class="comment">#返回的是MatchObject</span></span><br></pre></td></tr></table></figure></p>
+<p>这些模块级函数的基本用法与RegexObject几乎一致，只是需要传入一个pattern参数，不再赘述。  </p>
+<h2 id="match与search"><a href="#match与search" class="headerlink" title="match与search"></a>match与search</h2><p>只有在字符串的开头开始匹配，match才会返回MatchObject对象，而search则在全text中寻找匹配。例如  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">line = <span class="string">"Cats are smarter than dogs"</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">#No match!!</span></span><br><span class="line">matchObj = re.match( <span class="string">r'dogs'</span>, line, re.M|re.I)</span><br><span class="line"><span class="keyword">if</span> matchObj:</span><br><span class="line">   <span class="keyword">print</span> <span class="string">"match --&gt; matchObj.group() : "</span>, matchObj.group()</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">   <span class="keyword">print</span> <span class="string">"No match!!"</span><span class="comment"># if line="dogs are smarter than cats", things change</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#search --&gt; matchObj.group() :  dogs</span></span><br><span class="line">searchObj = re.search( <span class="string">r'dogs'</span>, line, re.M|re.I)</span><br><span class="line"><span class="keyword">if</span> searchObj:</span><br><span class="line">   <span class="keyword">print</span> <span class="string">"search --&gt; searchObj.group() : "</span>, searchObj.group()</span><br><span class="line"><span class="keyword">else</span>:</span><br><span class="line">   <span class="keyword">print</span> <span class="string">"Nothing found!!"</span></span><br></pre></td></tr></table></figure>
+<h2 id="特殊符号"><a href="#特殊符号" class="headerlink" title="特殊符号"></a>特殊符号</h2><p>特殊符号主要是<code>.</code>,<code>\</code>,<code>$</code>,<code>^</code>等具有特殊意义的符号，这些符号的一般用法我不予介绍，在第2节的规则图中都有说明，本小节只介绍特殊用法。</p>
+<p><strong><code>&#39;\&#39;</code></strong><br>反斜杠在正则表达式中用于转义。同时注意，在python的字符串中反斜杠同样用于转义，所以反斜杠会经过两层解释：python字符串解释，正则表达式解释。<br>这可能导致一些意料之外的问题，例如想在Latex文本中匹配<code>\section</code>，它作为RE表达式，需要写成<code>&#39;\\section&#39;</code>转义反斜杠，同时，如果它直接作为字符串参数传入RE模块，则还要分别对这两个反斜杠转义，写成<code>&#39;\\\\section&#39;</code>，显然这不漂亮。<br>一种便捷的方式是使用raw字符，这可以免去字符串转义，写成<code>r&#39;\\section&#39;</code>。但是注意，这时候所有字符串中的特殊转义就无用了，<code>r&#39;\n&#39;</code>将被识别为一个<code>&#39;\&#39;</code>和一个<code>&#39;n&#39;</code>。<br>另一种就是老老实实用compile。</p>
+<p><strong><code>&#39;.&#39;</code></strong><br>点号，如果指定了 <code>DOTALL</code> 标记，匹配包括换行符在内的任意一个字符。</p>
+<p><strong><code>&#39;^&#39;</code></strong><br>尖号，在<code>MULTILINE</code> 模式下，将匹配任意一个新行的开始。</p>
+<p><strong><code>&#39;$&#39;</code></strong><br>dollar符号，匹配一个字符串的<strong>结尾</strong>或者字符串最后面的<strong>换行符</strong>，在<code>MULTILINE</code>模式下，匹配任意一行的行尾。也就是说，普通模式下，<code>foo.$</code>去搜索<code>&#39;foo1\nfoo2\n&#39;</code>只会找到<code>&#39;foo2&#39;</code>，但是在 <code>MULTILINE</code> 模式，还能找到 <code>&#39;foo1&#39;</code>，而且就用一个 <code>$</code>去搜索<code>&#39;foo\n&#39;</code>的话，会找到两个空的匹配：一个是最后的换行符，一个是字符串的结尾，演示：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>re.findall(<span class="string">'(foo.$)'</span>, <span class="string">'foo1\nfoo2\n'</span>)</span><br><span class="line">[<span class="string">'foo2'</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>re.findall(<span class="string">'(foo.$)'</span>, <span class="string">'foo1\nfoo2\n'</span>, re.MULTILINE)</span><br><span class="line">[<span class="string">'foo1'</span>, <span class="string">'foo2'</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>re.findall(<span class="string">'($)'</span>, <span class="string">'foo\n'</span>)</span><br><span class="line">[<span class="string">''</span>, <span class="string">''</span>]</span><br></pre></td></tr></table></figure>
+<p><strong><code>*?</code></strong>, <strong><code>+?</code></strong>, <strong><code>??</code></strong><br><code>&#39;*&#39;</code>，<code>&#39;+&#39;</code>和<code>&#39;?&#39;</code>都是贪婪的，但这也许并不是我们所要的。可以在后面加个问号，将策略改为非贪婪，只匹配尽量短的RE。示例，体会两者的区别：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>re.findall(<span class="string">'&lt;(.*)&gt;'</span>, <span class="string">'&lt;H1&gt;title&lt;/H1&gt;'</span>)</span><br><span class="line">[<span class="string">'H1&gt;title&lt;/H1'</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>re.findall(<span class="string">'&lt;(.*?)&gt;'</span>, <span class="string">'&lt;H1&gt;title&lt;/H1&gt;'</span>)</span><br><span class="line">[<span class="string">'H1'</span>, <span class="string">'/H1'</span>]</span><br></pre></td></tr></table></figure>
+<p><strong><code>{m,n}?</code></strong><br>{m,n}，也是贪婪的，a{3,5}如果有5个以上连续a的话，会匹配5个，这个也可以通过加问号改变。a{3,5}?如果可能的话，将只匹配3个a。<br>(?…)<br>这是一个表达式的扩展符号。’?’后的第一个字母决定了整个表达式的语法和含义，除了(?P…)以外，表达式不会产生一个新的组。如果需要指定匹配模式或者需要对匹配起别名以便提取，可以使用这个符号。</p>
+<p><strong><code>\b</code></strong><br>匹配单词边界（包括开始和结束），这里的“单词”，是指连续的字母、数字和下划线组成的字符串。注意，\b的定义是\w和\W的交界，所以精确的定义有赖于UNICODE和LOCALE这两个标志位。</p>
+<p><strong><code>\B</code></strong><br>和\b相反，\B匹配非单词边界。<br><code>\b</code>和<code>\B</code>是<strong>零宽界定符(zero-width assertions)</strong></p>
+<p><strong>前向界定符(lookahead assertion)</strong><br>前向界定符也是一种零宽界定符(zero-width assertion)。前向界定符包括前向肯定界定符和前向否定界定符，如下所示：<br><code>(?=...)</code><br>前向肯定界定符。如果所含正则表达式(以 <code>...</code> 表示)在当前位置成功匹配时成功，否则失败。但一旦所含表达式已经尝试，匹配引擎并不会停止，模式的剩余部分还要尝试匹配界定符的右边。<br><code>(?!...)</code><br>前向否定界定符。与肯定界定符相反，当所含表达式<strong>不能</strong>在字符串当前位置匹配时成功，模式的剩余部分继续参与匹配。<br>文字描述可能不太好理解，看例子<br>要求匹配所有文件扩展名不为bat的文件，包括.ba,.batch等。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.*[.](?!bat$).*$</span><br></pre></td></tr></table></figure></p>
+<p>使用了前向否定界定，当<code>bat$</code>匹配失败时，当前位置不移动，继续匹配后面的表达式，当<code>bat$</code>匹配成功时，当前位置失败，停止匹配并返回。<br>前向否定的意思：在当前位置向前看（前向），如果表达式 <code>bat$</code> 不会被匹配，尝试模式的其余部分（当做没有这个表达式，当前位置不变）；如果 <code>bat$</code> 匹配，整个模式将失败（否定）。后面的 <code>$</code> 是为了确保象 “sample.batch” 这样以 “bat” 开头的扩展名会被允许。</p>
+<h1 id="正则表达式的规则"><a href="#正则表达式的规则" class="headerlink" title="正则表达式的规则"></a>正则表达式的规则</h1><p>一图胜千言<br><img src="http://img.blog.csdn.net/20130730194819359" alt="规则图" title="正则表达式的规则图"></p>
+<h1 id="字符串操作"><a href="#字符串操作" class="headerlink" title="字符串操作"></a>字符串操作</h1><p>RegexObject提供一些方法来对字符串进行操作。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">方法/属性</th>
+<th style="text-align:left">作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">split(string [, maxsplit = 0])</td>
+<td style="text-align:left">将字符串在 RE 匹配的地方分片并生成一个列表</td>
+</tr>
+<tr>
+<td style="text-align:left">sub(replacement, string[, count = 0])</td>
+<td style="text-align:left">找到 RE 匹配的所有子串，并将其用一个不同的字符串替换</td>
+</tr>
+<tr>
+<td style="text-align:left">subn(replacement, string[, count = 0])</td>
+<td style="text-align:left">与 sub() 相同，但返回新的字符串和替换次数</td>
+</tr>
+</tbody>
+</table>
+<p><code>replacement</code>中可以使用逆向引用，与正则匹配规则一样，字符串中的转义符号例如<code>\n</code>会被解释为对应的控制符，<code>r&#39;\n&#39;</code>则不会。<br>需要了解更多的方法可以查看<a href="https://docs.python.org/2/library/re.html" title="Python官方文档" target="_blank" rel="noopener">官方文档</a></p>
+<h1 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h1><p><a href="http://www.jb51.net/article/15707.htm" title="比较详细Python正则表达式操作指南(re使用)" target="_blank" rel="noopener">比较详细Python正则表达式操作指南(re使用)</a><br><a href="http://www.jb51.net/article/50511.htm" title="python正则表达式re模块详细介绍" target="_blank" rel="noopener">python正则表达式re模块详细介绍</a><br><a href="http://www.yiibai.com/python/python_reg_expressions.html" title="Python正则表达式" target="_blank" rel="noopener">Python正则表达式</a><br><a href="http://blog.jobbole.com/74844/" title="Python正则表达式的七个使用范例" target="_blank" rel="noopener">Python正则表达式的七个使用范例</a><br><a href="http://www.cnblogs.com/IPrograming/p/Python_re.html" title="【循序渐进学Python】12.Python 正则表达式简介" target="_blank" rel="noopener">【循序渐进学Python】12.Python 正则表达式简介</a><br><a href="https://docs.python.org/2/library/re.html" title="Python官方文档" target="_blank" rel="noopener">Python doc</a><br><a href="http://blog.csdn.net/michaelpp/article/details/9631979" title="Python中使用正则表达式" target="_blank" rel="noopener">Python中使用正则表达式</a></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/blog/">blog</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/python/">python</a><a href="/tags/regex/">regex</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://hjhjw1991.github.io/blog/2015/06/08/Python正则表达式/" data-title="Python正则表达式 | hjhjw1991&#39;s blog" data-tsina="1304671950" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev">
+ <a href="/leetcode/2015/06/17/[Leetcode题解]6-ZigZag-Conversion/" title="【Leetcode题解】6-ZigZag Conversion">
+  <strong>上一篇：</strong><br>
+  <span>
+  【Leetcode题解】6-ZigZag Conversion</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/blog/2015/05/19/搬瓦工VPS架设VPN教程/" title="搬瓦工VPS架设VPN教程">
+ <strong>下一篇：</strong><br> 
+ <span>搬瓦工VPS架设VPN教程
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#用法"><span class="toc-number">2.</span> <span class="toc-text">用法</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#先compile后match"><span class="toc-number">2.1.</span> <span class="toc-text">先compile后match</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#直接匹配"><span class="toc-number">2.2.</span> <span class="toc-text">直接匹配</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#match与search"><span class="toc-number">2.3.</span> <span class="toc-text">match与search</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#特殊符号"><span class="toc-number">2.4.</span> <span class="toc-text">特殊符号</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#正则表达式的规则"><span class="toc-number">3.</span> <span class="toc-text">正则表达式的规则</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#字符串操作"><span class="toc-number">4.</span> <span class="toc-text">字符串操作</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#reference"><span class="toc-number">5.</span> <span class="toc-text">reference</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="hjhjw1991" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js"></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/android/" title="android">android<sup>26</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/blog/" title="blog">blog<sup>15</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/leetcode/" title="leetcode">leetcode<sup>9</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/opinion/" title="opinion">opinion<sup>4</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/tips/" title="tips">tips<sup>4</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/android/" title="android">android<sup>27</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guide/" title="guide">guide<sup>21</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/interview/" title="interview">interview<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/windows/" title="windows">windows<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/jekyll/" title="jekyll">jekyll<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vps/" title="vps">vps<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ssh/" title="ssh">ssh<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vpn/" title="vpn">vpn<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/regex/" title="regex">regex<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/uwsgi/" title="uwsgi">uwsgi<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ios/" title="ios">ios<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/linux/" title="linux">linux<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://google.com" target="_blank" title="Google">Google</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.goldenfrog.com/vyprvpn/refer-a-friend/get-a-free-month?ar=8betlkaq2h638_1" target="_blank" title="VyprVPN">VyprVPN</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="120" class="share_self" frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=1304671950&verifier=64e7ae81&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer">
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Huang Jun. <br>
+			This is my blog.</p>
+	</section>
+	 
+	<div class="social-font">
+		
+		<a href="http://weibo.com/1304671950" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/hjhjw1991" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:hjhjw1991@gmail.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="hjhjw1991">hjhjw1991</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'hjhjw1991';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?cd0e561542c22cc83da2e311ec57da84";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

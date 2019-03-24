@@ -1,0 +1,652 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+  
+    <title>Android 6.0 小记 | hjhjw1991&#39;s blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="hjhjw1991">
+    
+
+    
+    <meta name="description" content="最近 Google 正式发布了 Android M，并命名为“棉花糖”（Marshmallow）">
+<meta name="keywords" content="android">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android 6.0 小记">
+<meta property="og:url" content="https://hjhjw1991.github.io/android/2015/08/25/Android-6.0-小记/index.html">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
+<meta property="og:description" content="最近 Google 正式发布了 Android M，并命名为“棉花糖”（Marshmallow）">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-02-20T16:36:35.387Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android 6.0 小记">
+<meta name="twitter:description" content="最近 Google 正式发布了 Android M，并命名为“棉花糖”（Marshmallow）">
+
+    
+    <link rel="alternative" href="/atom.xml" title="hjhjw1991&#39;s blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/author.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/author.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="hjhjw1991&#39;s blog" title="hjhjw1991&#39;s blog"></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="hjhjw1991&#39;s blog">hjhjw1991&#39;s blog</a></h1>
+				<h2 class="blog-motto">Coder, Learn</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="http://zhannei.baidu.com/cse/search" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value="8741923514077570040"><input type="text" name="q" size="30" placeholder="搜索"><br>
+						</form>
+					
+					</li>
+				</ul>
+			</ul></nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/android/2015/08/25/Android-6.0-小记/" title="Android 6.0 小记" itemprop="url">Android 6.0 小记</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="hjhjw1991" target="_blank" itemprop="author">hjhjw1991</a>
+		
+  </p><p class="article-time">
+    <time datetime="2015-08-24T16:00:00.000Z" itemprop="datePublished"> 发表于 2015-08-25</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#权限管理"><span class="toc-number">1.</span> <span class="toc-text">权限管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#APP-Linking"><span class="toc-number">2.</span> <span class="toc-text">APP Linking</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#APP-数据自动备份"><span class="toc-number">3.</span> <span class="toc-text">APP 数据自动备份</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#直接分享"><span class="toc-number">4.</span> <span class="toc-text">直接分享</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#支持蓝牙触控笔"><span class="toc-number">5.</span> <span class="toc-text">支持蓝牙触控笔</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#低功耗蓝牙扫描优化"><span class="toc-number">6.</span> <span class="toc-text">低功耗蓝牙扫描优化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#支持主题化的-ColorStateLists"><span class="toc-number">7.</span> <span class="toc-text">支持主题化的 ColorStateLists</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#相机-API"><span class="toc-number">8.</span> <span class="toc-text">相机 API</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#其他"><span class="toc-number">9.</span> <span class="toc-text">其他</span></a></li></ol>
+		
+		</div>
+		
+		<blockquote>
+<p>最近 Google 正式发布了 Android M，并命名为“棉花糖”（Marshmallow），对于开发者来说，有哪些新的技术和变化呢？本文尝试总结一下 Android 6.0（API 23）给开发者带来新的技术和改变。</p>
+</blockquote>
+<h2 id="权限管理"><a href="#权限管理" class="headerlink" title="权限管理"></a>权限管理</h2><p>权限管理是 Android M 最大的改变，权限管理更加精细，并且由以前的安装时静态授权，改为现在的运行时动态授权。大家对 Android 的权限吐槽已久，Android 应该能极大的改善这方面的问题。主要改变有：  </p>
+<ul>
+<li>系统设置中可以对 APP 各个权限单独控制</li>
+<li>权限根据内容进行分组了</li>
+<li>普通权限还是在安装时授权</li>
+<li>其他权限在运行时系统弹窗授权，并且要解析使用这个权限的目的</li>
+</ul>
+<p>对于开发者来说，需要小心处理权限相关的问题。在使用某个功能的时候，需要总是判断是否有改权限，并且通过合适的方式请求用户授权。关于 Android M 权限的处理，可以参考<a href="http://developer.android.com/preview/features/runtime-permissions.html" target="_blank" rel="noopener">官方文档</a>。<br>另外，这篇<a href="https://medium.com/ribot-labs/exploring-the-new-android-permissions-model-ba1d5d6c0610" target="_blank" rel="noopener">文章</a>结合图文和代码讲述了 Android M 中权限模型，比较清晰，可以参考一下。</p>
+<hr>
+<h2 id="APP-Linking"><a href="#APP-Linking" class="headerlink" title="APP Linking"></a>APP Linking</h2><p>这是一个把 APP 和网页直接打通的技术，能够让 APP 能够直接来处理你的网站普通的 URL 链接，来展示你对应的网站内容。这绝对是一个值得关注的改进，Web 和 APP 之间缝隙将越来越小。这对既有网站又有 APP 的应用来说非常有利，例如知乎和淘宝等。<br>有点类似于之前的 APP 的 Deep link，可以通过特殊的 Schema 也可以让 APP 直接打开对应的内容。APP Linking 的特点是，只要使用传统的 URL 就可以，而且是根据 URL 的域名对应特定的 APP 的。<br>开发者需要做的是在 <code>AndroidManifest.xml</code> 做一下对应的声明即可。如果需要让系统默认用你的 APP 打开对应的 URL 的话，还需要网站配合提供 <code>assetlinks.json</code>。详情可以参考<a href="http://developer.android.com/preview/features/app-linking.html" target="_blank" rel="noopener">这里</a>。</p>
+<hr>
+<h2 id="APP-数据自动备份"><a href="#APP-数据自动备份" class="headerlink" title="APP 数据自动备份"></a>APP 数据自动备份</h2><p>支持 APP 数据自动备份到 Google Drive，在你换手机的时候，能够直接把 APP 的数据恢复到你的手机上，你还可以配置些数据那些数据需要或者不需要备份。而且不用写任何代码就自动实现了。详情可以参考<a href="http://developer.android.com/preview/backup/index.html" target="_blank" rel="noopener">这里</a>。<br>然而这些对国内的开发者来说，并没有什么用。国内厂商的 ROM 有些已经有或者准备会跟上，到时候都能享受到这样的便利。</p>
+<hr>
+<p>##指纹解锁<br>Android 官方支持指纹认证，可以用在解锁，或者任何需要验证用户的地方，例如支付。提供了新的 API <code>FingerprintManager</code>，让第三方 APP 来用来获得指纹认证的功能。具体使用方法可以参考这个<a href="https://github.com/googlesamples/android-FingerprintDialog" target="_blank" rel="noopener">实例</a>。</p>
+<hr>
+<h2 id="直接分享"><a href="#直接分享" class="headerlink" title="直接分享"></a>直接分享</h2><p>直接分享是在 APP 内直接弹出一个选择分享到其他应用的中的对象的列表，中间省略了选择需要分享的 APP，选择“联系人”之类的操作。Android 中分享已经做得很好了，这里又更进一步简化了分享操作。如果要让你的 APP 支持被直接分享，需要实现一个 <code>ChooserTargetService</code>，并且实现对应的处理分享 Intent 的 Activity。具体使用可以参考<a href="http://stackoverflow.com/a/30721038/1260562" target="_blank" rel="noopener">这里</a>。</p>
+<hr>
+<h2 id="支持蓝牙触控笔"><a href="#支持蓝牙触控笔" class="headerlink" title="支持蓝牙触控笔"></a>支持蓝牙触控笔</h2><p>系统内置支持蓝牙触控笔，这样 Android 系统就默认支持高大上的触控笔了。并提供了 API 让你的 APP 来响应触控笔事件。</p>
+<hr>
+<h2 id="低功耗蓝牙扫描优化"><a href="#低功耗蓝牙扫描优化" class="headerlink" title="低功耗蓝牙扫描优化"></a>低功耗蓝牙扫描优化</h2><p>优化了低功耗蓝牙扫描优化的扫描。现在低功耗蓝牙的应用越来越多，很多 APP 都需要扫描设备，扫描设备是一个非常重的操作，希望这次改动，能够带来一些改善。</p>
+<hr>
+<h2 id="支持主题化的-ColorStateLists"><a href="#支持主题化的-ColorStateLists" class="headerlink" title="支持主题化的 ColorStateLists"></a>支持主题化的 <code>ColorStateLists</code></h2><p>使用 <code>context.getColorStateList(int id)</code> 来获取当前主题对应的 <code>ColorStateLists</code>。</p>
+<hr>
+<h2 id="相机-API"><a href="#相机-API" class="headerlink" title="相机 API"></a>相机 API</h2><p>提供 API <code>setTorchMode()</code> 来直接开关闪光灯，并且可以监听闪光灯的开光状态，以前很多 APP 已经支持用闪光灯来做手电筒，现在官方提供 API 来做这样的事情了。<br>从 Android 5.0 开始，就提供了一套全新的相机 API <code>Camera2</code>，这里在此基础上添加了处理相关 API。</p>
+<hr>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><p>另外还有很多的改进，可以参考官方<a href="http://developer.android.com/preview/api-overview.html" target="_blank" rel="noopener">概述</a>：</p>
+<ul>
+<li>有语音交互 API</li>
+<li>Hotspot 2.0 支持</li>
+<li>4k 屏支持</li>
+<li><a href="http://developer.android.com/preview/api-overview.html#audio" target="_blank" rel="noopener">语音</a>和<a href="http://developer.android.com/preview/api-overview.html#video" target="_blank" rel="noopener">视频</a> API 的改进</li>
+<li>Android 企业用户特性，例如多用户支持，静默安装等</li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/android/">android</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://hjhjw1991.github.io/android/2015/08/25/Android-6.0-小记/" data-title="Android 6.0 小记 | hjhjw1991&#39;s blog" data-tsina="1304671950" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev">
+ <a href="/blog/2015/08/30/Mac下配置ssh访问远程私有git服务器/" title="Mac下配置ssh访问远程私有git服务器">
+  <strong>上一篇：</strong><br>
+  <span>
+  Mac下配置ssh访问远程私有git服务器</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/blog/2015/08/16/windows下使用Putty配置github-ssh-key/" title="Windows下使用Putty配置github-ssh-key">
+ <strong>下一篇：</strong><br> 
+ <span>Windows下使用Putty配置github-ssh-key
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#权限管理"><span class="toc-number">1.</span> <span class="toc-text">权限管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#APP-Linking"><span class="toc-number">2.</span> <span class="toc-text">APP Linking</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#APP-数据自动备份"><span class="toc-number">3.</span> <span class="toc-text">APP 数据自动备份</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#直接分享"><span class="toc-number">4.</span> <span class="toc-text">直接分享</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#支持蓝牙触控笔"><span class="toc-number">5.</span> <span class="toc-text">支持蓝牙触控笔</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#低功耗蓝牙扫描优化"><span class="toc-number">6.</span> <span class="toc-text">低功耗蓝牙扫描优化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#支持主题化的-ColorStateLists"><span class="toc-number">7.</span> <span class="toc-text">支持主题化的 ColorStateLists</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#相机-API"><span class="toc-number">8.</span> <span class="toc-text">相机 API</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#其他"><span class="toc-number">9.</span> <span class="toc-text">其他</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="hjhjw1991" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js"></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/android/" title="android">android<sup>26</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/blog/" title="blog">blog<sup>15</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/leetcode/" title="leetcode">leetcode<sup>9</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/opinion/" title="opinion">opinion<sup>4</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/tips/" title="tips">tips<sup>4</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/android/" title="android">android<sup>27</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guide/" title="guide">guide<sup>21</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/interview/" title="interview">interview<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/windows/" title="windows">windows<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/jekyll/" title="jekyll">jekyll<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vps/" title="vps">vps<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ssh/" title="ssh">ssh<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vpn/" title="vpn">vpn<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/regex/" title="regex">regex<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/uwsgi/" title="uwsgi">uwsgi<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ios/" title="ios">ios<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/linux/" title="linux">linux<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://google.com" target="_blank" title="Google">Google</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.goldenfrog.com/vyprvpn/refer-a-friend/get-a-free-month?ar=8betlkaq2h638_1" target="_blank" title="VyprVPN">VyprVPN</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="120" class="share_self" frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=1304671950&verifier=64e7ae81&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer">
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Huang Jun. <br>
+			This is my blog.</p>
+	</section>
+	 
+	<div class="social-font">
+		
+		<a href="http://weibo.com/1304671950" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/hjhjw1991" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:hjhjw1991@gmail.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="hjhjw1991">hjhjw1991</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'hjhjw1991';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?cd0e561542c22cc83da2e311ec57da84";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

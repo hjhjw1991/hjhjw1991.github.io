@@ -1,0 +1,664 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+  
+    <title>Activity中launchMode的理解 | hjhjw1991&#39;s blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="hjhjw1991">
+    
+
+    
+    <meta name="description" content="我们知道, `Activity`需要配置在`AndroidManifest.xml`中才能正常启动, 其原因是launc...">
+<meta name="keywords" content="guide,android">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Activity中launchMode的理解">
+<meta property="og:url" content="https://hjhjw1991.github.io/android/2017/04/28/Activity中launchMode的理解/index.html">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
+<meta property="og:description" content="我们知道, `Activity`需要配置在`AndroidManifest.xml`中才能正常启动, 其原因是launc...">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://hjhjw1991.github.io/images/blogs/back_stack.png">
+<meta property="og:updated_time" content="2019-02-20T16:36:35.394Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Activity中launchMode的理解">
+<meta name="twitter:description" content="我们知道, `Activity`需要配置在`AndroidManifest.xml`中才能正常启动, 其原因是launc...">
+<meta name="twitter:image" content="https://hjhjw1991.github.io/images/blogs/back_stack.png">
+
+    
+    <link rel="alternative" href="/atom.xml" title="hjhjw1991&#39;s blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/author.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/author.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="hjhjw1991&#39;s blog" title="hjhjw1991&#39;s blog"></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="hjhjw1991&#39;s blog">hjhjw1991&#39;s blog</a></h1>
+				<h2 class="blog-motto">Coder, Learn</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="http://zhannei.baidu.com/cse/search" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value="8741923514077570040"><input type="text" name="q" size="30" placeholder="搜索"><br>
+						</form>
+					
+					</li>
+				</ul>
+			</ul></nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/android/2017/04/28/Activity中launchMode的理解/" title="Activity中launchMode的理解" itemprop="url">Activity中launchMode的理解</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="hjhjw1991" target="_blank" itemprop="author">hjhjw1991</a>
+		
+  </p><p class="article-time">
+    <time datetime="2017-04-27T16:00:00.000Z" itemprop="datePublished"> 发表于 2017-04-28</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#launchMode属性"><span class="toc-number">1.</span> <span class="toc-text">launchMode属性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#taskAffinity"><span class="toc-number">2.</span> <span class="toc-text">taskAffinity</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#intent-flags"><span class="toc-number">3.</span> <span class="toc-text">intent flags</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#任务栈和回退栈"><span class="toc-number">4.</span> <span class="toc-text">任务栈和回退栈</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考文章"><span class="toc-number">5.</span> <span class="toc-text">参考文章</span></a></li></ol>
+		
+		</div>
+		
+		<p>我们知道, <code>Activity</code>需要配置在<code>AndroidManifest.xml</code>中才能正常启动, 其原因是launcher需要它来判断应当从哪个Apk中启动哪个Class. 在配置<code>Activity</code>的时候, 有一个属性叫做<code>launchMode</code>, 它对<code>Activity</code>的启动和退出影响颇大, 今天我们就来深入了解一下这个属性以及其背后的逻辑.  </p>
+<h2 id="launchMode属性"><a href="#launchMode属性" class="headerlink" title="launchMode属性"></a>launchMode属性</h2><blockquote>
+<p>本节内容可自行写demo验证理解</p>
+</blockquote>
+<p>翻阅各种参考, 我们知道(截至本文成文之日)<code>launchMode</code>一共可以指定四种属性值, 分别是<code>standard singleTop singleTask singleInstance</code>, 其中<code>standard</code>也是默认的属性值. 那么他们分别具有怎样的作用呢?<br>总的来说, <code>launchMode</code>属性影响的是<code>Activity</code>的回退栈, 因此我们有必要先理解回退栈这一概念.<br>在<code>Activity</code>启动的时候, 我们需要考虑当它退出的时候, 下一个要展示的<code>Activity</code>是什么, 为此, <code>android</code>中维护一个<code>Task</code>, 称为任务栈, 以栈的数据结构存储启动的<code>Activity</code>. 当我们退出一个<code>Activity</code>的时候, 展示上一个启动的<code>Activity</code>, 于是在<code>Task</code>中, 只要让当前展示的<code>Activity</code>位于栈顶, 在退出时让它出栈, 就可以自然完成这样的回退逻辑. 例如从A启动B, 当我们退出B的时候, 就展示A. 以上就是最简单朴素的回退栈. 但是这里有一个问题, 就是当我们从桌面启动A时, 回退栈中似乎只有一个A, 这时候退出A, 栈就空了, 怎么办呢? 当然我们大家都知道, 这时候其实是回到了桌面的. 原因就在于, <code>Task</code>有两层概念, 第一层是, 任一应用(作为一个process)拥有自身的回退栈, 第二层是, 系统维护跨应用的全部回退栈. 于是在退出A的时候, 我们实际上是退出了当前应用的回退栈, 交由系统决定下一个要展示的回退栈, 这里就是<code>launcher</code>这个系统应用的回退栈了. 而在<code>launcher</code>中, 由于重写了<code>Back</code> <code>Home</code>按键的响应, 所以不会再退出这个应用.<br>可以用图表示如下:  </p>
+<p><img src="/images/blogs/back_stack.png" alt="回退栈示意图">  </p>
+<p>有了回退栈我们就知道了如何处理”退出一个Activity”这件事情. 与此相对的, “启动一个Activity”这件事情就意味着需要将<code>Activity</code>放到某个回退栈中. 如果我们完全按照以上的基本逻辑, 即每个应用拥有自身的回退栈, 并且每启动一个<code>Activity</code>就将它放到栈顶, 这就是<code>launchMode</code>的默认属性<code>standard</code>的行为. 对于<code>standard</code>的<code>Activity</code>来说, 它的实例会被放到启动它的<code>Activity</code>所在的<code>Task</code>中.  </p>
+<p>很可惜现实世界不是这么简单而美好的, “标准行为”总是会引起”标准错误”. 于是就有了后面三种启动模式.<br>考虑一种情况, 我们需要在应用App1中启动应用App2的某个<code>Activity B</code>. 假设这个B以标准模式启动会有什么问题呢? 每次调用都会创建B并添加到任务栈中, 导致任务栈上茫茫多的B, 退都退不完. 更糟糕的是, 默认情况下B没有指定任务栈, 它会被放在调用它的应用的任务栈上, 这就导致你回到原来的应用界面需要穿过千山万水. 这种情形很常见, 例如点击通知栏通知, 就会跳转到指定应用的指定<code>Activity</code>, 点一百次通知就创建一百个实例这是不可接受的. 通常情况下其实只需要更新数据, 根本没必要新建一个实例. 于是我们有了<code>singleTop</code>模式. 它的作用在于, 该模式下的<code>Activity</code>实例, 如果本身已经在栈顶, 那么再次调用<code>startActivity</code>的时候, 不会创建新的实例, 而是调用已存在实例的<code>onNewIntent()</code>生命周期, 处理新传入的<code>Intent</code>. 如果实例不存在或不在栈顶, 那就跟标准模式一样创建新的实例并放在栈顶.<br>考虑另一种情况, 我们需要在A-B两个<code>Activity</code>中反复互相启动(秘技:反复横跳!), 那么就会引起问题. 由于标准模式下只是无脑启动并添加<code>Activity</code>, 就会导致回退栈中存有大量的<code>A-B-A-B-A-B</code>这样的序列, 而实际上存在多个A还是一个A对用户来说没有分别, 反而多个A导致退出的时候需要按很多次<code>Back</code>, 不胜其烦, 而<code>singleTop</code>模式也不能解决这种问题. 于是我们有了<code>singleTask</code>模式. 它的作用在于, 处于<code>singleTask</code>模式的<code>Activity</code>, 在整个<code>Task</code>之中只能有一个实例. 在启动该<code>Activity</code>的时候, 如果<code>Task</code>中没有该实例, 则新建实例并添加到任务栈, 走全新创建的生命周期, 否则将任务栈中处于该实例以上的所有<code>Activity</code>出栈, 令它处于栈顶(唯我独尊有木有!), 然后调用<code>onNewIntent()</code>周期. 它也是可以快速清空栈内<code>Activity</code>的黑科技.(思考: <code>singleTask</code>模式一定会新建一个<code>Task</code>吗?)<br>再考虑另一种情况, 某个<code>Activity</code>的功能非常单一, 我们全局只需要一个这样的实例来完成他的功能就可以了, 相当于要一个单例<code>Activity</code>. 这样的话, 以上三种模式都无法满足需要, 他们都是强调在某一个Task栈中的状态, 但处于不同的Task栈的话就没有限制了(特别说明一下<code>singleTask</code>模式, 它令Task中只有一个实例, 按理说如果我们只有一个Task的话也可以满足单例的要求, 但它的”副作用”是会清空实例以上的全部<code>Activity</code>, 这却不是我们希望的效果), 所以我们需要一个新的模式来代表这种跨Task栈的单例, 由此诞生了<code>singleInstance</code>模式. 处于该模式的<code>Activity</code>, 在被启动的时候会新建一个<code>Task</code>, 整个生命周期都在这个<code>Task</code>中, 并且这个<code>Task</code><strong>有且只有</strong>它一个实例, 无论从哪里启动它, 只要在某个<code>Task</code>中存在实例, 就会调用这个实例的<code>onNewIntent()</code>周期, 而不是新建一个实例. 这样的例子还是挺多的, 例如桌面日历, 桌面时钟.(思考: 如果指定另一个<code>Activity</code>跟这个<code>singleInstance</code>的<code>Activity</code>拥有同样的<code>Task</code>, 会怎样? 如果从这个<code>singleInstance</code>实例中启动新的<code>Activity</code>, 新的<code>Activity</code>会放在哪里?)  </p>
+<p>以上就是四种启动模式的特点. 在官网中对启动模式的描述, 隐含条件是非标准启动模式都指定了<code>taskAffinity</code>属性, 故可能会引起误解.  </p>
+<h2 id="taskAffinity"><a href="#taskAffinity" class="headerlink" title="taskAffinity"></a>taskAffinity</h2><p>启动模式可以配合<code>taskAffinity</code>属性使用.这里来解释一下<code>taskAffinity</code>这个属性.<br>它是<code>Application</code>和<code>Activity</code>标签都有的属性, 用于指定一个<code>Task</code>的名字, 直译的话可以译作”任务归属性”或者”任务亲和性”吧. 不填写该属性的情况下, 所有<code>Activity</code>在一个以包名为名字的<code>Task</code>中, <code>Activity</code>指定了该属性时, 会被放在以该属性值为名字的<code>Task</code>中, <code>Application</code>指定了该属性时, 整个<code>Application</code>的默认<code>Task</code>以该属性值为名.<br>前文曾提出疑问, <code>singleTask</code>是否一定会新建一个<code>Task</code>, 答案是”不一定”. 以<code>singleTask</code>模式启动的<code>Activity</code>, 总是在”将要放置该Activity的Task”中检查实例, 而不指定<code>taskAffinity</code>的情况下将要放置该<code>Activity</code>的就是默认<code>Task</code>了. 实际上只有在指定了<code>taskAffinity</code>并且该<code>Task</code>还不存在的情况下, 才会新建以<code>taskAffinity</code>值命名的<code>Task</code>.<br>需要注意的是, <code>taskAffinity</code>属性是<strong>跨应用的</strong>, 你完全可以为不同的应用指定同一个<code>Task</code>. 要使该属性生效, 必须允许在启动拥有该属性的<code>Activity</code>时新建<code>Task</code>, 即需要传入下文将要介绍的<code>FLAG_ACTIVITY_NEW_TASK</code>标志或为<code>Activity</code>指定<code>allowTaskReparenting</code>为<code>True</code>.  </p>
+<h2 id="intent-flags"><a href="#intent-flags" class="headerlink" title="intent flags"></a>intent flags</h2><p>如果说, 我们想要在代码中动态地改变<code>Activity</code>启动模式, 比如想让本来以<code>standard</code>模式启动的<code>Activity</code>在某种情况下以<code>singleTop</code>模式启动, 这可以办到吗? <code>Android</code>工程师们显然想到了这种情形, 设计了<code>intent flags</code>来达成该目的.<br>在启动<code>Activity</code>的时候需要一个<code>Intent</code>, 通过<code>Intent.setFlags()</code>可以设置启动标志, 其中启动模式和FLAG的对应关系如下:  </p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">启动模式</th>
+<th style="text-align:left">启动标志</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">standard</td>
+<td style="text-align:left">不设置</td>
+</tr>
+<tr>
+<td style="text-align:left">singleTop</td>
+<td style="text-align:left">FLAG_ACTIVITY_SINGLE_TOP</td>
+</tr>
+<tr>
+<td style="text-align:left">singleTask</td>
+<td style="text-align:left">FLAG_ACTIVITY_NEW_TASK &#124; FLAG_ACTIVITY_CLEAR_TOP</td>
+</tr>
+</tbody>
+</table>
+<p>另外还有更多的FLAG可以达成其他效果, 查看<code>Intent</code>类源码可以了解更多.<br>细心的同学可能发现了, 上述表格跟官网的介绍有出入. 官网说仅<code>FLAG_ACTIVITY_NEW_TASK</code>就会产生与<code>singleTask</code>模式相同的行为, 事实上经我实验只有在指定了<code>taskAffinity</code>时这句话才成立. 官网说<code>FLAG_ACTIVITY_CLEAR_TOP</code>属性没有对应的启动模式, 事实上确实如此, 因为它是<code>singleTask</code>模式的其中一个行为.  </p>
+<p>细心的同学可能还发现, 表格中没有<code>singleInstance</code>模式对应的FLAG. 那是因为这种模式要达成的效果需要在处理<code>Intent</code>之前更早的时期来控制, 在<code>Intent</code>中设置没用.  </p>
+<h2 id="任务栈和回退栈"><a href="#任务栈和回退栈" class="headerlink" title="任务栈和回退栈"></a>任务栈和回退栈</h2><p>由前文所述我们接触到两个概念: 任务栈和回退栈. 我姑且在此拙劣地理解一下: 任务栈是为了完成某种任务而形成的<code>Activity</code>的栈; 回退栈是显示回退顺序的<code>Activity</code>栈. 如此理解的话, 那么两者是从不同的侧面来描述<code>Activity</code>的组织方式, 其中任务栈就是我们上文一直在说的<code>Task</code>, 而回退栈只是一个逻辑上的概念. 事实上我们在新建或者唤起一个<code>Activity</code>的时候, 它所在的整个<code>Task</code>会被提到最上层, 也就是”回退栈”的顶端, 就算<code>launcher</code>应用也是以这种方式回到栈顶的, 只不过它对<code>Back</code>和<code>Home</code>做了处理, 我们无法通过返回键令它出栈而回到位于它下面的<code>Activity</code>. 这就是为什么我们能够在不同的应用间切换, 还能保持应用所打开的<code>Activity</code>的原因(事实上通过设置<code>clearTaskOnLaunch</code>等属性, 切入后台后再切回来可以清空已打开的<code>Activity</code>). 一个栈的名字由在这个栈的底端的那个<code>Activity</code>来定义, 默认就是那个<code>Activity</code>所在的应用的包名.<br>最后一个思考题, 这些任务栈是被谁在什么时候进行管理的呢?<br>祭出我们的大杀器: 源码. 全目录搜索关键词<code>launchMode</code>, 然后就会发现一个东西<code>./frameworks/base/services/java/com/android/server/am/ActivityStack.java</code>以及另一个东西<code>./frameworks/base/core/java/android/content/pm/ActivityInfo.java</code>, 其中前者我们在AMS中已经见到过了, 至此得解.  </p>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><ul>
+<li><a href="https://developer.android.com/guide/components/tasks-and-back-stack.html#ManagingTasks" target="_blank" rel="noopener">官网 任务和返回栈</a>  </li>
+<li><a href="http://www.jcodecraeer.com/a/anzhuokaifa/androidkaifa/2015/0520/2897.html" target="_blank" rel="noopener">Activity启动模式图文详解</a>  </li>
+<li><a href="http://blog.csdn.net/qilamaxiu/article/details/51604957" target="_blank" rel="noopener">Activity启动模式解析</a>  </li>
+<li><a href="http://blog.csdn.net/liuhe688/article/details/6754323" target="_blank" rel="noopener">基础总结篇之二：Activity的四种launchMode</a>  </li>
+<li><a href="http://blog.csdn.net/thewalker3000/article/details/62035836" target="_blank" rel="noopener">如何正确理解和使用 Activity的4种启动模式</a>  </li>
+<li><a href="http://wangkuiwu.github.io/2014/06/26/IntentFlag/" target="_blank" rel="noopener">Android 之Activity启动模式(二)之 Intent的Flag属性</a>  </li>
+<li><a href="http://www.cloudchou.com/android/post-760.html" target="_blank" rel="noopener">深入理解Activity启动模式(二)–Activity,回退栈,Task之间的关系</a>  </li>
+<li><a href="http://blog.csdn.net/wanghao200906/article/details/49766309" target="_blank" rel="noopener">android的启动模式 到底在什么时候用呢</a>  </li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/guide/">guide</a><a href="/tags/android/">android</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://hjhjw1991.github.io/android/2017/04/28/Activity中launchMode的理解/" data-title="Activity中launchMode的理解 | hjhjw1991&#39;s blog" data-tsina="1304671950" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev">
+ <a href="/android/2017/05/02/初涉mmap/" title="初涉mmap">
+  <strong>上一篇：</strong><br>
+  <span>
+  初涉mmap</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/android/2017/03/05/[Android教程]ActivityManagerService全解-part1/" title="【Android教程】ActivityManagerService全解(1/5)">
+ <strong>下一篇：</strong><br> 
+ <span>【Android教程】ActivityManagerService全解(1/5)
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#launchMode属性"><span class="toc-number">1.</span> <span class="toc-text">launchMode属性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#taskAffinity"><span class="toc-number">2.</span> <span class="toc-text">taskAffinity</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#intent-flags"><span class="toc-number">3.</span> <span class="toc-text">intent flags</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#任务栈和回退栈"><span class="toc-number">4.</span> <span class="toc-text">任务栈和回退栈</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考文章"><span class="toc-number">5.</span> <span class="toc-text">参考文章</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="hjhjw1991" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js"></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/android/" title="android">android<sup>26</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/blog/" title="blog">blog<sup>15</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/leetcode/" title="leetcode">leetcode<sup>9</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/opinion/" title="opinion">opinion<sup>4</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/tips/" title="tips">tips<sup>4</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/android/" title="android">android<sup>27</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guide/" title="guide">guide<sup>21</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/interview/" title="interview">interview<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/windows/" title="windows">windows<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/jekyll/" title="jekyll">jekyll<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vps/" title="vps">vps<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ssh/" title="ssh">ssh<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vpn/" title="vpn">vpn<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/regex/" title="regex">regex<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/uwsgi/" title="uwsgi">uwsgi<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ios/" title="ios">ios<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/linux/" title="linux">linux<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://google.com" target="_blank" title="Google">Google</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.goldenfrog.com/vyprvpn/refer-a-friend/get-a-free-month?ar=8betlkaq2h638_1" target="_blank" title="VyprVPN">VyprVPN</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="120" class="share_self" frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=1304671950&verifier=64e7ae81&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer">
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Huang Jun. <br>
+			This is my blog.</p>
+	</section>
+	 
+	<div class="social-font">
+		
+		<a href="http://weibo.com/1304671950" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/hjhjw1991" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:hjhjw1991@gmail.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="hjhjw1991">hjhjw1991</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'hjhjw1991';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?cd0e561542c22cc83da2e311ec57da84";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

@@ -1,0 +1,650 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+  
+    <title>初涉mmap | hjhjw1991&#39;s blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="hjhjw1991">
+    
+
+    
+    <meta name="description" content="在Native开发中遇到mmap, 于是有了这篇文章.">
+<meta name="keywords" content="android">
+<meta property="og:type" content="article">
+<meta property="og:title" content="初涉mmap">
+<meta property="og:url" content="https://hjhjw1991.github.io/android/2017/05/02/初涉mmap/index.html">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
+<meta property="og:description" content="在Native开发中遇到mmap, 于是有了这篇文章.">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-02-20T16:36:35.394Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="初涉mmap">
+<meta name="twitter:description" content="在Native开发中遇到mmap, 于是有了这篇文章.">
+
+    
+    <link rel="alternative" href="/atom.xml" title="hjhjw1991&#39;s blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/author.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/author.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="hjhjw1991&#39;s blog" title="hjhjw1991&#39;s blog"></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="hjhjw1991&#39;s blog">hjhjw1991&#39;s blog</a></h1>
+				<h2 class="blog-motto">Coder, Learn</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="http://zhannei.baidu.com/cse/search" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value="8741923514077570040"><input type="text" name="q" size="30" placeholder="搜索"><br>
+						</form>
+					
+					</li>
+				</ul>
+			</ul></nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/android/2017/05/02/初涉mmap/" title="初涉mmap" itemprop="url">初涉mmap</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="hjhjw1991" target="_blank" itemprop="author">hjhjw1991</a>
+		
+  </p><p class="article-time">
+    <time datetime="2017-05-01T16:00:00.000Z" itemprop="datePublished"> 发表于 2017-05-02</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#是什么"><span class="toc-number">1.</span> <span class="toc-text">是什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#为什么"><span class="toc-number">2.</span> <span class="toc-text">为什么</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#mmap原理"><span class="toc-number">2.1.</span> <span class="toc-text">mmap原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mmap与文件操作的区别"><span class="toc-number">2.2.</span> <span class="toc-text">mmap与文件操作的区别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mmap优势"><span class="toc-number">2.3.</span> <span class="toc-text">mmap优势</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#怎么用"><span class="toc-number">3.</span> <span class="toc-text">怎么用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">4.</span> <span class="toc-text">参考</span></a></li></ol>
+		
+		</div>
+		
+		<blockquote>
+<p>在Native开发中遇到mmap, 于是有了这篇文章.  </p>
+</blockquote>
+<p>目录:  </p>
+<ul>
+<li>是什么  </li>
+<li>为什么  </li>
+<li>怎么用  </li>
+</ul>
+<h2 id="是什么"><a href="#是什么" class="headerlink" title="是什么"></a>是什么</h2><p>mmap: Memory-map. 可翻译成内存映射, 这是一种文件I/O操作, 它将文件(linux世界中, 设备也是文件)映射到内存中, 用户可以像操作内存一样操作文件.<br>mmap以及相关系统调用包含在Unix的BSD(Berkeley Software Distribution)4.2版本的设计中, 然而最先实现mmap接口的是Sun公司, BSD开发者向Sun要代码没要到, 最后BSD上的实现是基于虚拟内存系统Mach中的版本.  </p>
+<h2 id="为什么"><a href="#为什么" class="headerlink" title="为什么"></a>为什么</h2><h3 id="mmap原理"><a href="#mmap原理" class="headerlink" title="mmap原理"></a>mmap原理</h3><p>mmap将文件映射到连续的内存区域, 使进程的地址空间中某一段与被映射的文件(或共享内存)的地址一一对应.<br>无论内核态还是用户态都只是进程所处的一种状态, 进程拥有自己的虚拟地址空间, 但是物理区块是只有一份的, 只是这一份物理区块在不同进程中的地址不同而已. 基于这个事实, 我们只要让自己进程的一段虚拟地址, 指向我们想要载入的物理文件所在的位置, 那么对这段虚拟地址的操作, 就可以直接反映在物理文件上, 看起来就像我们已经载入(从内核空间拷贝内容到用户空间内存)了文件一样.<br>具体来说, 可以分为三个阶段:  </p>
+<ol>
+<li>在用户空间调用mmap函数, 分配一块连续的满足要求的虚拟地址空间, 并将代表该空间的数据结构初始化后插入进程的虚拟地址区域链表中.  </li>
+<li>根据mmap参数, 找到待映射文件的文件描述符, 标记为已打开, 调用内核mmap函数, 定位到文件磁盘物理地址, 建立页表实现文件地址和虚拟地址区域的映射关系. 至此地址映射完成, 但尚未拷贝数据到内存.  </li>
+<li>进程访问虚拟地址空间中该文件所在地址, 引发缺页异常使文件拷贝到主存, 然后就可以对这片区域进行读写操作了.<br>虽然原理很简单, 但实际实现的时候有许多问题需要注意, 比如多个进程访问同一个文件的时候, 如果有进程写文件怎么处理. 根据参数的不同, 可能有不同的处理方式. 例如共享内存<code>MAP_SHARED</code>方式下, 写操作会立即对其他进程可见, 但实际将脏数据写回到文件却是经过一定时间或在msync系统调用之后. 而如果是<code>MAP_PRIVATE</code>方式, 则任何写操作都会引起第二次内存拷贝, 文件数据被拷贝到进程内存空间, 对其他进程不可见, 并且也不会写回文件.  </li>
+</ol>
+<h3 id="mmap与文件操作的区别"><a href="#mmap与文件操作的区别" class="headerlink" title="mmap与文件操作的区别"></a>mmap与文件操作的区别</h3><p>linux还有一套文件操作的系统调用, 即<code>open read write</code>, mmap与他们区别在哪儿呢?<br>最大的区别就在于, 普通文件读写操作, 需要借助处于内核空间的页缓存作为中转, 将数据载入主存, 而mmap却是逻辑映射到物理文件, 直接载入数据到主存.<br>前者总是向页缓存索取数据, 内核通过查找页缓存来判断能否立即返回数据, 在未缓存的情况下, 先从物理磁盘拷贝数据到页缓存, 再从页缓存拷贝数据到用户空间中, 写回时也是同样, 需要先将用户空间的文件缓存拷贝到内核空间, 再由内核写回到磁盘, 都需要经过<strong>两次拷贝</strong>.<br>后者则是在发现需要载入数据时, 通过事先建立的页表映射关系, 直接由内核将数据拷贝到用户空间, <strong>一次拷贝</strong>.<br>因此, mmap理论上来说效率更高.  </p>
+<h3 id="mmap优势"><a href="#mmap优势" class="headerlink" title="mmap优势"></a>mmap优势</h3><ol>
+<li>不使用页缓存机制, 减少一次拷贝.  </li>
+<li>用户空间和内核空间对同一片区域的修改都可以直接反映在对方映射区域内, 提高了交互效率.  </li>
+<li>为共享内存和IPC通信提供一种方式.  </li>
+</ol>
+<h2 id="怎么用"><a href="#怎么用" class="headerlink" title="怎么用"></a>怎么用</h2><p>mmap尽管有些优势, 但并不是万能药, 例如如果你要处理的文件大到很难为之分配一个连续的虚拟地址空间, 或者你想要访问的地址的偏移量不是物理页大小(page_size)的整数倍(此时你需要自己解决偏移量问题), 甚至有些情况下, read/write是与目标文件交互的唯一方式, 见<a href="http://stackoverflow.com/a/258097/3996521" target="_blank" rel="noopener">SOF: when-should-use-mmap</a>.<br>mmap可以用于实现共享内存, 如上问所述.<br>Binder的底层使用mmap, 所以Binder才能做到只拷贝一次数据.<br>在使用mmap时有些要点需要注意:  </p>
+<ol>
+<li>由于mmap的映射是基于页大小的, 所以它一定会映射整数个页面, 哪怕你用不到那么多. 比如5000 byte数据需要2*4k(2个页)空间, 但5000~8191读写不报错但不会反映到文件中, 读为0, 写丢失.  </li>
+<li>无论你声明要使用多大空间, mmap都只会映射刚好够用的页面数量, 所以访问已映射的页面之外的地址, 会报错. 比如原始文件大小5000 byte, 声明要映射15000 byte, 那么仅前5000 byte可正常读写, 5000~8191同上, 不报错但读为0写丢失. 8192~14999无法读写, 报SIGBUS错误. 15000及以上无法读写, 报SIGSEGV错误. 如果确实需要写5000以上的位置, 那么需要在写之前增加文件大小.  </li>
+</ol>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a href="https://en.wikipedia.org/wiki/Mmap" target="_blank" rel="noopener">wikipedia-mmap</a>  </li>
+<li><a href="http://www.cnblogs.com/huxiao-tee/p/4660352.html" target="_blank" rel="noopener">认真分析mmap：是什么 为什么 怎么用</a>  </li>
+<li><a href="http://stackoverflow.com/a/258097/3996521" target="_blank" rel="noopener">SOF: when-should-use-mmap</a>  </li>
+<li><a href="http://blog.csdn.net/yusiguyuan/article/details/23388771" target="_blank" rel="noopener">linux内存映射mmap原理分析</a>  </li>
+<li><a href="http://blog.csdn.net/yinjiabin/article/details/7575653" target="_blank" rel="noopener">linux中mmap系统调用原理分析与实现</a>  </li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/android/">android</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://hjhjw1991.github.io/android/2017/05/02/初涉mmap/" data-title="初涉mmap | hjhjw1991&#39;s blog" data-tsina="1304671950" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev">
+ <a href="/android/2017/05/11/Animation详解/" title="Animation详解">
+  <strong>上一篇：</strong><br>
+  <span>
+  Animation详解</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/android/2017/04/28/Activity中launchMode的理解/" title="Activity中launchMode的理解">
+ <strong>下一篇：</strong><br> 
+ <span>Activity中launchMode的理解
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#是什么"><span class="toc-number">1.</span> <span class="toc-text">是什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#为什么"><span class="toc-number">2.</span> <span class="toc-text">为什么</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#mmap原理"><span class="toc-number">2.1.</span> <span class="toc-text">mmap原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mmap与文件操作的区别"><span class="toc-number">2.2.</span> <span class="toc-text">mmap与文件操作的区别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#mmap优势"><span class="toc-number">2.3.</span> <span class="toc-text">mmap优势</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#怎么用"><span class="toc-number">3.</span> <span class="toc-text">怎么用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">4.</span> <span class="toc-text">参考</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="hjhjw1991" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js"></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/android/" title="android">android<sup>26</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/blog/" title="blog">blog<sup>15</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/leetcode/" title="leetcode">leetcode<sup>9</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/opinion/" title="opinion">opinion<sup>4</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/tips/" title="tips">tips<sup>4</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/android/" title="android">android<sup>27</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guide/" title="guide">guide<sup>21</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/interview/" title="interview">interview<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/windows/" title="windows">windows<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/jekyll/" title="jekyll">jekyll<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vps/" title="vps">vps<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ssh/" title="ssh">ssh<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vpn/" title="vpn">vpn<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/regex/" title="regex">regex<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/uwsgi/" title="uwsgi">uwsgi<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ios/" title="ios">ios<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/linux/" title="linux">linux<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://google.com" target="_blank" title="Google">Google</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.goldenfrog.com/vyprvpn/refer-a-friend/get-a-free-month?ar=8betlkaq2h638_1" target="_blank" title="VyprVPN">VyprVPN</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="120" class="share_self" frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=1304671950&verifier=64e7ae81&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer">
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Huang Jun. <br>
+			This is my blog.</p>
+	</section>
+	 
+	<div class="social-font">
+		
+		<a href="http://weibo.com/1304671950" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/hjhjw1991" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:hjhjw1991@gmail.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="hjhjw1991">hjhjw1991</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'hjhjw1991';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?cd0e561542c22cc83da2e311ec57da84";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

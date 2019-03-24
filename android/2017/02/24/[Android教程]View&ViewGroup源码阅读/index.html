@@ -1,0 +1,707 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+  
+    <title>【Android教程】View/ViewGroup源码阅读 | hjhjw1991&#39;s blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="hjhjw1991">
+    
+
+    
+    <meta name="description" content="又叫【花样劝退教程】。本文讲View">
+<meta name="keywords" content="guide,android,interview">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【Android教程】View&#x2F;ViewGroup源码阅读">
+<meta property="og:url" content="https://hjhjw1991.github.io/android/2017/02/24/[Android教程]View&ViewGroup源码阅读/index.html">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
+<meta property="og:description" content="又叫【花样劝退教程】。本文讲View">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://hjhjw1991.github.io/images/blogs/view_and_viewgroup.png">
+<meta property="og:image" content="https://hjhjw1991.github.io/images/blogs/ActivityWindow.png">
+<meta property="og:image" content="https://hjhjw1991.github.io/images/blogs/view_event_dispatch.png">
+<meta property="og:updated_time" content="2019-02-20T16:36:35.392Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="【Android教程】View&#x2F;ViewGroup源码阅读">
+<meta name="twitter:description" content="又叫【花样劝退教程】。本文讲View">
+<meta name="twitter:image" content="https://hjhjw1991.github.io/images/blogs/view_and_viewgroup.png">
+
+    
+    <link rel="alternative" href="/atom.xml" title="hjhjw1991&#39;s blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/author.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/author.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="hjhjw1991&#39;s blog" title="hjhjw1991&#39;s blog"></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="hjhjw1991&#39;s blog">hjhjw1991&#39;s blog</a></h1>
+				<h2 class="blog-motto">Coder, Learn</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="http://zhannei.baidu.com/cse/search" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value="8741923514077570040"><input type="text" name="q" size="30" placeholder="搜索"><br>
+						</form>
+					
+					</li>
+				</ul>
+			</ul></nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/android/2017/02/24/[Android教程]View&ViewGroup源码阅读/" title="【Android教程】View/ViewGroup源码阅读" itemprop="url">【Android教程】View/ViewGroup源码阅读</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="hjhjw1991" target="_blank" itemprop="author">hjhjw1991</a>
+		
+  </p><p class="article-time">
+    <time datetime="2017-02-23T16:00:00.000Z" itemprop="datePublished"> 发表于 2017-02-24</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#View与ViewGroup类结构"><span class="toc-number">1.</span> <span class="toc-text">View与ViewGroup类结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#View与Window"><span class="toc-number">2.</span> <span class="toc-text">View与Window</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#View绘制与重绘过程"><span class="toc-number">3.</span> <span class="toc-text">View绘制与重绘过程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#View与ViewGroup事件分发"><span class="toc-number">4.</span> <span class="toc-text">View与ViewGroup事件分发</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#事件产生"><span class="toc-number">4.1.</span> <span class="toc-text">事件产生</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#事件分发和处理"><span class="toc-number">4.2.</span> <span class="toc-text">事件分发和处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#事件冲突"><span class="toc-number">4.3.</span> <span class="toc-text">事件冲突</span></a></li></ol></li></ol>
+		
+		</div>
+		
+		<blockquote>
+<p>本文基于Android 4.0 源码</p>
+</blockquote>
+<h2 id="View与ViewGroup类结构"><a href="#View与ViewGroup类结构" class="headerlink" title="View与ViewGroup类结构"></a>View与ViewGroup类结构</h2><p><img src="/images/blogs/view_and_viewgroup.png" alt="View与ViewGroup的类关系">  </p>
+<h2 id="View与Window"><a href="#View与Window" class="headerlink" title="View与Window"></a>View与Window</h2><p>Android系统中所有的UI类都是建立在<code>View</code>和<code>ViewGroup</code>基础上。<code>View</code>的子类包括widget包中的那些(常用的<code>TextView</code>、<code>ImageView</code>等都在这个包下)，<code>ViewGroup</code>的子类包括Layout命名的类以及<code>RecyclerView</code>等少数以View命名的类，<code>ViewGroup</code>又是<code>View</code>的直接子类，这样就允许<code>View</code>和<code>ViewGroup</code>并列与嵌套存在。在AS中可以通过F4查看类的继承关系。  </p>
+<p>Window不继承于View，它就是一个用来显示东西的窗口，通过<code>setContentView</code>来显示东西(调用该方法之后紧接着调用<code>initWindowDecorActionBar</code>来设置ActionBar)，<code>Activity</code>自身持有一个<code>mWindow</code>(初始化为<code>PhoneWindow</code>，<code>PhoneWindow</code>的定义在源码目录<code>frameworks/policies/base/phone/com/android/internal/policy/impl/PhoneWindow</code>，它是Window的直接子类，被标注为<code>@hide</code>，SDK看不到，需要下载SDK源码才能看到，在SDK源码的<code>android-23/com/android/internal/policy/PhoneWindow</code>下)，<code>Activity</code>的<code>setContentView</code>就是<code>mWindow.setContentView</code>的代理。<code>PhoneWindow</code>有个<code>DecorView</code>内部类(继承自<code>FrameLayout</code>)，在初始化<code>PhoneWindow</code>的时候会创建一个<code>DecorView</code>的实例作为根视图。  </p>
+<p>还有一个类叫做<code>LayoutInflater</code>，它本身是个抽象类，但只有一个<code>cloneInContext</code>是抽象方法。它采用工厂模式负责将布局文件xml实例化为View对象。看它的<code>inflate</code>方法，最终调用的都是<code>View inflate(XmlPullParser parser, ViewGroup root, boolean attachToRoot)</code>这个方法，用<code>XmlResourceParser</code>从resource中获取parser，然后<strong>同步地</strong>完成这些调用：<br><code>result=root, attrs=Xml.asAttributeSet(parser)</code><br>-&gt; <code>temp=createViewFromTag(root, name=parser.next().getName(), inflaterContext=mContext, attrs)</code><br>-&gt; <code>root!=null?(params=root.generateLayoutParams(attrs);if(!attachToRoot)temp.setLayoutParams(params)):null</code><br>-&gt; <code>rInflateChildren(parser, temp, attrs, true)</code><br>-&gt; <code>if(root!=null &amp;&amp; attachToRoot) root.addView(temp, params); if(root==null || !attachToRoot)result = temp</code><br>-&gt; <code>return result</code><br>大致意思是首先解析xml，找到第一个开始的Tag即布局文件的根视图的标签，把它和布局文件的<code>AttributeSet</code>传给<code>createViewFromTag</code>就获得了布局文件的根View，如果root非空且要附加到root上就把这个View附加上去。在处理Tag时单独处理MERGE和INCLUDE两个Tag。在返回前调用了<code>rInflateChildren</code>方法来填充这个View的子视图，这是个递归填充子视图的方法，根据Tag名分别调用<code>parseRequestFocus parseViewTag parseInclude createViewFromTag&amp;&amp;rInflateChildren</code>来一层层创建View，在<code>finishInflate</code>的时候View提供了<code>onFinishInflate</code>回调供子类重写。  </p>
+<p>这里就有三个东西了，Window、Inflater、View，他们之间的关系就好像画布、画笔和成品作品，xml布局文件就相当于设计图，Activity作为画家需要将成品按照设计图一层层画到画布上。<br>给个图来表示：<br><img src="/images/blogs/ActivityWindow.png" alt="ActivityWindow">  </p>
+<h2 id="View绘制与重绘过程"><a href="#View绘制与重绘过程" class="headerlink" title="View绘制与重绘过程"></a>View绘制与重绘过程</h2><p><code>inflate</code>只是相当于给画作打了个线稿，规定了要画的内容的层次关系，具体画什么、在哪里画，就是View的绘制过程。Android中为View和ViewGroup设计了一致的绘制流程。绘制视图总要有个开端，仍以Activity为例，前面说到Activity通过<code>setContentView</code>用Inflater把xml导入成View树，这时候我们只是在逻辑上得到了View的结构，还没有实际画到屏幕上。猜想Activity载入了View之后，应该是在某个生命周期的时候绘图，回想Activity总是在onStart之后才能看到Activity内容，跟随Activity的生命周期，猜想是某个Manager比如ActivityManager在控制。随便找了一下Activity的startActivity方法，发现Activity中所有的startActivity实际上都是调用的<code>startActivityForResult</code>方法（它有两个重载），它里面又是调用的<code>Instrumentation.execStartActivity(this, mMainThread.getApplicationThread(), mToken, this,intent, requestCode, options)</code>，在这个方法中使用<code>ActivityManagerNative</code>的<code>getDefault().startActivity()</code>真正开始Activity，查看源码知道<code>getDefault()</code>得到的是<code>ServiceManager.getService(&quot;activity&quot;)</code>，是系统提供的名为<code>activity</code>的服务，它经过<code>asInterface</code>转换成<code>IActivityManager</code>接口后作为结果返回，显然它的实现在Server端，同时有内部类<code>ActivityManagerProxy</code>用来调用远程服务，前面分析AIDL和Binder机制时候说过，实际上对远程服务的调用中，系统Binder驱动和Server各持有一个服务的实例，其中系统持有的是代理。通过<code>queryLocalInterface</code>区分是从服务端还是客户端进行服务调用，从服务端调用就直接返回本地服务了，从客户端调用则通过代理来访问服务。  </p>
+<p>这里暂时停下，看到有一个<code>ActivityManager</code>类，很有意思，它的内部类AppTask有个<code>startActivity</code>方法，首先获取<code>ActivityThread</code>，再通过<code>Instrumentation.execStartActivityFromAppTask</code>在<code>ActivityThread</code>的<code>ApplicationThread</code>上开始Activity，点进去一看它实际上是调用的参数中的<code>IAppTask.startActivity</code>，回来看传入的参数是<code>mAppTaskImpl</code>，它的值由构造函数确定，而AppTask的构造函数是隐藏的，这很Android。顺藤摸瓜发现它在ActivityManager的getAppTasks方法中调用，实际上是从<code>ActivityManagerNative.getDefault().getAppTasks(mContext.getPackageName())</code>得到的任务列表，好嘛，又看到<code>ActivityManagerNative</code>了，可问题在于，这货的AppTask又是从哪儿得到的呢？  </p>
+<p>以上花了不少力气，结果只看明白了Activity的启动是系统服务负责的，虽然通过查看SDK源码的<code>ServiceManager</code>找到了启动Activity的系统服务，但是仍然没有看到控制Activity绘制内容的相关代码，解耦解得厉害就是有这点不好，全都是面向接口了不太好找实现。用了一个土方法，根据分包直接去找activity服务的实现代码，感谢Android良好的模块设计，很快就找到了<code>com/android/server/am/ActivityManagerService.java</code>，一看它继承了<code>ActivityManagerNative</code>，稳了。直奔<code>startActivity</code>方法发现原来用的是<code>startActivityAsUser</code>方法，它又调用的<code>ActivityStackSupervisor.startActivityMayWait</code>，这个方法挺长的，关键的一步是调用<code>startActivityLocked</code>，里面调用<code>doPendingActivityLaunchesLocked</code>，它又调用<code>startActivityUncheckedLocked</code>，(一路各种设置flag，最后调用了<code>ActivityStack</code>的<code>startActivityLocked</code>，在Activity当前栈栈顶添加一个<code>ActivityRecord</code>，再调用<code>WindowManager.addAppToken</code>在task中存下Token，并且记录&lt;Binder,Token&gt;对应关系，有空单独写个Activity的启动，这里就不再说了)，惭愧看很久也没看到开始Activity的具体代码。求助Google，然后得知<code>ActivityThread</code>(同样是<code>@hide</code>，在SDK中看不到)是启动Activity的关键类，它运行<code>performLaunchActivity</code>和<code>handleResumeActivity</code>来创建和启动Activity。看到<code>performLaunchActivity</code>的第一个参数是<code>ActivityClientRecord</code>类型，感觉自己前面的功夫没有白费，在这里连接起来了。这里通过Instrumentation(<code>android/app/Instrumentation</code>)依次创建了<code>Activity</code>、<code>Application</code>和<code>Context</code>，然后又依次调用了Activity的<code>OnCreate</code>、<code>performStart</code>、<code>OnRestoreInstanceState</code>、<code>OnPostCreate</code>。现在还没有调用<code>OnResume</code>，理论上应该还没有绘制内容。<code>performStart</code>方法也只是使用<code>Instrumentation</code>调用了Activity自身的<code>OnStart</code>，并且将Start事件分发到<code>mFragments</code>而已。  </p>
+<p>来看<code>handleResumeActivity</code>，上来先是一记<code>performResumeActivity</code>(一番状态设置之后调用<code>activity.performResume</code>)，一堆状态读取和设置后，<code>if(r.activity.mVisibleFromClient)r.activity.makeVisible()</code>，这个方法看起来很有希望就是我要找的方法！找去源码一看，方法内容出奇的简单：<code>mDecor.setVisibility(View.VISIBLE)</code>可以说就这么一句。靠！根本还没完！  </p>
+<hr>
+<p>接着看，原来<code>View</code>的<code>setVisibility</code>所调用的<code>setFlags</code>方法会在传入参数为<code>VISIBLE</code>时调用<code>invalidate(true)</code>方法(顺便一提<code>setFlags</code>方法当然也会处理<code>GONE</code>和<code>INVISIBLE</code>，再顺便一提这就解释了为什么设置可见性后不需要调用<code>invalidate</code>就可以自动重绘)。最终还是走到了View源码。  </p>
+<p>打开<code>invalidate(boolean invalidateCache)</code>，调用的<code>invalidateInternal(int l, int t, int r, int b, boolean invalidateCache, boolean fullInvalidate)</code>，这里出现了一个神奇的<code>mGhostView</code>，之后还记得的话再来看看它是干嘛用的。<code>l t r b</code>是需要invalidate的区域，<code>invalidate</code>方法传入的直接就是View实例的整个区域。调用<code>mParent.invalidateChild</code>来invalidate给定区域。<code>mParent</code>只是一个<code>ViewParent</code>接口，它具体是指向什么实例还是要看代码。想一想Activity中什么内容都不设置的话，是有一个<code>DecorView</code>和一个id为content的<code>FrameLayout</code>，应该可以在<code>FrameLayout</code>或者<code>DecorView</code>找到具体的实现代码。幸运的是，在<code>FrameLayout</code>的父类<code>ViewGroup</code>中找到了<code>invalidateChild</code>方法(<code>ViewGroup</code>实现了<code>ViewParent</code>接口)。  </p>
+<p>方法挺长，拣重点说。parent变量初始化为<code>ViewGroup</code>自身，先标记出dirty区域(为<code>transformMatrix</code>变形后的dirty区域上下左右各扩大0.5f)，然后调用parent的<code>invalidateChildInParent</code>方法对dirty区域进行扩展并将返回值赋予parent，如此往复直到parent为<code>null</code>为止。<code>ViewGroup</code>的这个方法返回<code>mParent</code>成员变量，它是一个隐藏的变量，从它的名字和可能为<code>null</code>来推断应该是会随着这个方法的调用而变化(我猜它会<strong>层层向上</strong>直到根视图<code>DecorView</code>的父<code>ViewRootImpl</code>，这个东西之前没有提过，其实它就是最顶层<code>DecorView</code>所添加到的地方, <code>DecorView</code>实例作为一个成员变量<code>mView</code>存在于它的实例中, 它受到<code>WindowManager</code>的实现类<code>WindowManagerImpl</code>实际上是<code>WindowManagerGlobal</code>的管理，它是逻辑上存在的一个东西，类型也不是View，但实现了<code>ViewParent</code>接口)，且是受系统什么服务控制的，我猜是<code>WindowManager</code>。在这个过程中如果如我所猜是层层向上，那么总会到达<code>DecorView</code>，而<code>DecorView</code>的父就是并不属于View子类的<code>ViewRootImpl</code>，当此时就会调用到<code>ViewRootImpl</code>的<code>invalidateChildInParent</code>方法，有意思的是这个方法最终返回<code>null</code>，这从侧面验证了我的猜测可能是对的。  </p>
+<p>这里有一个关键变量，即<code>mAttachInfo.mInvalidateChildLocation</code>，这是一个仅两个元素的整型数组，分别存储child的left和top，从名字看存的是要invalidate的child的位置，真正绘制应该跟这个数组有关。</p>
+<p>至此我发现前面整个过程是一个计算dirty区域的过程，想想图形的出现和更新其实都可以看做是对特定区域的绘制，通过计算dirty区域就统一了这两个行为。到了<code>ViewRootImpl</code>总算是计算完了dirty区域，接下来总应该画图了吧。一看果然，在<code>ViewRootImpl</code>的<code>invalidateChildInParent</code>方法中调用了<code>invalidateRectOnScreen</code>，而这个方法里又有个<code>scheduleTraversals</code>方法的调用，看起来就像是要遍历重绘的意思，它的代码是往Looper队列里添加了一个同步屏障，并在<code>mChoreographer</code>里添加了一个<code>TraversalRunnable</code>的回调，跑去这个Runnable的定义一看，就是调用了<code>doTraversal</code>方法，方法内容是移除同步屏障并执行<code>performTraversals</code>方法。这样想来，估计窗口第一次显示的时候类似的遍历过程会在<code>WindowManagerGlobal</code>调用<code>addView</code>方法之后调用吧。  </p>
+<p>先不去管他，咱们来看<code>performTraversals</code>方法。……………………好长，里面写了一些debug的print，有空的话可以把debug开关打开来profile一下。这里挑重点看：首先是判断了一番当前的状态，是否需要创建Surface，是否需要完全重绘，是否需要硬件渲染，根据这些状态设置相应的条件，在满足Measure的条件时，调用<code>performMeasure</code>进行测量(该方法的内容是调用<code>mView.measure()</code>，在<code>View</code>的该方法实现代码中，调用了<code>onMeasure</code>，而<code>DecorView</code>的<code>onMeasure</code>方法在计算好自身宽高以后，调用了父类的<code>onMeasure</code>方法，我们还记得<code>DecorView</code>的父类是<code>FrameLayout</code>，去查看它的<code>onMeasure</code>方法就会发现，它对每一个child调用了<code>measureChildWithMargins</code>进行<strong>递归measure</strong>，然后才调用<code>setMeasuredDimension</code>设置自己的宽高)，measure不好还有可能measure第二次，测量完了之后<code>layoutRequested=true</code>； 接下来就执行了<code>performLayout</code>进行布局，方法中首先调用host(顶层<code>mView</code>的缓存)的layout进行布局(仍然调用的父类的<code>FrameLayout.onLayout</code>方法，非常暴力，就是一个<code>layoutChildren</code>进行<strong>递归layout</strong>)，然后计算有效的布局请求的View数量，如果此时还有需要布局的View则执行以下三步：遍历调用<code>View.requestLayout</code>，接着调用<code>measureHierarchy</code>，然后是<code>host.layout</code>再走一遍。这三步是第二次layout了，此时再检查还有没有需要布局的View，如果还有就只好将遍历调用<code>View.layout</code>的任务post到队列中等待下一帧执行，该方法完成后源码中注释说此时所有View就已经计算好并放置好了，接下来就会计算透明区域，主要就是把透明区域搜集起来并设置，如果透明区域跟之前的不同，则要求完全重绘；此时已经知道了屏幕上哪些地方需要重绘，哪些地方是透明的，接下来判断是否cancelDraw，<code>mAttachInfo.mTreeObserver.dispatchOnPreDraw()</code>完成(<code>AttachInfo</code>是<code>View</code>的内部类，当某个<code>View</code>附着到它的父窗口时，这个类的实例就存储一些相关的信息)或者<code>viewVisibility!=VISIBLE</code>都会被记为<code>cancelDraw</code>，如果可见性为<code>VISIBLE</code>则此时还会再试一次<code>scheduleTraversals</code>。只有在经过前面的状态判断后仍然需要绘制的情况下，才会调用<code>performDraw()</code>进行绘制，该方法调用<code>draw()</code>方法，在<code>draw()</code>中首先<code>mAttachInfo.mTreeObserver.dispatchOnDraw()</code>将事件传给观察者(<code>dispatchOnDraw</code>方法中，依次调用已注册的<code>OnDrawListener</code>中的<code>onDraw()</code>方法)，然后根据情况调用<code>mAttachInfo.mHardwareRenderer.draw</code>或者<code>drawSoftware</code>(在<code>drawSoftware</code>中会调用<code>mView.draw</code>，查看<code>DecorView</code>源码知道其实主要是调用的<code>super.draw</code>，再看<code>FrameLayout</code>源码发现未被重写，再往上到<code>ViewGroup</code>的源码，很棒仍然没找到<code>draw</code>不过找到了<code>drawChild</code>，再往上看，就到<code>View</code>了，<code>View</code>的<code>draw</code>方法中会先调用<code>drawBackground</code>，再调用<code>onDraw</code>来画自身内容，然后调用<code>dispatchDraw</code>请求孩子进行绘制，最后调用<code>onDrawForeground</code>。然而<code>View</code>中<code>dispatchDraw</code>是个空方法，根据逻辑它应该是个<code>ViewGroup</code>来实现，于是回来找到<code>ViewGroup</code>，果然里面有<code>dispatchDraw</code>的实现代码，这个方法大体还是对每个child调用<code>drawChild</code>，<code>drawChild</code>方法只是返回<code>child.draw</code>的结果，至此完成<strong>递归draw</strong>)，这期间有可能再来一次<code>scheduleTraversals</code>。  </p>
+<p>看到这里有个疑问，<code>dirty</code>区域哪去了？其实回头一看就会知道，<code>dirty</code>早在<code>invalidateRectOnScreen</code>的时候就被合并到<code>mDirty</code>中了，而<code>mDirty</code>会在<code>draw</code>方法中使用。想必各位也注意到了，只有<code>draw</code>是要先<code>dispatchOnDraw</code>的，这暗示了这三个重要的步骤的逻辑是前两者由孩子发起，到父亲结束，而绘制动作是由父亲发起。但三个步骤的实际执行都是先执行孩子的对应方法，才执行父亲的对应方法。回想一下，一切的开端都在View调用<code>invalidate(true)</code>的时候。至此，整个重绘的过程就已经清楚了。  </p>
+<p>那么，当一切开始时，Activity是怎样从零开始绘制<code>DecorView</code>的呢？借助前面重绘过程的探索分析，我发现了在执行<code>ActivityThread#handleResumeActivity</code>时会调用<code>r.activity.makeVisible()</code>方法使<code>activity</code>可见，这个过程就是上面我们分析过的测量和绘制视图的过程了。那么这些视图是什么时候初始化的呢？从<code>setContentView</code>到视图可见，之间经历了什么？其实在<code>makeVisible()</code>这个调用之前，在<code>performResumeActivity</code>之后，还有一个重要的步骤，就是添加<code>DecorView</code>，具体是先通过<code>r.window = r.activity.getWindow()</code>获取Activity所在的Window，并记录到r中，一般来说这个Window就是<code>PhoneWindow</code>了，所以接下来就不难理解调用<code>r.window.getDecorView()</code>获取到了<code>DecorView</code>的引用。获取到<code>DecorView</code>引用后，首先设置为<code>INVISIBLE</code>，然后通过<code>ViewManager wm = a.getWindowManager()</code>获取到<code>ViewManager</code>实例，通过<code>WindowManager.LayoutParams l = r.window.getAttributes()</code>获取到布局参数，最后通过<code>wm.addView(decor, l)</code>添加<code>DecorView</code>到<code>WindowManager</code>中。  </p>
+<p>来看<code>addView</code>，前面讲过这里的<code>WindowManager</code>实际上是<code>WindowManagerGlobal</code>，所以我们知道这里实际调用的是<code>WindowManagerGlobal.addView(View view, ViewGroup.LayoutParams params, Display display, Window parentWindow)</code>(这里的后两个参数来自于<code>WindowManagerImpl</code>的<code>mDisplay</code>和<code>mParentWindow</code>)，它做了什么呢？打开源码，看到它首先使用<code>params</code>参数调整父窗口的子窗口(<code>parentWindow.adjustLayoutParamsForSubWindow(wparams)</code>)，然后<strong>同步地</strong>先确保之前的<code>removeView()</code>执行完毕，再用<code>View.getContext()</code>实例化了<code>ViewRootImpl</code>并赋值给局部变量<code>root</code>，同时分别在<code>mViews mRoots mParams</code>添加记录<code>view root params</code>。同步块之后调用了<code>root.setView(view, params, panelParentView)</code>设置视图内容。这个<code>setView</code>方法厉害了，它整个都是同步的，跳过一些我暂时看不懂的<code>SurfaceHolder</code>等内容后，首先设置<code>mAttachInfo.mRootView = view</code>，然后调用了<code>requestLayout</code>，然后调用<code>mWindowSession.addToDisplay(mWindow, mSeq, mWindowAttributes, getHostVisibility(), mDisplay.getDisplayId(), mAttachInfo.mContentInsets, mAttachInfo.mStableInsets, mAttachInfo.mOutsets, mInputChannel)</code>将<code>mWindow</code>加入到<code>WindowManagerGlobal</code>中，然后<code>view.assignParent(this)</code>把<code>ViewRootImpl</code>注册为<code>DecorView</code>的父亲。其中<code>mWindowSession</code>是<code>WindowManagerService</code>的远程事务。至此，<code>DecorView</code>就已经被加入到<code>ViewRootImpl</code>并随着<code>PhoneWindow</code>加入到了<code>WindowManagerService</code>中接受其管理。  </p>
+<p>总结一下，可以看到<code>View</code>的绘制过程和重绘过程其实本质上是一样的，只不过绘制的dirty区域是整个窗口。在<code>Activity</code>初始化的时候，在<code>ResumeActivity</code>之后，真正显示之前，<code>ActivityThread</code>进行了Activity中DecorView的创建、初始化和添加，然后通过调用<code>setVisibility</code>来间接调用<code>invalidate</code>方法进行重绘，在重绘时子View通过调用<code>invalidate</code>方法，请求父亲计算dirty区域并递归依次按需执行<code>measure、layout、draw</code>三种方法。孩子节点要进行重绘的时候，只需要在设置好新的界面值之后直接或间接调用<code>invalidate</code>方法，就可以触发该孩子节点及其所有<strong>祖先</strong>的重绘。源码为了健壮性，有很多地方都可能进行两次甚至三次某个步骤，有些地方甚至直接重新全部执行，过多次数的计算和重绘可能会产生性能瓶颈。  </p>
+<h2 id="View与ViewGroup事件分发"><a href="#View与ViewGroup事件分发" class="headerlink" title="View与ViewGroup事件分发"></a>View与ViewGroup事件分发</h2><p>在前面我们已经见到了两个神奇的方法<code>dispatchOnPreDraw</code>和<code>dispatchOnDraw</code>，这一节我们来看更多的<code>dispatchXXX</code>, 也就是Android中的<strong>事件分发机制</strong>。多一句嘴, View的事件分发机制只是针对触屏事件的一种处理思路, 这种思路完全可以用在别的事件的分发和处理流程上.  </p>
+<p>我们知道, 对于用户来说, 跟Activity交互的主要方式之一就是触屏, 而展示在用户面前, 用户可以看见的东西, 就是我们的 <code>View</code> 和 <code>ViewGroup</code>, 所以 <code>View</code> 和 <code>ViewGroup</code> 必然会对触屏事件做处理. 这里我们直接通过读源码的方式去了解<code>View</code>的时间分发机制, 并着重根据以下几种触屏事件来梳理思路, 加深理解:  </p>
+<ol>
+<li>点击事件(Click)分发  </li>
+<li>按下事件/释放事件  </li>
+<li>滑动事件  </li>
+</ol>
+<p>同时, 我们需要注意一个事件的处理周期, 即它分发的路径是怎样的, 是否会停止分发, 满足什么条件会停止分发.<br>对事件分发机制有充分理解, 那么各种按键事件响应处理和事件冲突问题, 就可以迎刃而解.<br>写这一节参考了网上的一些资料, 这里先做个说明, 本节不会以”消费”来表示事件处理函数返回<code>true</code>的情况, 纯粹因为我个人不喜欢这个词, 觉得表意不明确, 我认为方法的返回值只是表示”是否停止处理事件”, 而这个意思用”消费”来表示不太准确, 尽管源代码中用来表示这种情况的<code>Consume</code>通常确实被翻译为消费. 各位读者如果习惯这样称呼, 也并无不妥. 其他内容如有引用会在文中注明.<br>本节行文方式是先背景知识, 再总体流程图, 再贴源码详细解释.  </p>
+<h3 id="事件产生"><a href="#事件产生" class="headerlink" title="事件产生"></a>事件产生</h3><p>触屏对操作系统提供硬件接口用以通知操作系统产生了什么事件, 操作系统通过硬件驱动读取和解析硬件接口的事件, 这个跟源码关系不大我们就不说了. 我们只说当事件被Android系统捕捉到之后, 传入Activity的时候是个什么形式, 没错, 就是<code>MotionEvent</code>. 硬件输入事件被<code>InputEvent</code>来描述, 该类是一个抽象类, 其有两个直接子类, 即<code>MotionEvent</code>和<code>KeyEvent</code>, 分别对应触屏事件和按键事件. 我们这里重点关注<code>MotionEvent</code>.<br>它在<code>frameworks/base/core/java/android/view/MotionEvent.java</code>中定义, 比较大, 注释也多, 我们只抽象地简单了解一下它刻画了触屏事件的哪些属性.<br>首先它定义了一系列ACTION常量来表示触屏事件, 例如我们下面会用到的<code>ACTION_DOWN</code> <code>ACTION_MOVE</code> <code>ACTION_UP</code>, 以及<code>ACTION_OUTSIDE</code> <code>ACTION_CANCEL</code> <code>ACTION_POINTER_DOWN</code> <code>ACTION_POINTER_UP</code> <code>ACTION_SCROLL</code>等.<br>其次它还定义了触屏事件的坐标属性包括偏移量等信息, 对应的处理和转换方法(@hide), 以及相应的Getter.<br>最后它定义了触屏事件的发生时间, 以及一系列<code>toString</code>方法.<br>这里面有很多方法都是native的, 而且也用到了aidl可见跟binder驱动估计也有关系. 如果今后有时间, 我会深入去看一下硬件到事件的过程, 今天先点到为止.<br>对<code>MotionEvent</code>本身感兴趣的同学可以去看看源码和官网的文档, 也可以在网上搜一下, 已经有很多人写过相关的博客.  </p>
+<h3 id="事件分发和处理"><a href="#事件分发和处理" class="headerlink" title="事件分发和处理"></a>事件分发和处理</h3><p>事件产生之后(<code>MotionEvent</code>), 是怎么分发和处理呢? 我们先来看一张图:<br><img src="/images/blogs/view_event_dispatch.png" alt="事件分发总流程"><br>上图来自<a href="http://www.jianshu.com/p/e99b5e8bd67b" target="_blank" rel="noopener">图解 Android 事件分发机制</a>. 图中白色箭头代表事件流动的方向. 大体上来说一个全新的事件就是按照这个过程分发和分级处理的.<br>可见事件处理的主体主要分三个层级, 即<code>Activity</code> <code>ViewGroup</code> <code>View</code>, 你没看错, <code>Activity</code>这个浓眉大眼的家伙也可以处理<code>MotionEvent</code>.<br>网上常说”从上往下传递事件, 从下往上处理事件”, 其实默认是从”View树层次结构”的角度去说的, 而不是”View的显示层次”, 在”View树层次结构”这个角度上, <code>Activity</code>及其<code>DecorView</code>就是最上层, 逐层往下是<code>ViewGroup</code>和<code>View</code>, 这其实是一个<strong>深度优先搜索</strong>的过程, 对于一个确定的<code>MotionEvent</code>, 在这棵树上的路径也是确定的. 其实每一层都是先往下搜索看子节点是否处理完毕这个事件, 如果处理完毕了, <code>dispatchTouchEvent</code>就返回<code>true</code>, 否则本层调用<code>onTouchEvent</code>进行处理并返回处理结果.<br>所以我们可以猜测代码逻辑是这样:  </p>
+<pre><code>public boolean dispatchTouchEvent(MotionEvent e){
+    View target;
+    for (View child: children){
+        target = child.getTouchTarget(e); // find event target
+        if (target != null){
+            break;
+        }
+    }
+    if (target != null &amp;&amp; target.dispatchTouchEvent(e)){
+        return true;
+    }
+
+    return onTouchEvent(e);
+}
+</code></pre><p>当然事实上远没有这么简单, 在<code>View</code>和<code>ViewGroup</code>中, 在实际分发和处理事件之前, 进行了一系列的逻辑处理(这里我就不贴源码了, 有兴趣的同学可以自行查看), 如: 在<code>ViewGroup</code>中, 判断当前是<code>DOWN</code>事件或者目标非空, 如果满足条件, 则设置一系列标记, 并判断该事件是否被自己拦截(<code>onInterceptTouchEvent</code>). 如果不满足条件, 即非<code>DOWN</code>事件且目标为空, 则直接标记该事件被拦截, 随后关键步骤是调用<code>dispatchTransformedTouchEvent</code>, 根据传入参数来决定是调用孩子节点的<code>onTouchEvent</code>还是调用<code>super.dispatchTouchEvent</code>(即<code>View.dispatchTouchEvent</code>, 这条路径会让自己的<code>onTouchListener</code>或<code>onTouchEvent</code>处理事件); 在<code>View</code>中, <code>DOWN</code>事件会让<code>View</code>停止滚动, 判断是否被<code>OnTouchListener</code>处理完毕(该步取代了<code>dispatchTouchEvent</code>, 原因显而易见), 如果没有则调用<code>OnTouchEvent</code>处理; 以上两者都会判断事件是否满足一致性校验, 是否满足安全性策略, 是否被取消.<br>与此相比, <code>Activity</code>中的事件处理就是一股清流, 它的代码非常简短, 几乎就跟我上面给出的差不多. 它先将<code>DOWN</code>事件交给<code>onUserInteraction</code>处理, 然后并不返回, 继续将该事件交给<code>getWindow().superDispatchTouchEvent</code>, 如果未被处理完毕则交给自身的<code>onTouchEvent</code>处理并返回.<br>神秘的就在于<code>superDispatchTouchEvent</code>了, 复习一下第一节的知识知道它八成是在<code>PhoneWindow</code>中定义的. 打开一看, 果不其然, 又被<code>mDecor</code>代理了…我们回忆一下, <code>DecorView</code>这个内部类是继承自<code>FrameLayout</code>的, 也就是说他是个<code>ViewGroup</code>, 好, 我们来看看这个类中<code>superDispatchTouchEvent</code>怎么定义的:  </p>
+<pre><code>public boolean superDispatchTouchEvent(MotionEvent event) {
+            return super.dispatchTouchEvent(event);
+}
+</code></pre><p>直接丢给父类了, 人干事? 好在我们惊喜地发现这个方法是<code>public</code>的, 我们可以自己定义<code>Window.superDispatchTouchEvent</code>. 当然, 最惊喜的是<code>getWindow()</code>也是<code>public</code>的, 使得自定义<code>Window</code>并修改事件分发策略成为可能, 这个设计绝赞.  </p>
+<p>现在我们已经大体知道了事件分发和处理的逻辑, 不清楚读者心中产生了什么新的疑问, 我有两个疑问: 1. 事件从何处传递给<code>Activity</code>(我们怎么确定顶层处理组件是<code>Activity</code>而不是其他什么东西?); 2. 事件何时终止传递, 连续事件(<code>DOWN-&gt;MOVE-&gt;UP</code>)有时候是要同一个<code>View</code>进行处理的, 例如滑动<code>ListView</code>, 如何保证这个过程?  </p>
+<p>对于第一个问题, 我自己想想就觉得头大, 首先它肯定是硬件传递给我们操作系统再分发给某个服务(<code>ActivityManagerService</code>?)的, 这里面估计涉及到<code>Binder</code>通讯, 分析<code>Binder</code>原理的时候要了我半条命(感兴趣的同学可以在我博客里搜索到<code>Binder</code>原理解析的文章). 其次, 对于裸的驱动事件, 必然需要借助设备驱动将事件进行重新包装和定义, 这一步可能是<code>Android</code>提供接口, 设备驱动来完成, 也可能是<code>Android</code>系统自己来完成, 具体实现过程不太好找. 没办法, 有此疑问必然辗转反侧, 所以还是来看看吧. <code>Window.Callback</code>接口类定义了<code>dispatchTouchEvent</code>这个接口, 但是对于<code>Activity</code>来说哪个调用了它的这个方法, 我一点线索也没有. 回忆应用启动过程, 应该可以从<code>MotionEvent</code>的构造方法找到一点蛛丝马迹. 具体艰辛的过程我就不细述了, 总之最后终于发现了如下流程:<br><code>Linux</code>系统已经实现了对触屏事件的封装和传递, 硬件事件将会通过内核底层的硬件驱动进行处理, <code>Android</code>系统在此基础上进一步封装内核传递过来的触屏事件, 并根据事件的具体值, 依据硬件设备协议, 来初始化触屏事件<code>MotionEvent</code>.(回忆<code>adb sendevent</code>其实传输的就是触屏事件或按键事件)  </p>
+<p>然后事件被包装成<code>QueuedInputEvent</code>, 并且由被设置了<code>Callback</code>的<code>Message</code>携带, 进入了主线程<code>ActivityThread</code>的消息队列, 处理时直接<code>handleCallback</code>调用了<code>Callback</code>, 而这个<code>Callback</code>是调用<code>ViewRootImpl.dispatchInputEvent</code>(接口来自<code>InputEventReceiver</code>)分发给了<code>ViewRootImpl</code>由<code>ViewRootImpl.onInputEvent</code>处理, 它才是真正意义上第一个处理触屏事件的类, 在该类中经过一系列处理后会传递到以下代码中:  </p>
+<pre><code>private int processPointerEvent(QueuedInputEvent q) {
+    ...
+    final MotionEvent event = (MotionEvent)q.mEvent;
+    final View eventTarget =
+            (event.isFromSource(InputDevice.SOURCE_MOUSE) &amp;&amp; mCapturingView != null) ?
+                    mCapturingView : mView;
+    mAttachInfo.mHandlingPointerEvent = true;
+    boolean handled = eventTarget.dispatchPointerEvent(event);
+    ...
+}
+</code></pre><p>至于<code>mView</code>其实就是<code>DecorView</code>的实例, 是整个<code>View</code>树中最上层的可见元素, 见上文. 于是在这里调用了要么是<code>mCapturingView</code>要么是<code>mView</code>的<code>dispatchPointerEvent</code>, 而在<code>View.dispatchPointerEvent</code>的实现是, 如果它是<code>MotionEvent</code>, 则调用<code>dispatchTouchEvent</code>.<br>在<code>DecorView.dispatchTouchEvent</code>中, 如果有<code>Callback</code>调用<code>Callback.dispatchTouchEvent</code>, 否则调用<code>super.dispatchTouchEvent</code>. 这就厉害了, 这里对于<code>Activity</code>来说, 它是实现了<code>Callback</code>接口的, 也就是说这里如果传入的<code>Callback</code>是<code>Activity</code>实例, 那么就是直接调用<code>Activity.dispatchTouchEvent</code>了, 一切都解释得通了.<br>来梳理一下这一段的调用:  </p>
+<pre><code>ActivityThread.mH.handleMessage(Message msg) -&gt;  
+ActivityThread.mH.handleCallback(msg.callback)  
+ViewRootImpl.dispatchInputEvent(q) -&gt;  
+ViewRootImpl.onInputEvent(mEvent) -&gt;  
+ViewRootImpl.processPointerEvent(q) -&gt;  
+DecorView.dispatchPointerEvent(q.mEvent) -&gt;  
+DecorView.dispatchTouchEvent -&gt;  
+Activity.dispatchTouchEvent -&gt;  
+Activity.getWindow().superDispatchTouchEvent -&gt;  
+DecorView.superDispatchTouchEvent -&gt;  
+FrameLayout.dispatchTouchEvent  
+</code></pre><p>可以看到最后好像是绕了个圈, 从<code>DecorView.dispatchTouchEvent</code>出发, 又回到<code>DecorView.super.dispatchTouchEvent</code>.  </p>
+<p>对触屏事件的定义见代码<code>./bionic/libc/kernel/common/linux/input.h</code>.<br>触屏驱动见驱动代码目录<code>./kernel/goldfish/drivers/input/touchscreen/</code>.<br>事件封装见<code>./frameworks/base/services/input/EventHub.cpp</code>.  </p>
+<p>(如果有兴趣, 可以沿这条路径查阅代码, 感受一下我的艰辛: <code>MotionEvent.obtain() -&gt; ./frameworks/base/services/input/EventHub.cpp</code> -&gt; 实在找不到触发点, 写了个Demo打印调用栈, 发现是异步调用, 事件被放进<code>ActivityThread</code>的<code>looper</code>中 -&gt; 我能怎么办, 我也很绝望啊, 事件从哪里放进looper中的? 沿着处理栈看看吧 -&gt; 惊喜发现)  </p>
+<p>至此, 第一个疑问基本得到解答. 第二个疑问是, 事件何时终止传递, 对于连续事件如何处理? 事实上, 从以上代码可以看到, 当任意一层<code>dispatchTouchEvent</code>提前返回而无论自身还是父亲节点都不再调用下一层<code>dispatchTouchEvent</code>的时候, 就终止事件传递了, 具体来说就是<code>dispatchTouchEvent</code>在调用孩子节点的<code>dispatchTouchEvent</code>之前就返回了<code>true</code>(例如, 被拦截或者传递给<code>onTouchEvent</code>并返回<code>true</code>). 连续事件分两类, 一类是像<code>ACTION_MOVE</code>这样的, 由一系列连续的事件点构成的一个事件, 另一类就是像我上文提到的那种, 按下不放滑动手指.  </p>
+<p>对于第一类, <code>Android</code>系统实际上将这种多次事件封装在了一个<code>MotionEvent</code>中, 并且用<code>ACTION_MOVE</code>这种标记来表示, 实际上我们手指触摸屏幕的时候, 很难达到仅有<code>ACTION_DOWN</code>-&gt;<code>ACTION_UP</code>, 中间多少都会夹几个<code>ACTION_MOVE</code>.  </p>
+<p>对于第二类, 其实也很简单, 在<code>DOWN</code>事件发生时, “<strong>ACTION_DOWN在哪个View的onTouchEvent返回true，那么ACTION_MOVE和ACTION_UP的事件从上往下传到这个View后就不再往下传递了，而直接传给自己的onTouchEvent 并结束本次事件传递过程… 如果ACTION_DOWN事件是在dispatchTouchEvent消费，那么事件到此为止停止传递，如果ACTION_DOWN事件是在onTouchEvent消费的，那么会把ACTION_MOVE或ACTION_UP事件传给该控件的onTouchEvent处理并结束传递。</strong>“(以上引用自<a href="http://www.jianshu.com/p/e99b5e8bd67b" target="_blank" rel="noopener">图解 Android 事件分发机制</a>).<br>现象好像确实如此, 但是代码是怎么做到的呢? 带着好奇我重新看了<code>ViewGroup</code>和<code>View</code>的事件分发, 发现了实现方法. 对于<code>View</code>, 如果在<code>dispatchTouchEvent</code>时调用了默认的<code>onTouchEvent</code>, 并且它是可点击的, 那么<code>DOWN</code> <code>UP</code> <code>MOVE</code> <code>CANCEL</code>四个事件会进入该函数的<code>switch</code>, <code>switch</code>之后必然返回<code>true</code>, 即触屏事件被处理完毕. 由于<code>View</code>本来就是事件分发的最底层, 所以它并没有显示后续事件拦截是如何实现的. 对于<code>ViewGroup</code>, 由于它并没有重写<code>onTouchEvent</code>方法, 故所有事件如果传递到了<code>onTouchEvent</code>则必然也是走<code>View</code>的方法. 在<code>dispatchTouchEvent</code>过程中, 特殊处理<code>DOWN</code>事件, 此时会清除掉内部保存的<code>target</code>链表, 并遍历一个有序的<code>View[] children</code>数组(按绘制先后顺序排序), 对于每一个孩子节点, 在<code>target</code>链表中寻找是否存在它对应的<code>target</code>, 如果存在则循环结束跳出, 否则对这个孩子调用<code>dispatchTransformedTouchEvent</code>, 并在返回<code>true</code>时构造这个孩子的<code>target</code>并插入到链表头部, 然后结束循环, 以上内容都是仅在<code>DOWN</code>事件时发生. 这就意味着, 如果一个<code>child</code>在<code>DOWN</code>事件时<code>dispatchTransformedTouchEvent</code>返回<code>true</code>了, 那么它在链表中就应该存在对应的<code>target</code>. 用<code>newTouchTarget</code>这个变量来暂时存储, 而且这个<code>target</code>应该在链表靠头部的位置. 如果<code>newTouchTarget</code>为空(意味着<code>dispatchTransformedTouchEvent</code>返回<code>false</code>)但<code>target</code>链表不为空(意味着本<code>ViewGroup</code>中已经有一组<code>target</code>等待接收事件), 则<code>newTouchTarget</code>存储链表尾节点. 循环结束后, 根据<code>target</code>链表继续处理事件, 如果<code>target</code>链表为空说明本<code>ViewGroup</code>的孩子节点没有曾经将事件处理完毕过(一旦有过, 就会被链表保存)或者本次事件是<code>DOWN</code>事件但被取消或拦截了, 那么调用<code>View.dispatchTouchEvent</code>继续处理事件, 而该方法默认是调用自身的<code>onTouchEvent</code>. 如果<code>target</code>链表不为空, 遍历<code>target</code>链表把事件传给对应的<code>View</code>进行处理(划重点!!<strong>事件如果被标记为取消或者拦截, 则不继续传递给孩子节点, 事件要么由自身<code>onTouchEvent</code>处理, 要么传递给已经在target列表中的节点处理; 事件不被取消也不被拦截的情况下, 如果孩子节点有一个返回true, 则以后的非DOWN事件也只交给target列表中的节点处理, 不再继续传递给其他孩子; target列表中的节点则是调用其dispatchTouchEvent方法继续传递和处理事件</strong>), 有任意一个处理完毕则都标记本<code>ViewGroup</code>已处理完毕该事件(但是不会中断遍历). 在该过程中如果有<code>View</code>标记为下次<code>UP</code>事件时取消, 则同时从链表中删除并回收该<code>target</code>.  </p>
+<p>小结一下, 借助<code>target</code>链表, <code>ViewGroup</code>记录了处理<code>DOWN</code>事件的<code>View</code>集合, 并在下次其他事件传入时仅传给这个链表中的<code>View</code>, 这就实现了对连续事件的处理. 而且对于<code>View</code>的<code>onTouchEvent</code>默认实现来说, 四种事件均会返回<code>true</code>, 即<code>View</code>本身默认就是会拦截事件的.  </p>
+<h3 id="事件冲突"><a href="#事件冲突" class="headerlink" title="事件冲突"></a>事件冲突</h3><p>仔细理解了上一节的内容之后, 就不难预见事件冲突这种情况发生的原因以及解决方案了.<br>总的来说, 事件冲突的原因就是意料之外的<code>View</code>或者<code>ViewGroup</code>把事件拦截了, 从而我们想用来处理事件的<code>View</code>或者<code>ViewGroup</code>无法接收到事件.  </p>
+<p>典型的, <code>ScrollView</code>中嵌套<code>ListView</code>, 冲突产生的原因是<code>ScrollView</code>在滑动拖拽的过程中会让<code>onInterceptTouchEvent</code>返回<code>true</code>, 直接导致<code>ScrollView</code>拦截事件, 不会被传递到深一层的<code>ListView</code>(其他<code>View</code>也一样). 解决方案也很简单, 就是重写<code>ScrollView</code>的<code>onInterceptTouchEvent</code>, 告诉<code>ScrollView</code>哪些情况该拦截, 哪些情况不该拦截. 如果不能修改这个拦截事件的<code>View</code>怎么办呢? 也好办, 从自己可控的<code>ViewGroup</code>出发, 调用<code>requestDisallowInterceptTouchEvent</code>要求该<code>ViewGroup</code>及其祖先节点不拦截事件, 再视情况恢复这个标记位.<br>可以看出, 了解了<code>Android</code>系统各个层次对事件的分发处理和返回的策略之后, 遇到任何事件冲突问题我们都能够很容易找到症结所在并给出解决方案.  </p>
+<p>对于嵌套滑动, <code>View</code>定义了一个接口<code>dispatchNestedScroll</code>用来传递嵌套滑动事件. 今后有空我将会继续研读这一块的设计.  </p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/guide/">guide</a><a href="/tags/android/">android</a><a href="/tags/interview/">interview</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://hjhjw1991.github.io/android/2017/02/24/[Android教程]View&ViewGroup源码阅读/" data-title="【Android教程】View/ViewGroup源码阅读 | hjhjw1991&#39;s blog" data-tsina="1304671950" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev">
+ <a href="/android/2017/02/27/[Android源码伴读]OkHttp源码探索/" title="【Android源码伴读】OkHttp源码探索">
+  <strong>上一篇：</strong><br>
+  <span>
+  【Android源码伴读】OkHttp源码探索</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/android/2017/01/23/[Android教程]Context全解/" title="【Android教程】Context全解">
+ <strong>下一篇：</strong><br> 
+ <span>【Android教程】Context全解
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#View与ViewGroup类结构"><span class="toc-number">1.</span> <span class="toc-text">View与ViewGroup类结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#View与Window"><span class="toc-number">2.</span> <span class="toc-text">View与Window</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#View绘制与重绘过程"><span class="toc-number">3.</span> <span class="toc-text">View绘制与重绘过程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#View与ViewGroup事件分发"><span class="toc-number">4.</span> <span class="toc-text">View与ViewGroup事件分发</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#事件产生"><span class="toc-number">4.1.</span> <span class="toc-text">事件产生</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#事件分发和处理"><span class="toc-number">4.2.</span> <span class="toc-text">事件分发和处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#事件冲突"><span class="toc-number">4.3.</span> <span class="toc-text">事件冲突</span></a></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="hjhjw1991" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js"></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/android/" title="android">android<sup>26</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/blog/" title="blog">blog<sup>15</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/leetcode/" title="leetcode">leetcode<sup>9</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/opinion/" title="opinion">opinion<sup>4</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/tips/" title="tips">tips<sup>4</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/android/" title="android">android<sup>27</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guide/" title="guide">guide<sup>21</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/interview/" title="interview">interview<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/windows/" title="windows">windows<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/jekyll/" title="jekyll">jekyll<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vps/" title="vps">vps<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ssh/" title="ssh">ssh<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vpn/" title="vpn">vpn<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/regex/" title="regex">regex<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/uwsgi/" title="uwsgi">uwsgi<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ios/" title="ios">ios<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/linux/" title="linux">linux<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://google.com" target="_blank" title="Google">Google</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.goldenfrog.com/vyprvpn/refer-a-friend/get-a-free-month?ar=8betlkaq2h638_1" target="_blank" title="VyprVPN">VyprVPN</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="120" class="share_self" frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=1304671950&verifier=64e7ae81&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer">
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Huang Jun. <br>
+			This is my blog.</p>
+	</section>
+	 
+	<div class="social-font">
+		
+		<a href="http://weibo.com/1304671950" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/hjhjw1991" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:hjhjw1991@gmail.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="hjhjw1991">hjhjw1991</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'hjhjw1991';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?cd0e561542c22cc83da2e311ec57da84";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

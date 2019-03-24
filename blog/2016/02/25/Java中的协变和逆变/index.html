@@ -1,0 +1,750 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+  
+    <title>Java中的协变和逆变 | hjhjw1991&#39;s blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="hjhjw1991">
+    
+
+    
+    <meta name="description" content="协变和逆变，里氏代换原则，父类和子类">
+<meta name="keywords" content="Java">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java中的协变和逆变">
+<meta property="og:url" content="https://hjhjw1991.github.io/blog/2016/02/25/Java中的协变和逆变/index.html">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
+<meta property="og:description" content="协变和逆变，里氏代换原则，父类和子类">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-02-20T16:36:35.389Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java中的协变和逆变">
+<meta name="twitter:description" content="协变和逆变，里氏代换原则，父类和子类">
+
+    
+    <link rel="alternative" href="/atom.xml" title="hjhjw1991&#39;s blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/author.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/author.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="hjhjw1991&#39;s blog" title="hjhjw1991&#39;s blog"></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="hjhjw1991&#39;s blog">hjhjw1991&#39;s blog</a></h1>
+				<h2 class="blog-motto">Coder, Learn</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="http://zhannei.baidu.com/cse/search" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value="8741923514077570040"><input type="text" name="q" size="30" placeholder="搜索"><br>
+						</form>
+					
+					</li>
+				</ul>
+			</ul></nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/blog/2016/02/25/Java中的协变和逆变/" title="Java中的协变和逆变" itemprop="url">Java中的协变和逆变</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="hjhjw1991" target="_blank" itemprop="author">hjhjw1991</a>
+		
+  </p><p class="article-time">
+    <time datetime="2016-02-24T16:00:00.000Z" itemprop="datePublished"> 发表于 2016-02-25</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#概念"><span class="toc-number">1.</span> <span class="toc-text">概念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#例子"><span class="toc-number">2.</span> <span class="toc-text">例子</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">3.</span> <span class="toc-text">参考</span></a></li></ol>
+		
+		</div>
+		
+		<blockquote>
+<p>WARNING: 以下内容涉及强烈的个人理解和偏见，限于作者所知和笔力，不保证词可达意和正确性，请读者注意</p>
+</blockquote>
+<p>————————————————-手工分割机———————————————–  </p>
+<blockquote>
+<p>马者，所以名形也；白者，所以名色也。名形者非名色也。故曰：白马非马。求马，黄黑马皆可致。求白马，黄黑马不可致。……故黄黑马一也，而可以应有马，而不可以应有白马，是白马之非马审矣。马者，无去取于色，故黄黑皆所以应。白马者有去取于色，黄黑马皆所以色去，故惟白马独可以应耳。无去者，非有去也。故曰：白马非马.马故有色，故有白马。使马无色，由马如己耳。安取白马？故白者，非马也。白马者，马与白也，白与马也。故曰：白马非马也。  –公孙龙</p>
+</blockquote>
+<p>开宗先明义. 简介中提到里氏代换原则，先温习一下什么是里氏代换：  </p>
+<p><em>里氏代换原则(Liskov Substitution Principle LSP): 任何基类可以出现的地方，子类一定可以出现.</em>  </p>
+<p>里氏代换原则放在返回值上，就是返回基类的地方，也可以返回子类。放在参数值上，就是接受基类的函数，也可以接受子类。对于持有返回值的变量来说，就是声明为子类的变量可以被声明为父类的变量代替。对于函数本身来说，就是接受子类的函数可以被接受基类的函数代替。这里可以看出，里氏代换原则描述的事实上是对象。  </p>
+<p>再看看所谓<strong>“协变(Covariance)”</strong>和<strong>“逆变(Contravariance)”</strong>这两个拗口的中文术语，其英文定义是什么：  </p>
+<blockquote>
+<p>Within the type system of a programming language, a typing rule or a type constructor is:</p>
+</blockquote>
+<ul>
+<li><strong>covariant</strong> if it preserves the ordering of types (≤), which orders types from more specific to more generic;  </li>
+<li><strong>contravariant</strong> if it reverses this ordering;  </li>
+<li><strong>bivariant</strong> if both of these apply (i.e., both <code>I&lt;A&gt;</code> ≤ <code>I&lt;B&gt;</code> and <code>I&lt;B&gt;</code> ≤ <code>I&lt;A&gt;</code> at the same time);  </li>
+<li><strong>invariant</strong> or <strong>nonvariant</strong> if neither of these applies.<br>–  <a href="https://en.wikipedia.org/wiki/Covariance_and_contravariance_(computer_science" target="_blank" rel="noopener">wikipedia</a>#Formal_definition)  </li>
+</ul>
+<p>英文定义不好理解没关系，这里还有更不好理解的中文定义：  </p>
+<blockquote>
+<p><strong>协变(covariant)</strong>:当委托方法的返回类型具有的派生程度比委托签名更大时，就称为协变委托方法。因为方法的返回类型比委托签名的返回类型更具体 ，所以可以对其进行隐式转换。这样该方法就可以用作委托。协变使得创建可被类和派生类同时使用的委托方法成为可能。  </p>
+<p><strong>逆变(contravariant)</strong>:当委托方法签名具有一个或多个参数，并且这些参数的类型派生自方法参数的类型时，就称为逆变委托方法。因为委托方法签名参数比方法参数更具体，因此可以在传递给处理程序方法时对它们进行隐式转换。这样，当创建可由大量类使用的更加通用的委托方法时，使用逆变就更为简单了。  </p>
+<p>– 以上出自百度百科<a href="http://baike.baidu.com/link?url=W0J1-WTM1SjfSlVwsfkeESzHcT1NyRIS5GKtnUxB57WmF89Qv74QyDdFqx5vbx9rdc4e69xDO_ugFE54Fx9Zv_" target="_blank" rel="noopener">协变</a> <a href="http://baike.baidu.com/subview/302541/5594455.htm#viewPageContent" target="_blank" rel="noopener">逆变</a></p>
+</blockquote>
+<p>中文定义不好的地方在于，它高度概括，但对于想要从定义来理解的人可能毫无帮助。让我想起我那些线性代数教材。</p>
+<h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h2><p>在刚知道这两个概念的时候想必也对它们的含义和作用有过猜测，可能也像我一样相当糊涂，看过定义和网上各种中文的解释说明之后可能更加糊涂了。  </p>
+<p>要理解这两个概念，还是从根源说起。<em>这一段为了方便自己回忆，会非常啰嗦，如果想快速理解的话直接看<a href="#lizi">例子</a>。</em>   </p>
+<p>covariance也可被译作<code>协方差</code>，没错就是统计分析了里面那个。covariance根源于数学和物理领域，在wiki上的词条说它是用来描述两个变量变化时，它们之间的<strong>联系</strong>，统分就是采纳这个含义来描述统计量之间样本差异的联系。<br>协变和逆变放在一起，那应该可以猜测是一对”逆运算”或者说”反义词”，事实上确实是，只是根据需要，在编程语言中的使用位置不同。  </p>
+<p>接下来会用我擅长的”只有我自己可以理解的列举”来解释我对这两个概念的理解，基于wiki的形式化定义。  </p>
+<ul>
+<li>首先有两个东西<code>A</code>和<code>B</code>，然后有某种过程<code>process</code>，不失一般性，假设存在偏序关系<code>A&lt;=B</code>，且具有传递性、自反性、非对称性.  <ul>
+<li>如果有<code>process(A)&lt;=process(B)</code>，就说<code>这种偏序关系</code>在<code>这个process</code>上是协变的。  </li>
+<li>如果有<code>process(B)&lt;=process(A)</code>，就说<code>这种偏序关系</code>在<code>这个process</code>上是逆变的。  </li>
+</ul>
+</li>
+</ul>
+<p>细心的我发现了我只是把wiki的解释翻译成了中文，而且还缺斤少两。  </p>
+<p>事实上看到这里，联系自己熟悉的编程语言(很多编程语言都实现了这种特性)，那么相信你会隐约觉得——“这玩意我好像遇到过?”。你应该遇到过，如果你在声明的时候参数是类型B，但是赋值的时候参数是类型A，或者将A对象赋予给了B类型的变量，前者你遇到了逆变，后者你遇到了协变。  </p>
+<p>事实上参考中列出的某篇文章用更通俗的语言解释过这两个概念:  </p>
+<blockquote>
+<p>“协变”-&gt;”和谐的变”-&gt;”很自然的变化”-&gt;<code>string-&gt;object</code> 协变。<br>“逆变”-&gt;”逆常的变”-&gt;”不正常的变化”-&gt;<code>object-&gt;string</code> 逆变。</p>
+</blockquote>
+<p>最初让我疑惑之处在于，在所有参考资料中都有举例在函数中协变和逆变的表现，但看起来好像差不多:同样都是声明的父类，传递的子类。这TM有什么区别？  </p>
+<p>还是自己姿势不够，应该多学习。另外这个栗子也不好，注意，我要开始举例了。<br><strong>——前方高能——</strong><br>许多地方涉及到协变和逆变，但归根结底它只是一种类型变换规则，所以咱们从类型声明和赋值着手。  </p>
+<pre><code>class Parent{}
+class Child extends Parent{}
+
+Parent parent;// 也许你想成为一个父(母)亲
+parent = new Child();// 但最初，你还只是个孩子。明明是个孩子，却要以家长的形式存在下去，这是协变。里氏代换说，任何孩子都可以成为家长。
+
+Child child;// 但当你是个家长的时候
+child = new Parent();// 你无法回复身份，让自己成为一个孩子。至少在Java中不行。这就是说，Java中你没法把更抽象的父类对象直接丢给一个更具体的子类变量。
+// C#中把要丢给别人的协变变量用 out来修饰，也就是说，协变的变量可以用它的子类来代替(实际以子类形式存在的对象可以扔给父类形式声明的变量来管理)
+
+IEat&lt;T&gt;{}  //吃
+IEat&lt;Parent&gt; iep = new IEat&lt;Parent&gt;();// 作为家长可以吃
+IEat&lt;Child&gt; iec = iep;// 作为家长，可以吃得跟孩子一样，这是逆变。里氏代换说，任何子类都可以代替作为参数的父类。
+// C#中把这种只能被使用的逆变变量用 in来修饰，也即是说，逆变的变量可以用它的父类来代替(实际以父类形式存在的行为可以让子类形式声明的变量做出)
+</code></pre><p>那么，简单一句话，孩子协变成家长，家长逆变成孩子。  </p>
+<p>好像这么一说更令人疑惑了，那么还是借助c#的定义再说一遍。可以看到c#用out修饰协变变量，用in修饰逆变变量。对于函数来说，就是in可以逆变，out可以协变。如果把函数C的调用看作<code>A-&gt;C-&gt;B</code>这样的数据流过程，那么可以看到，两个箭头的位置涉及到变型，而里氏代换原则告诉我们，子类对象可以代替父类对象，那么自然可以导出结论：<code>在A和B不变的情况下，如果函数D将C的输入口放大到父类，而输出口缩小到子类，则D可以安全代替C。</code>注意到，以上的描述中已经暗含了逆变和协变的定义。直接看好像是相反的意思，实则不然。<br>我们更具体一点定义D和C，如下:  </p>
+<pre><code>CReturn C (CParameter)
+DReturn extends CReturn D(DParameter super CParameter)
+</code></pre><p>那么我们可以发现，当<code>D&lt;C</code>的时候，<code>DReturn&lt;=CReturn</code>，而且<code>DParameter&gt;=CParameter</code>，即有：  </p>
+<ul>
+<li><code>D&lt;C</code>-&gt;<code>DReturn&lt;=CReturn</code> 协变  </li>
+<li><code>D&lt;C</code>-&gt;<code>DParameter&gt;=CParameter</code> 逆变  </li>
+</ul>
+<p>协变和逆变可以解释程序语言实现中的许多现象。<br>例如，按以上的理解，<code>List&lt;Object&gt; l = new List&lt;String&gt;()</code>是允许的，因为<code>String</code>是<code>Object</code>的子类，赋值时子类可以协变成父类。<br>事实上，在c#中确实可以(未验证)。<br>然而这句话在Java中无法编译。原因是Java中<code>List</code>接口被定义为泛型类型<code>List&lt;T&gt;</code>，而Java中的泛型类型都是<code>invariant</code>，因此你既不能协变定义泛型变量，也不能逆变使用泛型对象。<br>有人说那不对啊，我可以用<code>List&lt;? extends Object&gt; l = new List&lt;String&gt;()</code>，这不就是协变了吗？事实上，这叫做<code>使用点变型(use-site variance)</code>，即在声明变量的时候告知编译器接受子类型或父类型的参数。<code>extends</code>和<code>super</code>分别对应协变和逆变方式使用。<br>有些语言支持<code>声明点变型(declaration-site variance)</code>，即在该类型的定义中就表明是协变还是逆变，例如C#和Scala，Java不支持。但是Java支持在类型定义中声明 <code>使用点变型</code>的泛型参数，我认为这可以替代<code>声明点变型</code>。<br>有趣的是，以上的例子中，Java是支持<code>class</code>协变的。例如你可以这样写<code>List&lt;String&gt; l = new ArrayList&lt;String&gt;()</code>或者这样写<code>AbstractList&lt;String&gt; l = new ArrayList&lt;String&gt;()</code>。BTW，数组协变也支持，你可以这样做<code>Object[] obj = new String[]</code>.<br>以下是一些验证代码。  </p>
+<pre><code>List&lt;Object&gt; list1 = new List&lt;String&gt;();
+List&lt;? extends Object&gt; list2 = new List&lt;String&gt;();
+List&lt;? super String&gt; list3 = new List&lt;Object&gt;();
+List&lt;Object&gt; list4 = new ArrayList&lt;Object&gt;();
+</code></pre><p>好了，这时候已经涉及到了函数和类型的定义，正如上文所说，函数和类型的定义中是否支持协变和逆变，这个跟具体语言有关，可以从<a href="http://www.cnblogs.com/1-2-3/archive/2010/09/27/covariance-contravariance-csharp4.html" target="_blank" rel="noopener">协变(Covariance)和逆变(Contravariance)的十万个为什么</a>这篇文章了解到该作者对是否需要、以及什么时候需要协变和逆变的理解。文中提到，当函数返回值是普通类型时，通常以参数逆变、返回值协变为宜。<br>另一种情况，自然是当返回值为涉及泛型的类型时，这时候参数是协变还是逆变，返回值是协变还是逆变，都取决于其使用方式是否类型安全，例子可以看<a href="http://arron-li.iteye.com/blog/673783" target="_blank" rel="noopener">java泛型通配符-协变与逆变</a>。  </p>
+<p>在类型定义的时候，如果一个子类的函数可以比父类的函数接受更抽象的参数，并返回更具体的值，那么这个函数就可以安全替换父类中的同名函数，这就是里氏代换原则的体现，也是<code>参数值逆变，返回值协变</code>的体现。换句话说，通过支持协变和逆变，编译器保证了里氏代换原则不被打破。  </p>
+<p>总之，协变和逆变的理解可以总结如下：  </p>
+<ul>
+<li>是一种<strong>类型变换规则</strong>，在Java中部分支持</li>
+<li>存在是为了<strong>“保证里氏代换原则不被打破”</strong>  </li>
+<li>协变是子类作为父类做功，逆变是父类作为子类做功，或者可以这么说，<strong>协变是期待一个父类，实际得到子类，逆变是期待一个子类，实际得到父类。哪一个行为被支持，就说哪种变型被支持</strong>。Java中内置部分类型的协变，并用<code>extends</code>和<code>super</code>支持泛型变量的协变和逆变  </li>
+<li><strong>函数定义中通常使返回值具有协变性，而使参数具有逆变性</strong>  </li>
+<li>函数定义为支持协变和逆变时，将参数值和返回值的类型范围都放大了，但放大方向相反，可以接受比定义更抽象的参数类型，并返回比定义更具体的返回类型  </li>
+<li>Java中所有地方都支持内置的协变，但逆变只有在显式声明时才支持  </li>
+</ul>
+<p><span id="lizi"></span></p>
+<h2 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h2><p>c# 协变</p>
+<pre><code>class Mammals{}
+class Dogs : Mammals{}
+
+class Program
+{
+    // Define the delegate.
+    public delegate Mammals HandlerMethod();
+
+    public static Mammals MammalsHandler()
+    {
+        return null;
+    }
+
+    public static Dogs DogsHandler()
+    {
+        return null;
+    }
+
+    static void Test()
+    {
+        HandlerMethod handlerMammals = MammalsHandler;
+
+        // Covariance enables this assignment.
+        HandlerMethod handlerDogs = DogsHandler;
+    }
+}
+</code></pre><p>c# 逆变</p>
+<pre><code>// Event hander that accepts a parameter of the EventArgs type.
+private void MultiHandler(object sender, System.EventArgs e)
+{
+    label1.Text = System.DateTime.Now.ToString();
+}
+
+public Form1()
+{
+    InitializeComponent();
+
+    // You can use a method that has an EventArgs parameter,
+    // although the event expects the KeyEventArgs parameter.
+    this.button1.KeyDown += this.MultiHandler;
+
+    // You can use the same method 
+    // for an event that expects the MouseEventArgs parameter.
+    this.button1.MouseClick += this.MultiHandler;
+
+}
+</code></pre><h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="http://www.2cto.com/kf/201304/205042.html" target="_blank" rel="noopener">Java 协变性 逆变性 学习笔记 - 2014</a><br><a href="http://www.cnblogs.com/Ninputer/archive/2008/11/22/generic_covariant.html" target="_blank" rel="noopener">.NET 4.0中的泛型协变和反变 - 2008</a><br><a href="https://www.zybuluo.com/zhanjindong/note/34147" target="_blank" rel="noopener">再谈对协变和逆变的理解 - 2014</a><br><a href="http://blog.csdn.net/beliefer/article/details/50894265" target="_blank" rel="noopener">Java泛型的协变</a><br><a href="http://www.cnblogs.com/LoveJenny/archive/2012/03/13/2392747.html" target="_blank" rel="noopener">深入理解 C# 协变和逆变</a><br><a href="https://msdn.microsoft.com/zh-cn/library/dd233060.aspx" target="_blank" rel="noopener">委托中的变体（C# 和 Visual Basic）</a><br><a href="https://msdn.microsoft.com/zh-cn/library/ms173174(v=vs.140" target="_blank" rel="noopener">在委托中使用变体（C# 和 Visual Basic）</a>.aspx)<br><a href="https://msdn.microsoft.com/zh-cn/library/dd465122.aspx" target="_blank" rel="noopener">对 Func 和 Action 泛型委托使用变体（C# 和 Visual Basic）</a><br><a href="http://www.cnblogs.com/1-2-3/archive/2010/09/27/covariance-contravariance-csharp4.html" target="_blank" rel="noopener">协变(Covariance)和逆变(Contravariance)的十万个为什么</a><br><a href="http://hongjiang.info/scala-covariance-and-contravariance/" target="_blank" rel="noopener">scala类型系统：15) 协变与逆变</a>  </p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/blog/">blog</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/Java/">Java</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://hjhjw1991.github.io/blog/2016/02/25/Java中的协变和逆变/" data-title="Java中的协变和逆变 | hjhjw1991&#39;s blog" data-tsina="1304671950" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev">
+ <a href="/blog/2016/03/02/记一次uwsgi故障排除/" title="记一次uwsgi故障排除">
+  <strong>上一篇：</strong><br>
+  <span>
+  记一次uwsgi故障排除</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/tips/2016/02/23/utf-8项目生成javadoc编码GBK的不可映射字符/" title="utf-8项目生成javadoc编码GBK的不可映射字符">
+ <strong>下一篇：</strong><br> 
+ <span>utf-8项目生成javadoc编码GBK的不可映射字符
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#概念"><span class="toc-number">1.</span> <span class="toc-text">概念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#例子"><span class="toc-number">2.</span> <span class="toc-text">例子</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">3.</span> <span class="toc-text">参考</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="hjhjw1991" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js"></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/android/" title="android">android<sup>26</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/blog/" title="blog">blog<sup>15</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/leetcode/" title="leetcode">leetcode<sup>9</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/opinion/" title="opinion">opinion<sup>4</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/tips/" title="tips">tips<sup>4</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/android/" title="android">android<sup>27</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guide/" title="guide">guide<sup>21</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/interview/" title="interview">interview<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/windows/" title="windows">windows<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/jekyll/" title="jekyll">jekyll<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vps/" title="vps">vps<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ssh/" title="ssh">ssh<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vpn/" title="vpn">vpn<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/regex/" title="regex">regex<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/uwsgi/" title="uwsgi">uwsgi<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ios/" title="ios">ios<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/linux/" title="linux">linux<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://google.com" target="_blank" title="Google">Google</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.goldenfrog.com/vyprvpn/refer-a-friend/get-a-free-month?ar=8betlkaq2h638_1" target="_blank" title="VyprVPN">VyprVPN</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="120" class="share_self" frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=1304671950&verifier=64e7ae81&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer">
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Huang Jun. <br>
+			This is my blog.</p>
+	</section>
+	 
+	<div class="social-font">
+		
+		<a href="http://weibo.com/1304671950" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/hjhjw1991" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:hjhjw1991@gmail.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="hjhjw1991">hjhjw1991</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'hjhjw1991';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?cd0e561542c22cc83da2e311ec57da84";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

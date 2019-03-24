@@ -1,0 +1,657 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+  
+    <title>在Ubuntu 16.04 64bit上下载、编译和安装Android源码 | hjhjw1991&#39;s blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="hjhjw1991">
+    
+
+    
+    <meta name="description" content="从空系统开始如何下载和编译Android系统源码">
+<meta name="keywords" content="guide,android">
+<meta property="og:type" content="article">
+<meta property="og:title" content="在Ubuntu 16.04 64bit上下载、编译和安装Android源码">
+<meta property="og:url" content="https://hjhjw1991.github.io/android/2016/08/01/build-android/index.html">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
+<meta property="og:description" content="从空系统开始如何下载和编译Android系统源码">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-02-20T16:36:35.391Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="在Ubuntu 16.04 64bit上下载、编译和安装Android源码">
+<meta name="twitter:description" content="从空系统开始如何下载和编译Android系统源码">
+
+    
+    <link rel="alternative" href="/atom.xml" title="hjhjw1991&#39;s blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/author.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/author.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="hjhjw1991&#39;s blog" title="hjhjw1991&#39;s blog"></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="hjhjw1991&#39;s blog">hjhjw1991&#39;s blog</a></h1>
+				<h2 class="blog-motto">Coder, Learn</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="http://zhannei.baidu.com/cse/search" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value="8741923514077570040"><input type="text" name="q" size="30" placeholder="搜索"><br>
+						</form>
+					
+					</li>
+				</ul>
+			</ul></nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/android/2016/08/01/build-android/" title="在Ubuntu 16.04 64bit上下载、编译和安装Android源码" itemprop="url">在Ubuntu 16.04 64bit上下载、编译和安装Android源码</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="hjhjw1991" target="_blank" itemprop="author">hjhjw1991</a>
+		
+  </p><p class="article-time">
+    <time datetime="2016-07-31T16:00:00.000Z" itemprop="datePublished"> 发表于 2016-08-01</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#环境准备"><span class="toc-number">1.</span> <span class="toc-text">环境准备</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#下载Android源码"><span class="toc-number">2.</span> <span class="toc-text">下载Android源码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#编译Android源码"><span class="toc-number">3.</span> <span class="toc-text">编译Android源码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#安装编译好的Android到模拟器"><span class="toc-number">4.</span> <span class="toc-text">安装编译好的Android到模拟器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">5.</span> <span class="toc-text">参考</span></a></li></ol>
+		
+		</div>
+		
+		<p>自诩为Android开发者已经很久了然而却没有自己编译安装过Android源码，怎么也说不过去。今天就编译安装，记录下来过程中需要注意的情况。</p>
+<h2 id="环境准备"><a href="#环境准备" class="headerlink" title="环境准备"></a>环境准备</h2><ul>
+<li>如果在中国大陆建议有一个能访问google的网络环境，官方的指导是最可靠最完善的。</li>
+<li>Android编译不能在Windows系统上进行，所以你需要一个基于Linux的系统，Mac OS和Ubuntu都行，虚拟机的话需要16GB的swap空间。官方使用的是Ubuntu 14.04，我建议你也用这个版本（我用的是16.04）。  </li>
+<li>Android基于Java，最新的基于Java 8， 所以你需要安装JDK 1.8。</li>
+<li>Android源码使用Git进行管理，并在外封装了一层叫Repo，所以你还要安装Git客户端。  </li>
+<li>安装依赖包。</li>
+</ul>
+<pre><code>sudo apt-get install git-core gnupg flex bison gperf build-essential \  
+zip curl zlib1g-dev gcc-multilib g++-multilib libc6-dev-i386 \  
+lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z-dev ccache \  
+libgl1-mesa-dev libxml2-utils xsltproc unzip  
+</code></pre><h2 id="下载Android源码"><a href="#下载Android源码" class="headerlink" title="下载Android源码"></a>下载Android源码</h2><p>Android源码每个分支可能都要占用约22GB空间，官方建议磁盘空间至少25GB.我建议先选定一个版本的源码，进行下载。  </p>
+<ol>
+<li><p>下载repo工具。执行以下命令：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">wget https://storage.googleapis.com/git-repo-downloads/repo</span><br><span class="line">chmod a+x repo</span><br><span class="line">mkdir ~/bin</span><br><span class="line">cp repo ~/bin/</span><br><span class="line">PATH=~/bin:$PATH</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>下载源码。执行以下命令：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">mkdidr AndroidSource</span><br><span class="line">cd AndroidSource</span><br><span class="line">repo init -u https://android.googlesource.com/platform/manifest -b android-4.4.1_r1 # -b是选择分支，不加则下载最新master分支。可以在网页上查看有哪些分支标签</span><br><span class="line">repo sync</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>然后就开始下载源码了，视网络状况这个过程可能会很长（我下了两天），中间还可能遇到下载错误，这时候重新执行<code>repo sync</code>就行了。</p>
+<h2 id="编译Android源码"><a href="#编译Android源码" class="headerlink" title="编译Android源码"></a>编译Android源码</h2><p>Android用到的Makefile系统来编译源码，所以必要的相关知识会非常有帮助。以后涉及到单独模块的编译需要自己写makefile。<br>在源码根目录下执行<code>make</code>就可以编译源码。默认编译目标是<code>droid</code>，默认输出目录在<code>/out</code>，执行<code>source build/envsetup.sh</code>可以获得更多的编译命令，其中<code>lunch</code>和<code>mmm</code>两个命令特别有用。<br>编译目标中，默认是<code>droid</code>前面已经说过，另外还有几个常用的编译目标，<code>clean</code>清理out目录，<code>sdk</code>编译SDK，<code>clean-sdk</code>清理SDK编译产物，<code>all</code>编译所有内容，<code>snod</code>从已经编译出的包快速重建系统镜像，<code>dump-products</code>显示所有产品的编译配置信息，<code>bootimage</code> <code>recoveryiamge</code> <code>userdataimage</code> <code>cacheimage</code>生成对应的<code>.img</code>。关于Build系统可以看<a href="https://www.ibm.com/developerworks/cn/opensource/os-cn-android-build/#icomments" target="_blank" rel="noopener">这里</a>  </p>
+<p>可能会遇到问题：<br>1.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">You are using version x.x of make  </span><br><span class="line">Android can only be built by versions 3.81 and 3.82</span><br></pre></td></tr></table></figure></p>
+<p>make的版本过低或过高，过低升级即可，过高则需要安装指定版本。我先remove了make 4.1，然后在<a href="http://packages.ubuntu.com/trusty/make" target="_blank" rel="noopener">http://packages.ubuntu.com/trusty/make</a> 下载安装了make 3.81。<br>2.<br><code>You are attempting to build with an unsupported JDK.</code><br>很明显OpenJDK不被支持，需要Oracle JDK。另外，JDK版本也一定要与你要编译的版本相匹配，不能过高，否则提示<code>You are attempting to build with the incorrect version
+of java.</code>。比如我编译4.4源码用的JDK 1.8，就提示java版本错误，非常郁闷。<br>安装好JDK 6 之后终于开始了编译步骤。<br>官网上说AOSP光靠它的源码还不能工作，需要一些跟硬件有关的library，在<a href="http://source.android.com/source/requirements.html#binaries" target="_blank" rel="noopener">http://source.android.com/source/requirements.html#binaries</a> 最下面。另外提供了官方的Nexus系列的驱动在<a href="https://developers.google.com/android/nexus/blobs-preview" target="_blank" rel="noopener">https://developers.google.com/android/nexus/blobs-preview</a> 和 <a href="https://developers.google.com/android/nexus/drivers" target="_blank" rel="noopener">https://developers.google.com/android/nexus/drivers</a> 。安装步骤见<a href="http://source.android.com/source/building.html，" target="_blank" rel="noopener">http://source.android.com/source/building.html，</a> 每个binary是一个自解压文件，在Android源码根目录运行这个自解压文件，然后相应的binary和makefile就会被安装在vendor目录。<br>编译没有错误的话就会生成Android系统了，根据主机配置不同这个过程可能比较久（我开始编译的时候没有注意，用了4小时…），可以在make的时候指定并发job数量来加速编译过程：<code>make -j8</code>。<br>编译完成的out目录下应该有<code>system.img</code> <code>ramdisk.img</code> <code>userdata.img</code>三个文件。<br>接下来进行安装。  </p>
+<h2 id="安装编译好的Android到模拟器"><a href="#安装编译好的Android到模拟器" class="headerlink" title="安装编译好的Android到模拟器"></a>安装编译好的Android到模拟器</h2><p>安装有两种选择：刷到设备里和安装到模拟器。其中刷到设备里需要设备和编译目标相匹配，否则可能无法成功启动，且需要用到<code>fastboot</code>工具，见<a href="http://source.android.com/source/running.html#flashing-a-device" target="_blank" rel="noopener">flashing a device</a>。这里我们选择安装到模拟器。<br>在build完成后把<code>/out/host/linux-x86/bin/emulator</code>添加到环境变量，这里需要执行的是这个<code>emulator</code>。加选项<code>-kernel &lt;PATH&gt;</code> <code>-sysdir &lt;PATH&gt;</code> <code>-system &lt;PATH&gt;</code> <code>-data &lt;PATH&gt;</code> <code>-ramdisk &lt;PATH&gt;</code>可以指定要用到的image文件。模拟器运行需要四个文件，分别是Linux Kernel镜像kernel-qemu（在<code>$ANDROID_SOURCE/prebuilts/qemu-kernel</code>中）、Android镜像<code>system.img</code>、<code>userdata.img</code>和<code>ramdisk.img</code>。<br>需要注意的是即使是模拟器平台也要跟编译目标相匹配，模拟器要求的内核最低版本必须低于所使用的内核版本。<br>今后就可以自己修改某个模块的代码，然后编译这个模块并重新打包到<code>system.img</code>来查看效果啦！<br>甚至可以自己定义新的模块，添加到系统镜像中。Android自带的App存放在<code>out/target/product/generic/system/app</code>，可执行文件存放在<code>out/target/product/generic/system/bin</code>，动态链接库存放在<code>out/target/product/generic/system/lib</code>，硬件抽象层（HAL）接口文件存放在<code>out/target/product/generic/system/lib/hw</code>。  </p>
+<p>可能会遇到的问题：</p>
+<ol>
+<li><p><code>emulator: ERROR: Missing initial data partition file: (null)</code> or 必须要指定一个虚拟机才能运行<code>emulator</code>。遇到这个可能是因为你使用了不合适的<code>emulator</code>，看一看<code>which emulator</code>，是不是使用了Sdk中的<code>emulator</code>。应该使用<code>/out/host/linux-x86/bin/emulator</code>。  </p>
+</li>
+<li><p><code>qemu: could not load initrd &#39;ramdisk.img&#39;</code>。遇到这个问题可能是模拟器没有读取到正确的<code>ramdisk.img</code>文件。按网上说法使用绝对路径即可，也可以将<code>ramdisk</code>的父目录<code>out/target/product/generic</code>添加到环境变量。  </p>
+</li>
+<li><p>启动模拟器后一直黑屏。可能是使用了错误的kernel，换一个kernel试试。我换成<code>arm/kernel-qemu-armv7</code>就可以启动了。  </p>
+</li>
+<li><p><code>emulator: WARNING: system partition size adjusted to match image file (550 MB &gt; 200 MB)</code>。这个WARNING好像不影响模拟器运行，但强迫症还是想弄懂为什么要WARNING，于是查了查。原来是所需空间不足，添加参数<code>emulator -partition-size 1024 # 大于所需尺寸即可</code>。  </p>
+</li>
+<li><p><code>make: *** No rule to make target &#39;out/target/product/generic/root/file_contexts&#39;, needed by &#39;snod&#39;.  Stop.</code> 或者启动模拟器后一直停留在开机画面，打开monitor发现logcat一直在循环刷错误(最近几天连续出现这个问题，虽然还没搞清楚原因，不过暂时在<code>emulator</code>之前执行<code>lunch full-eng</code>是有效果的，另外如果不执行<code>lunch full-eng</code>的话启动的模拟器默认连皮肤都没有，完全没有按键)。可能是模块编译目标与system.img目标不匹配。在编译模块前<code>lunch full-eng# lunch的combo要和编译系统时lunch的combo一致</code>，在<code>make snod</code>前<code>lunch full-eng</code>，我是这么做的。  </p>
+</li>
+</ol>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p>本文参考了以下文章，排列不分先后：<br><a href="http://blog.csdn.net/luoshengyang/article/details/18928789" target="_blank" rel="noopener">Android编译系统环境初始化过程分析</a><br><a href="http://blog.csdn.net/innost/article/details/47660387" target="_blank" rel="noopener">深入理解Android输入系统</a><br><a href="http://blog.csdn.net/luoshengyang/article/details/8923485" target="_blank" rel="noopener">那两年练就的Android内功修养-老罗</a><br><a href="http://blog.csdn.net/luoshengyang/article/details/6559955" target="_blank" rel="noopener">在Ubuntu上下载、编译和安装Android最新源代码-老罗</a><br><a href="http://blog.csdn.net/luoshengyang/article/details/6566662" target="_blank" rel="noopener">如何单独编译Android源代码中的模块-老罗</a><br><a href="https://www.ibm.com/developerworks/cn/opensource/os-cn-android-build/#icomments" target="_blank" rel="noopener">理解Android Build系统</a>  </p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/guide/">guide</a><a href="/tags/android/">android</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://hjhjw1991.github.io/android/2016/08/01/build-android/" data-title="在Ubuntu 16.04 64bit上下载、编译和安装Android源码 | hjhjw1991&#39;s blog" data-tsina="1304671950" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev">
+ <a href="/android/2016/08/01/Android源码结构/" title="Android源码结构">
+  <strong>上一篇：</strong><br>
+  <span>
+  Android源码结构</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/android/2016/04/01/[Android教程]AIDL入门/" title="【Android教程】AIDL入门">
+ <strong>下一篇：</strong><br> 
+ <span>【Android教程】AIDL入门
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#环境准备"><span class="toc-number">1.</span> <span class="toc-text">环境准备</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#下载Android源码"><span class="toc-number">2.</span> <span class="toc-text">下载Android源码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#编译Android源码"><span class="toc-number">3.</span> <span class="toc-text">编译Android源码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#安装编译好的Android到模拟器"><span class="toc-number">4.</span> <span class="toc-text">安装编译好的Android到模拟器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">5.</span> <span class="toc-text">参考</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="hjhjw1991" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js"></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/android/" title="android">android<sup>26</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/blog/" title="blog">blog<sup>15</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/leetcode/" title="leetcode">leetcode<sup>9</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/opinion/" title="opinion">opinion<sup>4</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/tips/" title="tips">tips<sup>4</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/android/" title="android">android<sup>27</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guide/" title="guide">guide<sup>21</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/interview/" title="interview">interview<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/windows/" title="windows">windows<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/jekyll/" title="jekyll">jekyll<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vps/" title="vps">vps<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ssh/" title="ssh">ssh<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vpn/" title="vpn">vpn<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/regex/" title="regex">regex<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/uwsgi/" title="uwsgi">uwsgi<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ios/" title="ios">ios<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/linux/" title="linux">linux<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://google.com" target="_blank" title="Google">Google</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.goldenfrog.com/vyprvpn/refer-a-friend/get-a-free-month?ar=8betlkaq2h638_1" target="_blank" title="VyprVPN">VyprVPN</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="120" class="share_self" frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=1304671950&verifier=64e7ae81&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer">
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Huang Jun. <br>
+			This is my blog.</p>
+	</section>
+	 
+	<div class="social-font">
+		
+		<a href="http://weibo.com/1304671950" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/hjhjw1991" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:hjhjw1991@gmail.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="hjhjw1991">hjhjw1991</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'hjhjw1991';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?cd0e561542c22cc83da2e311ec57da84";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

@@ -1,0 +1,645 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+  
+    <title>如何在Github上搭建个人博客 | hjhjw1991&#39;s blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="hjhjw1991">
+    
+
+    
+    <meta name="description" content="作为配置好的环境的第一篇Blog，讲解一下如何在Github上配置Blog">
+<meta name="keywords" content="git,jekyll">
+<meta property="og:type" content="article">
+<meta property="og:title" content="如何在Github上搭建个人博客">
+<meta property="og:url" content="https://hjhjw1991.github.io/blog/2014/09/11/如何在Github上搭建个人博客/index.html">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
+<meta property="og:description" content="作为配置好的环境的第一篇Blog，讲解一下如何在Github上配置Blog">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-02-20T16:36:35.384Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="如何在Github上搭建个人博客">
+<meta name="twitter:description" content="作为配置好的环境的第一篇Blog，讲解一下如何在Github上配置Blog">
+
+    
+    <link rel="alternative" href="/atom.xml" title="hjhjw1991&#39;s blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/author.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/author.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="hjhjw1991&#39;s blog" title="hjhjw1991&#39;s blog"></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="hjhjw1991&#39;s blog">hjhjw1991&#39;s blog</a></h1>
+				<h2 class="blog-motto">Coder, Learn</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="http://zhannei.baidu.com/cse/search" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value="8741923514077570040"><input type="text" name="q" size="30" placeholder="搜索"><br>
+						</form>
+					
+					</li>
+				</ul>
+			</ul></nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/blog/2014/09/11/如何在Github上搭建个人博客/" title="如何在Github上搭建个人博客" itemprop="url">如何在Github上搭建个人博客</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="hjhjw1991" target="_blank" itemprop="author">hjhjw1991</a>
+		
+  </p><p class="article-time">
+    <time datetime="2014-09-10T16:00:00.000Z" itemprop="datePublished"> 发表于 2014-09-11</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#整体流程"><span class="toc-number">1.</span> <span class="toc-text">整体流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Fork模板"><span class="toc-number">2.</span> <span class="toc-text">Fork模板</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#本地预览"><span class="toc-number">3.</span> <span class="toc-text">本地预览</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#push到github"><span class="toc-number">4.</span> <span class="toc-text">push到github</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#更新blog"><span class="toc-number">5.</span> <span class="toc-text">更新blog</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#关联域名"><span class="toc-number">6.</span> <span class="toc-text">关联域名</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#补充说明"><span class="toc-number">7.</span> <span class="toc-text">补充说明</span></a></li></ol>
+		
+		</div>
+		
+		<blockquote>
+<p>最近发现用Github来写文章，或许是一个不错的选择，别的Blog系统，管理起来太麻烦了以至于时间不长我就开始不想继续写了。最近是打算开一个坑，记一下Leetcode题解，所以就顺便开一个Blog记录记录。<br>作为开始，这篇文章就记一下怎么搭建这个Github blog。</p>
+</blockquote>
+<h2 id="整体流程"><a href="#整体流程" class="headerlink" title="整体流程"></a>整体流程</h2><p>我认为先讲一讲整体过程会比较容易理解一些。本质上来说，你的blog是一个在Github上托管的repo，这个repo的内容跟一般的网站差不多，不过它用了一些工具来简化建立的过程。首先Github上可以建立特殊的repo，叫做github-pages，这在新建repo的时候有提示。其次，针对这种特殊的repo，github会采用一些插件来执行模板渲染，例如jekyll，生成静态页面，同时给我们一个域名来解析到这个静态站，同时，github会添加ignore规则，忽略repo中动态生成的_site文件夹。<br>所以在理解了jekyll的工作原理之后，我们只需要做</p>
+<pre><code>建立blog repo
+关联域名
+</code></pre><p>这两步就可以了。<br>建立blog repo要遵循一定的语法，yml配置是jekyll要求的，我直接fork的一个大神BeiYuu的<a href="https://github.com/beiyuu/Github-Pages-Example" title="Github Pages Example" target="_blank" rel="noopener">blog模板</a>，<a href="http://BeiYuu.com" title="BeiYuu" target="_blank" rel="noopener">点我查看他的博客</a>。大家也可以去选自己喜欢的模板或者自己组装自己喜欢的组件。<br>关联域名这里，需要你自己有DNS提供商，我呢嫌麻烦就直接用了Github提供的功能生成了一个域名，由于我直接用的repo名字作为域名，所以也没有测试过repo名字和域名不同时候能不能工作。（后来自己申请了一个域名，在Github项目下配置了一个CNAME做解析，配置CNAME的方法Github官网也有说，其实就是在这个叫做CNAME的文本文件里写上自己的域名就行了）<br>repo的名字我设置的是USERNAME.github.io，之所以这样是因为这个名字直接就对应我们在github上的空间，我在这个repo下默认是用master push的。github有一个自动生成pages的功能，他的默认分支名字叫做gh-pages。</p>
+<h2 id="Fork模板"><a href="#Fork模板" class="headerlink" title="Fork模板"></a>Fork模板</h2><p>不是Fork完就完了，还要做以下几个工作（主要是改配置）：  </p>
+<ul>
+<li>保留原作者声明</li>
+<li>修改配置</li>
+</ul>
+<p>要改的主要是这几个</p>
+<pre><code>_layouts模板文件
+_config.yml配置文件
+各种js、css文件
+</code></pre><p>修改诸如超链接、内容、样式等。顺便也修一下bug，或者修改一下自己不喜欢或不满意的效果。如果时间充裕，甚至完全可以使用另一套模板，例如很流行的wordpress模板来搭建。  </p>
+<h2 id="本地预览"><a href="#本地预览" class="headerlink" title="本地预览"></a>本地预览</h2><p>这里要本地预览就要安装jekyll，首先要安装ruby，推荐RailsInstaller套件，安完还得安DevKit。jekyll安完得安rdiscount，用来解析markdown，当然你也可以用它自带的解析器。安装到这里基本上就结束了，我也开始有点不耐烦。<br>不用本地预览的话……这一步可以不做。<br>在windows下我的jekyll没有安装成功，估计是makefile的原因，提示的错误是failed to build gem Native Extension,以及makefile:165.target pattern contains no ‘%’. Stop，如果有谁知道什么原因，请留言告诉我，不胜感激  </p>
+<hr>
+<p>update-2015 5 6:  经微博网友 <a href="http://weibo.com/u/1988918527" target="_blank" rel="noopener">jrc2012</a>的提示，在github上找到了同样的<a href="https://github.com/rubygems/rubygems/issues/977" target="_blank" rel="noopener">issue</a>，可能是版本原因，据称<strong>把gem降级到1.8.29, ruby1.9.3</strong>可解决。  </p>
+<hr>
+<p>update 2015 9 30:<br>按照<a href="http://jekyll-windows.juthilo.com/" target="_blank" rel="noopener">官方教程</a>安装好了ruby、jekyll和相关依赖包（注意教程第一页有写版本兼容性），终于可以在本地预览了，Windows就是麻烦。除了官方教程安装的包之外，还要把你自己在_config.yml中指定的插件也安装好。之后就可以打开cmd，先改变cmd的编码格式为<code>utf-8</code>，<code>chcp 65001</code>，然后进入到博客根目录，运行  </p>
+<pre><code>jekyll  serve -w  
+</code></pre><p>查看效果。<br>如果遇到端口被占用，<code>netstat -aop tcp</code>查看一下是哪个进程占用了4000端口。<br>然而悲伤的是本地预览的URL不支持中文，遇到中文就会404，非中文的页面就没问题，把生成的_site下中文文件夹的名字改成英文也可以直接url访问。显然是url encode的原因，悲伤。  </p>
+<hr>
+<p>update 2015 11 10<br>根据<a href="http://www.oschina.net/question/1396651_132154" target="_blank" rel="noopener"><br>Jekyll编译中文文件名的网页的本地预览问题</a>下的回答找到了原因及解决方法。<br>原因是ruby的包WEBrick采用了系统默认编码作为路径编码.修改方案是把本地Ruby中这个包里面有关解析路径的地方强制修改为<code>utf-8</code>格式  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">1.</span><br><span class="line">path = req.path_info.dup.force_encoding(Encoding.find(&quot;filesystem&quot;))</span><br><span class="line">path.force_encoding(&quot;UTF-8&quot;) # 加入编码</span><br><span class="line">if trailing_pathsep?(req.path_info)</span><br><span class="line">    </span><br><span class="line">2.</span><br><span class="line">while base = path_info.first</span><br><span class="line">break if base == &quot;/&quot;</span><br><span class="line">base.force_encoding(&quot;UTF-8&quot;) # 加入编码</span><br><span class="line">break unless File.directory?(File.expand_path(res.filename + base))</span><br></pre></td></tr></table></figure>
+<p>改成这样有后遗症(我未验证)：如果”根目录路径”中有非ascii编码的路径会无法预览，例如C:/非ascii编码/_site，只要根目录不要挂在中文路径上就可以凑合  </p>
+<h2 id="push到github"><a href="#push到github" class="headerlink" title="push到github"></a>push到github</h2><p>在Github建立对应的Github Pages项目，有引导，不用多说。  </p>
+<h2 id="更新blog"><a href="#更新blog" class="headerlink" title="更新blog"></a>更新blog</h2><p>只需要在对应_posts目录下按照模板写md格式的blog就行了，名字按照<code>year-month-day-words-of-blog-title</code>的格式命名，然后push上github就OK<br>注意，必须要保证两个<code>---</code>及之间的内容格式完全符合模板语法，否则该blog无法解析出来。  </p>
+<h2 id="关联域名"><a href="#关联域名" class="headerlink" title="关联域名"></a>关联域名</h2><p>把你的域名绑定到github上这个blog的地址就可以了。按照我这个流程如果不绑定域名，访问域名就是USERNAME.github.io。我配置了CNAME之后访问域名是blog.hjhjw1991.net。<br>后面这个域名是我个人的域名，在DNS管理中被CNAME解析到前面这个github的地址。  </p>
+<h2 id="补充说明"><a href="#补充说明" class="headerlink" title="补充说明"></a>补充说明</h2><p>模板自带的评论插件是DISQUS，挺好用的。用他的插件需要去他官网<a href="https://disqus.com" target="_blank" rel="noopener">https://disqus.com</a>注册一个账号，再在自己的模板中配置一下即可。<br>这个插件允许匿名评论，也允许用google、facebook、Twitter及disqus账号登陆评论，在国内可能不太好用。大家可寻找替代插件。  </p>
+<p>代码高亮在模板中有jekyll的pygments插件和google的prettify.js可以使用，我选择了prettify.js，因为用起来比较简单，它直接作用于markdown语法的代码块，不需要额外添加什么，另外大多数时候它可以正确识别语言。  </p>
+<p>右上角社交用的新浪微博提供的API，叫做微博秀，可以直接去微博主页找到，至于左上角社交因素是直接链接到我的账号主页的，图标是去官网截的，60x60.  </p>
+<p>参考资料如下，百分之八十的问题都可以通过以下教程和查阅官方文档得到解决：<br><a href="http://www.ruanyifeng.com/blog/2012/08/blogging_with_jekyll.html" target="_blank" rel="noopener">搭建一个免费的，无限流量的Blog—-github Pages和Jekyll入门</a><br><a href="http://jekyllcn.com/" target="_blank" rel="noopener">Jekyllcn</a><br><a href="http://higrid.net/c-art-jeklly_template_data.htm" target="_blank" rel="noopener">Jekyll变量 和 Jekyll模板语法教程</a></p>
+<hr>
+<p>2015-10-21: 更新。发现这个blog的题目毫无信息量，于是改了一下，“如何在Github上建立个人博客”。  </p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/blog/">blog</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/git/">git</a><a href="/tags/jekyll/">jekyll</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://hjhjw1991.github.io/blog/2014/09/11/如何在Github上搭建个人博客/" data-title="如何在Github上搭建个人博客 | hjhjw1991&#39;s blog" data-tsina="1304671950" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev">
+ <a href="/opinion/2014/12/26/leetcode加了新题目/" title="leetcode加了新题目">
+  <strong>上一篇：</strong><br>
+  <span>
+  leetcode加了新题目</span>
+</a>
+</div>
+
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#整体流程"><span class="toc-number">1.</span> <span class="toc-text">整体流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Fork模板"><span class="toc-number">2.</span> <span class="toc-text">Fork模板</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#本地预览"><span class="toc-number">3.</span> <span class="toc-text">本地预览</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#push到github"><span class="toc-number">4.</span> <span class="toc-text">push到github</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#更新blog"><span class="toc-number">5.</span> <span class="toc-text">更新blog</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#关联域名"><span class="toc-number">6.</span> <span class="toc-text">关联域名</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#补充说明"><span class="toc-number">7.</span> <span class="toc-text">补充说明</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="hjhjw1991" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js"></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/android/" title="android">android<sup>26</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/blog/" title="blog">blog<sup>15</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/leetcode/" title="leetcode">leetcode<sup>9</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/opinion/" title="opinion">opinion<sup>4</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/tips/" title="tips">tips<sup>4</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/android/" title="android">android<sup>27</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guide/" title="guide">guide<sup>21</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/interview/" title="interview">interview<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/windows/" title="windows">windows<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/jekyll/" title="jekyll">jekyll<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vps/" title="vps">vps<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ssh/" title="ssh">ssh<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vpn/" title="vpn">vpn<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/regex/" title="regex">regex<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/uwsgi/" title="uwsgi">uwsgi<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ios/" title="ios">ios<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/linux/" title="linux">linux<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://google.com" target="_blank" title="Google">Google</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.goldenfrog.com/vyprvpn/refer-a-friend/get-a-free-month?ar=8betlkaq2h638_1" target="_blank" title="VyprVPN">VyprVPN</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="120" class="share_self" frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=1304671950&verifier=64e7ae81&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer">
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Huang Jun. <br>
+			This is my blog.</p>
+	</section>
+	 
+	<div class="social-font">
+		
+		<a href="http://weibo.com/1304671950" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/hjhjw1991" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:hjhjw1991@gmail.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="hjhjw1991">hjhjw1991</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'hjhjw1991';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?cd0e561542c22cc83da2e311ec57da84";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

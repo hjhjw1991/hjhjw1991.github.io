@@ -1,0 +1,714 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+  
+    <title>Animation详解 | hjhjw1991&#39;s blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="hjhjw1991">
+    
+
+    
+    <meta name="description" content="说来惭愧, 接触Android这么久可UI和Animation一直是涉足未深的盲点, 今天就来解...">
+<meta name="keywords" content="guide,android">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Animation详解">
+<meta property="og:url" content="https://hjhjw1991.github.io/android/2017/05/11/Animation详解/index.html">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
+<meta property="og:description" content="说来惭愧, 接触Android这么久可UI和Animation一直是涉足未深的盲点, 今天就来解...">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://camo.githubusercontent.com/c41223966bdfed2260dbbabbcbae648e5db542c6/687474703a2f2f7777332e73696e61696d672e636e2f6d773639302f3631306463303334677731656a37356d69327737376732306333306a623471722e676966">
+<meta property="og:image" content="https://raw.githubusercontent.com/hujiaweibujidao/FabDialogMorph/master/fabdialog.gif">
+<meta property="og:image" content="https://github.com/hujiaweibujidao/wava/raw/master/wava.gif">
+<meta property="og:image" content="https://github.com/hujiaweibujidao/yava/raw/master/yava.gif">
+<meta property="og:image" content="https://github.com/yanbober/SlideLayout/raw/master/art/demo.gif">
+<meta property="og:image" content="https://hjhjw1991.github.io/images/blogs/valueanimator.png">
+<meta property="og:image" content="https://hjhjw1991.github.io/images/blogs/animation_demo.gif">
+<meta property="og:updated_time" content="2019-02-20T16:36:35.394Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Animation详解">
+<meta name="twitter:description" content="说来惭愧, 接触Android这么久可UI和Animation一直是涉足未深的盲点, 今天就来解...">
+<meta name="twitter:image" content="https://camo.githubusercontent.com/c41223966bdfed2260dbbabbcbae648e5db542c6/687474703a2f2f7777332e73696e61696d672e636e2f6d773639302f3631306463303334677731656a37356d69327737376732306333306a623471722e676966">
+
+    
+    <link rel="alternative" href="/atom.xml" title="hjhjw1991&#39;s blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/author.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/author.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="hjhjw1991&#39;s blog" title="hjhjw1991&#39;s blog"></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="hjhjw1991&#39;s blog">hjhjw1991&#39;s blog</a></h1>
+				<h2 class="blog-motto">Coder, Learn</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="http://zhannei.baidu.com/cse/search" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value="8741923514077570040"><input type="text" name="q" size="30" placeholder="搜索"><br>
+						</form>
+					
+					</li>
+				</ul>
+			</ul></nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/android/2017/05/11/Animation详解/" title="Animation详解" itemprop="url">Animation详解</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="hjhjw1991" target="_blank" itemprop="author">hjhjw1991</a>
+		
+  </p><p class="article-time">
+    <time datetime="2017-05-10T16:00:00.000Z" itemprop="datePublished"> 发表于 2017-05-11</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#入门"><span class="toc-number">2.</span> <span class="toc-text">入门</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#View-Anima-Tween-Anima"><span class="toc-number">2.1.</span> <span class="toc-text">View Anima / Tween Anima</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Drawable-Anima-Frame-Anima"><span class="toc-number">2.2.</span> <span class="toc-text">Drawable Anima/Frame Anima</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Property-Anima"><span class="toc-number">2.3.</span> <span class="toc-text">Property Anima</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#解决问题"><span class="toc-number">2.4.</span> <span class="toc-text">解决问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#其他动画"><span class="toc-number">2.5.</span> <span class="toc-text">其他动画</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#深入源码"><span class="toc-number">3.</span> <span class="toc-text">深入源码</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#分步解析ObjectAnimator"><span class="toc-number">3.1.</span> <span class="toc-text">分步解析ObjectAnimator</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#动画的灵魂-数学"><span class="toc-number">3.2.</span> <span class="toc-text">动画的灵魂: 数学</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#注意"><span class="toc-number">4.</span> <span class="toc-text">注意</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">5.</span> <span class="toc-text">参考</span></a></li></ol>
+		
+		</div>
+		
+		<p>说来惭愧, 接触Android这么久可UI和Animation一直是涉足未深的盲点, 今天就来解决Animation这个盲点.  </p>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>本篇应该会涉及很多demo图片. 在Android开发中经常会碰到各种各样的动画, 有的是为了辅助实现功能, 例如进度条动画和Loading界面, 有的是为了帮助用户理解功能逻辑, 提升用户体验, 例如切入切出动画, 滑动效果, 而有的是纯粹为了看起来酷炫, 比如各种游戏特效. 一图胜千言, 一个动画有时候能起到的作用是用Toast所达不到的, 如果能用好动画, 则无论是开发过程还是成品都能够得到质的提升(没有动画的世界是多么乏味!).  </p>
+<p>众所周知, Android对界面的绘制速度是有要求的, 正常屏幕刷新频率是60Hz, 也就是60 frame/s, 故每一帧需要在1000ms/60即约16ms内完成, 否则就会造成能够感知到的掉帧, 俗称卡顿, 所以我们在做动画的时候也一定要考虑性能问题, 由动画引起严重卡顿就得不偿失了, 为了Android早就被黑得体无完肤的卡顿问题, 我们还要多多磨练自己的技术.  </p>
+<p>先抛出几个优秀的动画效果:<br><a href="https://github.com/daimajia/AndroidViewAnimations" target="_blank" rel="noopener"><img src="https://camo.githubusercontent.com/c41223966bdfed2260dbbabbcbae648e5db542c6/687474703a2f2f7777332e73696e61696d672e636e2f6d773639302f3631306463303334677731656a37356d69327737376732306333306a623471722e676966" alt="AndroidAnimations"></a>  </p>
+<p><a href="https://github.com/hujiaweibujidao/FabDialogMorph" target="_blank" rel="noopener"><img src="https://raw.githubusercontent.com/hujiaweibujidao/FabDialogMorph/master/fabdialog.gif" alt="FabDialogMorph"></a>  </p>
+<p><a href="https://github.com/hujiaweibujidao/wava" target="_blank" rel="noopener"><img src="https://github.com/hujiaweibujidao/wava/raw/master/wava.gif" alt="wava"></a>  </p>
+<p><a href="https://github.com/hujiaweibujidao/yava" target="_blank" rel="noopener"><img src="https://github.com/hujiaweibujidao/yava/raw/master/yava.gif" alt="yava"></a>  </p>
+<p><a href="https://github.com/yanbober/SlideLayout" target="_blank" rel="noopener"><img src="https://github.com/yanbober/SlideLayout/raw/master/art/demo.gif" alt="slidelayout"></a>  </p>
+<p>感谢<a href="http://blog.csdn.net/yanbober" target="_blank" rel="noopener">工匠若水</a> <a href="https://daimajia.com/" target="_blank" rel="noopener">代码家</a>和<a href="https://hujiaweibujidao.github.io/" target="_blank" rel="noopener">潇涧</a><br>特别感谢代码家的个人感悟博文, 让我知道用心运营一个产品也许没有想象中那样乏味, 我之所以不去做只是不愿意面对可能的失败, 是完全的不自信.  </p>
+<p>如果不满足于使用动画库, 想像他们一样为开源世界做出贡献, 那么了解代码背后的代码就十分必要. 以上开源库为我们提供了一个很好的切入点, 读者可以挑选一个感兴趣的效果深入探究.<br>当然也可以跟我一起(在Android动画方面, 我是一个完全的入门者), 跟这篇文章一起, 从底层, 从原理一步一步地走上来.<br>本文基于<strong>Android6.0源码</strong>, 从问题出发, 打算用一篇长文解决所有问题, 所以会在小节标题尽量提示本节内容.  </p>
+<h2 id="入门"><a href="#入门" class="headerlink" title="入门"></a>入门</h2><p>不同于理论研究, 程序开发的一切功能都是为实际需求而生的, 我们先来看需求:<br>最简单的情况, 我想让一段文本横向缓缓移动, 就像跑马灯一样的效果.<br>再进一步, 一段文本或者图片我希望把它放大和缩小, 但是不能是那种一点没有过渡的一步到位.<br>抑或我想让一个百变怪的图像变形成皮卡丘.<br>…<br>所有这些都是动画要解决的问题. 光凭直觉我们也能分辨出动画是有类别之分的, 比如形变/位移/镜像, 显然动画可以跟数学描述紧密结合. 可以这么说, 任何动画, 只要我们在有限维空间能够找到表达式来表达映射关系, 就可以实现, 这是动画背后坚实的数学基础.  </p>
+<p>先不扯数学(后面再扯), 来看看一个简单的位移动画, 我们在最上层怎么实现. 最先想到的当然是去找官方文档(以及顺手创建一个示例工程). 在<a href="https://developer.android.com/guide/topics/graphics/index.html" target="_blank" rel="noopener">Android官方文档</a>中, 把动画分为两个系统: 属性动画(property anima)和视图动画(view anima). 为了备忘和无网时回顾, 我这里对官方文档做一个简单翻译, 建议大家看原文.  </p>
+<p>Android系统框架提供以上两种动画系统, 都可以用, 但是一般来说属性动画比较好用, 因为它更灵活功能也更多. 除了这两种动画以外, 还有一种 Drawable Anima(有叫帧动画Frame Anima的, 我不翻译), 它允许你载入一堆drawable资源, 并一帧一帧挨个显示他们.  </p>
+<p>我们分别来看看这三种动画都是什么东西, 怎么用, 然后来看看我们要实现的效果怎么实现.<br>以下内容主要参考官方文档.  </p>
+<h3 id="View-Anima-Tween-Anima"><a href="#View-Anima-Tween-Anima" class="headerlink" title="View Anima / Tween Anima"></a>View Anima / Tween Anima</h3><p><a href="https://developer.android.com/guide/topics/graphics/view-animation.html" target="_blank" rel="noopener">视图动画(也叫补间动画)</a>允许在一个视图容器里执行一系列简单变换, 它只能用于视图. 顾名思义, 它是以整个视图为对象, 将帧与帧”之间”的过渡给”补齐”的动画. 它通过动画的起点/终点/尺寸/旋转以及其他常见方面来计算动画. 我们可以用一系列的动画指令(anima instruction)来定义补间动画, XML或者Android代码都可以. 官方推荐XML方式定义, 如果要以代码方式定义, 官方建议参考 <code>android.view.animation.AnimationSet</code>及其他的<code>android.view.animation.Animation</code>子类.  </p>
+<p>本质上, 补间动画就是给出两个关键帧, 通过一些方法计算中间过程, 并按顺序展示中间过程. 补间动画有<code>AlphaAnimation, RotateAnimation, ScaleAnimation, TranslateAnimation</code>这几种, 看名字大概也知道对应的效果了.<br>我们来看看怎么用. 先看XML官方示例:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">&lt;!-- 以下代码用于拉伸和旋转一个View对象 --&gt;</span><br><span class="line">&lt;set android:shareInterpolator=&quot;false&quot;&gt;</span><br><span class="line">    &lt;scale</span><br><span class="line">        android:interpolator=&quot;@android:anim/accelerate_decelerate_interpolator&quot;</span><br><span class="line">        android:fromXScale=&quot;1.0&quot;</span><br><span class="line">        android:toXScale=&quot;1.4&quot;</span><br><span class="line">        android:fromYScale=&quot;1.0&quot;</span><br><span class="line">        android:toYScale=&quot;0.6&quot;</span><br><span class="line">        android:pivotX=&quot;50%&quot;</span><br><span class="line">        android:pivotY=&quot;50%&quot;</span><br><span class="line">        android:fillAfter=&quot;false&quot;</span><br><span class="line">        android:duration=&quot;700&quot; /&gt;</span><br><span class="line">    &lt;set android:interpolator=&quot;@android:anim/decelerate_interpolator&quot;&gt;</span><br><span class="line">        &lt;scale</span><br><span class="line">           android:fromXScale=&quot;1.4&quot;</span><br><span class="line">           android:toXScale=&quot;0.0&quot;</span><br><span class="line">           android:fromYScale=&quot;0.6&quot;</span><br><span class="line">           android:toYScale=&quot;0.0&quot;</span><br><span class="line">           android:pivotX=&quot;50%&quot;</span><br><span class="line">           android:pivotY=&quot;50%&quot;</span><br><span class="line">           android:startOffset=&quot;700&quot;</span><br><span class="line">           android:duration=&quot;400&quot;</span><br><span class="line">           android:fillBefore=&quot;false&quot; /&gt;</span><br><span class="line">        &lt;rotate</span><br><span class="line">           android:fromDegrees=&quot;0&quot;</span><br><span class="line">           android:toDegrees=&quot;-45&quot;</span><br><span class="line">           android:toYScale=&quot;0.0&quot;</span><br><span class="line">           android:pivotX=&quot;50%&quot;</span><br><span class="line">           android:pivotY=&quot;50%&quot;</span><br><span class="line">           android:startOffset=&quot;700&quot;</span><br><span class="line">           android:duration=&quot;400&quot; /&gt;</span><br><span class="line">    &lt;/set&gt;</span><br><span class="line">&lt;/set&gt;</span><br></pre></td></tr></table></figure>
+<p>看标签名不难理解每个动画元素都做了什么以及相互之间的关系.<br>XML中除了指定关键帧的属性以外, 有一个重要的属性<code>android:interpolator</code>, 该属性绑定一个<code>Interpolator</code>(有译”插值器”), 由它来控制动画转换过程如何完成, 例如<code>AccelerateInterpolator</code>就指示以越来越快的速度来展示动画. 每个<code>Interpolator</code>类都可以被配置在XML中.<br>特别要指出的是<code>android:pivotX</code>这类属性, 它的值指定的是一个百分比, 但是有带”%”符号和不带符号, 其含义是不同的: 带”%”符号, 表示相对于View自身, 而不带则表示相对于View的父元素.<br>假设以上XML以<code>hyperspace_jump.xml</code>的名字存在<code>res/anim/</code>目录下, 在代码中可以这样使用:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ImageView spaceshipImage = (ImageView) findViewById(R.id.spaceshipImage); // 要应用动画的View对象</span><br><span class="line">Animation hyperspaceJumpAnimation = AnimationUtils.loadAnimation(this, R.anim.hyperspace_jump); // 使用AnimationUtils载入并实例化动画</span><br><span class="line">spaceshipImage.startAnimation(hyperspaceJumpAnimation); // startAnimation是View提供的方法, 你也可以用View.setAnimation()指定一个已通过Animation.setStartTime()设定了开始时间的定时动画</span><br></pre></td></tr></table></figure>
+<p>我们再来看代码如何定义一个动画:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">private TranslateAnimation mTranslateAnimation; // 一个位移动画</span><br><span class="line">//这四个参数含义分别是当前View x起点坐标、x终点坐标、y起点坐标、y终点坐标</span><br><span class="line">mTranslateAnimation = new TranslateAnimation(0, 200, 0, 0);</span><br><span class="line">//动画持续时间</span><br><span class="line">mTranslateAnimation.setDuration(2000);</span><br><span class="line">//重复次数</span><br><span class="line">mTranslateAnimation.setRepeatCount(1);</span><br><span class="line">//动画执行模式</span><br><span class="line">mTranslateAnimation.setRepeatMode(Animation.REVERSE);</span><br><span class="line">... // 后面就跟上文XML方式动画实例化之后一样了</span><br></pre></td></tr></table></figure>
+<p>四种补间动画的定义和使用都大同小异, 而且可以设置监听器<code>Animation.AnimationListener()</code>, 这里就不赘述.<br>需要注意的是两点: 1. 动画播放完成后, View会怎么样; 2. 动画指定的边界和View及View的父容器指定的边界发生冲突时, 例如动画放大到超出View父容器的边界, 会怎样.<br><!-- 这里可以直接给出答案: 1. 通过setFillAfter/setFillBefore/setFillEnabled可以控制动画播放完成后是保持最后的状态还是回到开始的状态; 2. 如果动画放大到超出View父容器边界, 那View会被裁减为只显示父容器范围内的部分. --></p>
+<h3 id="Drawable-Anima-Frame-Anima"><a href="#Drawable-Anima-Frame-Anima" class="headerlink" title="Drawable Anima/Frame Anima"></a>Drawable Anima/Frame Anima</h3><p>这种动画我不知道怎么翻译, 主要是Drawable不好翻译. 正如前文所述, 这种动画就是把一个个Drawable或者说Frame按顺序播放, 跟放电影一样. 它的定义和使用也特别简单:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">private AnimationDrawable mAnimationDrawable; // 定义帧动画对象</span><br><span class="line">mAnimationDrawable = new AnimationDrawable();</span><br><span class="line">// 添加帧及播放时间</span><br><span class="line">mAnimationDrawable.addFrame(getResources().getDrawable(R.drawable.australia), 500);</span><br><span class="line">mAnimationDrawable.addFrame(getResources().getDrawable(R.drawable.austria), 500);</span><br><span class="line">mAnimationDrawable.addFrame(getResources().getDrawable(R.drawable.china), 500);</span><br><span class="line">mAnimationDrawable.start(); // 开始动画</span><br></pre></td></tr></table></figure>
+<p>以下是XML的定义  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&lt;!-- 等效XML --&gt;</span><br><span class="line">&lt;animation-list</span><br><span class="line">    xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;</span><br><span class="line">    android:oneshot=&quot;false&quot;&gt;</span><br><span class="line"></span><br><span class="line">    &lt;item android:drawable=&quot;@drawable/australia&quot; android:duration=&quot;500&quot;/&gt;</span><br><span class="line">    &lt;item android:drawable=&quot;@drawable/austria&quot; android:duration=&quot;500&quot;/&gt;</span><br><span class="line">    &lt;item android:drawable=&quot;@drawable/china&quot; android:duration=&quot;500&quot;/&gt;</span><br><span class="line">&lt;/animation-list&gt;</span><br><span class="line">&lt;!-- XML中设置 --&gt;</span><br><span class="line">&lt;ImageView</span><br><span class="line">        android:id=&quot;@+id/frame_iv&quot;</span><br><span class="line">        android:layout_width=&quot;wrap_content&quot;</span><br><span class="line">        android:layout_height=&quot;wrap_content&quot;</span><br><span class="line">        android:background=&quot;@anim/frame&quot;/&gt;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// java中调用</span><br><span class="line">private ImageView mFrameIv;</span><br><span class="line">private AnimationDrawable mAnimationDrawable;</span><br><span class="line">mFrameIv = (ImageView) findViewById(R.id.frame_iv);</span><br><span class="line">mAnimationDrawable = (AnimationDrawable) mFrameIv.getBackground();</span><br><span class="line">mAnimationDrawable.start();</span><br></pre></td></tr></table></figure>
+<p>这种动画本身就是在播放Drawable, 所以不能通过<code>setAnimation</code>或者类似的方式应用在别的对象上, 只能以普通图像的方式使用, 例如设置为背景图, 有点类似于gif.  </p>
+<h3 id="Property-Anima"><a href="#Property-Anima" class="headerlink" title="Property Anima"></a>Property Anima</h3><p><a href="https://developer.android.com/guide/topics/graphics/prop-animation.html" target="_blank" rel="noopener">属性动画</a>可以说是系统提供的最强大的动画框架了, 它可以改变<strong>任意对象</strong>的属性, 只要对象符合一定条件. 难怪官网说它几乎可以动画化一切(allows you to animate almost anything). 它是Android 3.0 (API 11)新加入的成员.<br>起先, 补间动画和帧动画似乎足够, 然而补间动画只能操作View, 而且不会改边View的属性, 帧动画又太过简单, 要实现复杂的动画效果需要大量的帧, 他们俩似乎并不足以撑起Android的动画天下, 于是谷歌增加了属性动画.  </p>
+<p>利用属性动画, 你可以指定对象所具有的某项属性随时间的变化情况, 比如, 你可以指定某个对象在300ms内从位置A移动到位置B, 其间分别位于位置AB1,AB2,AB3.<br>在属性动画中, 你可以指定动画持续时间(Duration), 属性值与执行时间的函数关系(Time interpolation), 重复模式和重复次数, 动画集合, 帧刷新频率等.  </p>
+<p>Property Anima有两个类可以使用: ValueAnimator, ObjectAnimator, 他们的共同祖先都是Animator.<br>以ObjectAnimator为例, 一个对象的属性动画可以这样定义:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">private ObjectAnimator mObjectAnimator;</span><br><span class="line">//设置不透明度从1到0变化</span><br><span class="line">mObjectAnimator = ObjectAnimator</span><br><span class="line">                .ofFloat(mObjectAnimatorIv, &quot;alpha&quot;, 1, 0) // 以 mObjectAnimatorIv对象的float型alpha属性为动画对象, 值从1变到0. &quot;alpha&quot;必须是对象具有getter/setter的属性的名字, 否则无效果</span><br><span class="line">                .setDuration(1000); // 持续时间1000ms</span><br><span class="line">//设置插值器，先加速后减速</span><br><span class="line">mObjectAnimator.setInterpolator(new AccelerateDecelerateInterpolator());</span><br><span class="line">//动画重复执行一次</span><br><span class="line">mObjectAnimator.setRepeatCount(1);</span><br><span class="line">//设置执行模式</span><br><span class="line">mObjectAnimator.setRepeatMode(ValueAnimator.REVERSE);</span><br><span class="line">//设置在插值器所指定的每个动画更新时点的监听器</span><br><span class="line">mObjectAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() &#123;</span><br><span class="line">    @Override</span><br><span class="line">    public void onAnimationUpdate(ValueAnimator animation) &#123;</span><br><span class="line">        //获取当前的动画值</span><br><span class="line">        float cVal = (Float) animation.getAnimatedValue();</span><br><span class="line">        //根据动画值缩放当前View</span><br><span class="line">        mObjectAnimatorIv.setScaleX(cVal);</span><br><span class="line">        mObjectAnimatorIv.setScaleY(cVal);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>上面代码的效果是让对象的alpha属性值按一定规律从1变到0, 即逐渐透明, 并通过监听器让对象同时缩小. 其中该目标属性alpha每个时点的具体值是通过TypeEvaluator根据插值器和初末值计算得到的. 不设置TypeEvaluator的情况下Property Animation会有一个默认的TypeEvaluator. 你可以自定义TypeEvaluator.  </p>
+<p>ValueAnimator与ObjectAnimator类似, 只是它不能直接指定目标属性和更新属性值, 需要在监听器中去设置.<br><img src="/images/blogs/valueanimator.png" alt="valueanimator">  </p>
+<p>属性动画也可以通过XML来定义, 这里不再贴代码了.  </p>
+<p>AnimationSet可以将多个动画组合到一起, 还可以设置集合中动画的播放顺序, 这在实现复杂的动画效果时很有用.  </p>
+<p>至此, 对属性动画的使用就只缺了解其XML属性集合/API这样繁琐而简单的操作.  </p>
+<p>扩展阅读: <a href="https://developer.android.com/guide/topics/graphics/prop-animation.html#keyframes" target="_blank" rel="noopener">Keyframe</a>与<a href="https://developer.android.com/reference/android/animation/PropertyValuesHolder.html" target="_blank" rel="noopener">PropertyValuesHolder</a>  </p>
+<h3 id="解决问题"><a href="#解决问题" class="headerlink" title="解决问题"></a>解决问题</h3><p>回顾一下本节开头提出的需求:  </p>
+<ul>
+<li>想让一段文本横向缓缓移动, 就像跑马灯一样的效果.  </li>
+<li>一段文本或者图片我希望把它放大和缩小, 但是不能是那种一点没有过渡的一步到位.  </li>
+<li>想让一个百变怪的图像变形成皮卡丘.  </li>
+</ul>
+<p>对以上问题我们应该可以给出解决方案了: 1. 位移动画TranslateAnimation; 2. ScaleAnimation; 3. DrawableAnimation.  </p>
+<p>以上几种动画效果, 我做了一个演示图片:  </p>
+<p><img src="/images/blogs/animation_demo.gif" alt="animation_demo">  </p>
+<h3 id="其他动画"><a href="#其他动画" class="headerlink" title="其他动画"></a>其他动画</h3><p>我们还可以为Layout和Activity指定使用的动画资源, 例如Layout可以定义LayoutAnimation, 它类似AnimationSet. Activity可以调用overridePendingTransition指定进入和退出时使用的动画资源.<br>自从Lollipop之后, Android加入了很多酷炫的动画效果, 例如水滴, 波纹等, 这一部分还有待扩展了解.<br>看到这里, 想必读者看见上面那些开源动画中”XXXAnimator”这样的名字, 心里也会对它背后的实现有所猜测了. 事实上打开源码一看, 果然如此, 这些开源项目终于看起来没那么神秘了. 我有一个大胆的想法…</p>
+<h2 id="深入源码"><a href="#深入源码" class="headerlink" title="深入源码"></a>深入源码</h2><p>咱们忽略简单的补间动画和帧动画, 直奔属性动画. 属性动画这么神奇, 它的内部是怎么实现的呢?<br>再看上文的示例代码:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">mObjectAnimator = ObjectAnimator</span><br><span class="line">                .ofFloat(mObjectAnimatorIv, &quot;alpha&quot;, 1, 0)</span><br><span class="line">                .setDuration(1000);</span><br><span class="line">                .setInterpolator(new AccelerateDecelerateInterpolator());</span><br><span class="line">                .setRepeatCount(1);</span><br><span class="line">                .setRepeatMode(ValueAnimator.REVERSE);</span><br><span class="line">                .addUpdateListener(new ValueAnimator.AnimatorUpdateListener() &#123;</span><br><span class="line">                        @Override</span><br><span class="line">                        public void onAnimationUpdate(ValueAnimator animation) &#123;</span><br><span class="line">                                float cVal = (Float) animation.getAnimatedValue();</span><br><span class="line">                                mObjectAnimatorIv.setScaleX(cVal);</span><br><span class="line">                                mObjectAnimatorIv.setScaleY(cVal);</span><br><span class="line">                        &#125;</span><br><span class="line">                &#125;)</span><br><span class="line">                .start();</span><br></pre></td></tr></table></figure>
+<p>这段代码做了什么事情很好理解. 我们考虑一下, 如果是让我们来实现这个ObjectAnimator类, 怎么做?<br>首先利用建造者模式设置各种属性/插值器/估值器/监听器. 在<code>start()</code>之后, 开启一个计时器线程, 每过一段特定的时间(该时间由插值器计算出), 就让插值器计算当前目标属性应该是什么值, 计算好后通过反射把值赋给目标属性, 然后检查生命周期并调用回调函数. 大致上应该就是这么个思路, 相信源码即便会复杂些, 基本原则也一样.  </p>
+<h3 id="分步解析ObjectAnimator"><a href="#分步解析ObjectAnimator" class="headerlink" title="分步解析ObjectAnimator"></a>分步解析ObjectAnimator</h3><p>源码是<code>android.animation.ObjectAnimator.java</code>我们就不贴大段代码了, 仅贴关键内容.  </p>
+<p>首先是<code>ofFloat</code>, 用前两个参数实例化<code>ObjectAnimator</code>并用第三个参数调用<code>setFloatValues()</code>, 最后返回实例化的<code>ObjectAnimator</code>. <code>setFloatValues</code>时, 如果mValues为空, 实际是调用<code>PropertyValuesHolder.ofFloat()</code>来得到值. 看<code>PropertyValuesHolder</code>源码得知它用来保存动画期间关键帧及各帧的值, 这好理解, 刚开始的时候初末帧就是关键帧, 初末值就是对应帧的值, 有了这两个再加上插值器就可以计算有多少个帧, 当然目前还只有两个.<br>一句话总结就是, <code>ofFloat</code>记录了要实施动画的对象及属性, 其中属性, 属性类型及关键帧集合都被封装到一个<code>PropertyValuesHolder</code>对象中, <code>ObjectAnimator</code>的<code>mValues</code>数组保存这个对象.  </p>
+<p>接着是<code>setDuration(),setRepeatCount(),setRepeatMode()</code>我觉得这三个应该差不多就一起看了. 果不其然, 里面直接调用的它的父类<code>ValueAnimator</code>的同名方法, 保存对应的值, 没什么好说的.  </p>
+<p>接着是<code>setInterpolator</code>. 调用的父类<code>ValueAnimator</code>的函数保存插值器, 默认是<code>LinearInterpolator</code>, 没什么好说的.<br>我们这里没有设置估值器, 但也一并看了吧. <code>setEvaluator</code>同样调用的父类方法, 往<code>mValues</code>数组第一个元素设置估值器, 调用<code>PropertyValuesHolder.setEvaluator</code>, 保存了估值器.  </p>
+<p>接着是<code>addUpdateListener</code>, 同样是父类方法, 添加监听器到成员变量<code>ArrayList&lt;&gt; mUpdateListeners</code>中, 类型是<code>AnimatorUpdateListener</code>. 可以料想后面某处会遍历这个列表, 逐个回调.  </p>
+<p>最后是<code>start</code>. 深呼吸一下, 这个方法显然是重头戏.<br>贴上完整代码以示尊重:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br></pre></td><td class="code"><pre><span class="line">// in ObjectAnimator</span><br><span class="line">@Override</span><br><span class="line">public void start() &#123;</span><br><span class="line">    // See if any of the current active/pending animators need to be canceled</span><br><span class="line">    AnimationHandler handler = sAnimationHandler.get(); // AnimationHandler是ValueAnimator的隐藏私有静态内部类, 5.0曾一度实现Runnable, 后来改用Runnable匿名内部类, 稍后我们会看它的源码. 在4.0版本它不是隐藏的, 并且是继承自Handler类, 这解释了它的名字. sAnimationHandler类型为 ThreadLocal&lt;AnimationHandler&gt;</span><br><span class="line">    if (handler != null) &#123;</span><br><span class="line">        int numAnims = handler.mAnimations.size();</span><br><span class="line">        for (int i = numAnims - 1; i &gt;= 0; i--) &#123;</span><br><span class="line">            if (handler.mAnimations.get(i) instanceof ObjectAnimator) &#123;</span><br><span class="line">                ObjectAnimator anim = (ObjectAnimator) handler.mAnimations.get(i);</span><br><span class="line">                if (anim.mAutoCancel &amp;&amp; hasSameTargetAndProperties(anim)) &#123;</span><br><span class="line">                    anim.cancel();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        numAnims = handler.mPendingAnimations.size();</span><br><span class="line">        for (int i = numAnims - 1; i &gt;= 0; i--) &#123;</span><br><span class="line">            if (handler.mPendingAnimations.get(i) instanceof ObjectAnimator) &#123;</span><br><span class="line">                ObjectAnimator anim = (ObjectAnimator) handler.mPendingAnimations.get(i);</span><br><span class="line">                if (anim.mAutoCancel &amp;&amp; hasSameTargetAndProperties(anim)) &#123;</span><br><span class="line">                    anim.cancel();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        numAnims = handler.mDelayedAnims.size();</span><br><span class="line">        for (int i = numAnims - 1; i &gt;= 0; i--) &#123;</span><br><span class="line">            if (handler.mDelayedAnims.get(i) instanceof ObjectAnimator) &#123;</span><br><span class="line">                ObjectAnimator anim = (ObjectAnimator) handler.mDelayedAnims.get(i);</span><br><span class="line">                if (anim.mAutoCancel &amp;&amp; hasSameTargetAndProperties(anim)) &#123;</span><br><span class="line">                    anim.cancel();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; // 以上用于判断队列中是否有需要取消的动画, 以下是真正的执行函数</span><br><span class="line">    ... // debug code</span><br><span class="line">    super.start();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// in ValueAnimator</span><br><span class="line">@Override</span><br><span class="line">public void start() &#123;</span><br><span class="line">    start(false); // ObjectAnimator调用start()时, 均是以正向方式播放动画</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * Start the animation playing. This version of start() takes a boolean flag that indicates</span><br><span class="line"> * whether the animation should play in reverse. The flag is usually false, but may be set</span><br><span class="line"> * to true if called from the reverse() method.</span><br><span class="line"> *</span><br><span class="line"> * &lt;p&gt;The animation started by calling this method will be run on the thread that called</span><br><span class="line"> * this method. This thread should have a Looper on it (a runtime exception will be thrown if</span><br><span class="line"> * this is not the case). Also, if the animation will animate</span><br><span class="line"> * properties of objects in the view hierarchy, then the calling thread should be the UI</span><br><span class="line"> * thread for that view hierarchy.&lt;/p&gt;</span><br><span class="line"> *</span><br><span class="line"> * @param playBackwards Whether the ValueAnimator should start playing in reverse.</span><br><span class="line"> */</span><br><span class="line">private void start(boolean playBackwards) &#123;</span><br><span class="line">    if (Looper.myLooper() == null) &#123;</span><br><span class="line">        throw new AndroidRuntimeException(&quot;Animators may only be run on Looper threads&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    mReversing = playBackwards;</span><br><span class="line">    mPlayingBackwards = playBackwards;</span><br><span class="line">    // 倒放时更新mSeekFraction</span><br><span class="line">    if (playBackwards &amp;&amp; mSeekFraction != -1) &#123;</span><br><span class="line">        if (mSeekFraction == 0 &amp;&amp; mCurrentIteration == 0) &#123;</span><br><span class="line">            // special case: reversing from seek-to-0 should act as if not seeked at all</span><br><span class="line">            mSeekFraction = 0;</span><br><span class="line">        &#125; else if (mRepeatCount == INFINITE) &#123;</span><br><span class="line">            mSeekFraction = 1 - (mSeekFraction % 1);</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            mSeekFraction = 1 + mRepeatCount - (mCurrentIteration + mSeekFraction);</span><br><span class="line">        &#125;</span><br><span class="line">        mCurrentIteration = (int) mSeekFraction;</span><br><span class="line">        mSeekFraction = mSeekFraction % 1;</span><br><span class="line">    &#125;</span><br><span class="line">    // 判断当前播放方向</span><br><span class="line">    if (mCurrentIteration &gt; 0 &amp;&amp; mRepeatMode == REVERSE &amp;&amp;</span><br><span class="line">            (mCurrentIteration &lt; (mRepeatCount + 1) || mRepeatCount == INFINITE)) &#123;</span><br><span class="line">        // if we were seeked to some other iteration in a reversing animator,</span><br><span class="line">        // figure out the correct direction to start playing based on the iteration</span><br><span class="line">        if (playBackwards) &#123;</span><br><span class="line">            mPlayingBackwards = (mCurrentIteration % 2) == 0;</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            mPlayingBackwards = (mCurrentIteration % 2) != 0;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    // 更新播放状态</span><br><span class="line">    int prevPlayingState = mPlayingState; // 保存上一个状态</span><br><span class="line">    mPlayingState = STOPPED;</span><br><span class="line">    mStarted = true;</span><br><span class="line">    mStartedDelay = false;</span><br><span class="line">    mPaused = false;</span><br><span class="line">    updateScaledDuration(); // in case the scale factor has changed since creation time</span><br><span class="line">    AnimationHandler animationHandler = getOrCreateAnimationHandler();</span><br><span class="line">    animationHandler.mPendingAnimations.add(this); // 当前动画添加进AnimationHandler等待队列</span><br><span class="line">    if (mStartDelay == 0) &#123; // 未设置时默认mStartDelay为0</span><br><span class="line">        // This sets the initial value of the animation, prior to actually starting it running</span><br><span class="line">        if (prevPlayingState != SEEKED) &#123;</span><br><span class="line">            setCurrentPlayTime(0); // 见下文解释</span><br><span class="line">        &#125;</span><br><span class="line">        mPlayingState = STOPPED;</span><br><span class="line">        mRunning = true;</span><br><span class="line">        notifyStartListeners(); // 通知监听器, 回调AnimatorListener.onAnimationStart方法. 注意, 早于动画真正开始</span><br><span class="line">    &#125;</span><br><span class="line">    animationHandler.start(); // 最终调用AnimationHandler.start()</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以上有一些地方需要解释一下: <code>mCurrentIteration</code>指当前是第几次播放动画; <code>getOrCreateAnimationHandler</code>顾名思义是尝试从<code>ThreadLocal</code>中获取Handler, 为空的话就创建一个; <code>setCurrentPlayTime()</code>顾名思义是设置当前播放时间, 该时间必须在0到持续时间之间. 其内部调用<code>setCurrentFraction(fraction)</code>设置当前播放的片段, 比如<code>fraction==1.3</code>就表示当前在播放第2次的0.3这部分. 在上述代码中此时<code>fraction==0</code>. 内部最后再调用<code>animateValue</code>将片段动画化, 这个函数稍后我们还会看到. 该函数首先调用<code>fraction = mInterpolator.getInterpolation(fraction)</code>使用插值器获取计算后的当前<code>fraction</code>值, 然后遍历<code>mValues</code>调用<code>calculateValue(fraction)</code>(内部使用<code>mAnimatedValue = mKeyframeSet.getValue(fraction)</code>获取各帧的当前属性值, 估值器就是在这个<code>getValue</code>函数里调用的), 显然这就是在<strong>计算此时的属性值</strong>了, 紧接着通过<code>PropertyValuesHolder.setAnimatedValue(Object target)</code>以反射的方式把值写回目标属性. 再遍历<code>mUpdateListeners</code>调用<code>onAnimationUpdate(this)</code>.  </p>
+<p>最后来看<code>AnimationHandler.start()</code>.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br></pre></td><td class="code"><pre><span class="line">// in ValueAnimator</span><br><span class="line">    final boolean doAnimationFrame(long frameTime) &#123;</span><br><span class="line">        // 更新动画状态</span><br><span class="line">        if (mPlayingState == STOPPED) &#123;</span><br><span class="line">            mPlayingState = RUNNING;</span><br><span class="line">            if (mSeekFraction &lt; 0) &#123;</span><br><span class="line">                mStartTime = frameTime;</span><br><span class="line">            &#125; else &#123;</span><br><span class="line">                long seekTime = (long) (mDuration * mSeekFraction);</span><br><span class="line">                mStartTime = frameTime - seekTime;</span><br><span class="line">                mSeekFraction = -1;</span><br><span class="line">            &#125;</span><br><span class="line">            mStartTimeCommitted = false; // allow start time to be compensated for jank</span><br><span class="line">        &#125;</span><br><span class="line">        if (mPaused) &#123;</span><br><span class="line">            if (mPauseTime &lt; 0) &#123;</span><br><span class="line">                mPauseTime = frameTime;</span><br><span class="line">            &#125;</span><br><span class="line">            return false;</span><br><span class="line">        &#125; else if (mResumed) &#123;</span><br><span class="line">            mResumed = false;</span><br><span class="line">            if (mPauseTime &gt; 0) &#123;</span><br><span class="line">                // Offset by the duration that the animation was paused</span><br><span class="line">                mStartTime += (frameTime - mPauseTime);</span><br><span class="line">                mStartTimeCommitted = false; // allow start time to be compensated for jank</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        // The frame time might be before the start time during the first frame of</span><br><span class="line">        // an animation.  The &quot;current time&quot; must always be on or after the start</span><br><span class="line">        // time to avoid animating frames at negative time intervals.  In practice, this</span><br><span class="line">        // is very rare and only happens when seeking backwards.</span><br><span class="line">        final long currentTime = Math.max(frameTime, mStartTime);</span><br><span class="line">        return animationFrame(currentTime); // 真正的动画处理函数</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    boolean animationFrame(long currentTime) &#123; // 真正的动画处理函数</span><br><span class="line">        boolean done = false;</span><br><span class="line">        switch (mPlayingState) &#123;</span><br><span class="line">        case RUNNING:</span><br><span class="line">        case SEEKED:</span><br><span class="line">            // 计算当前fraction</span><br><span class="line">            float fraction = mDuration &gt; 0 ? (float)(currentTime - mStartTime) / mDuration : 1f;</span><br><span class="line">            if (mDuration == 0 &amp;&amp; mRepeatCount != INFINITE) &#123;</span><br><span class="line">                // Skip to the end</span><br><span class="line">                mCurrentIteration = mRepeatCount;</span><br><span class="line">                if (!mReversing) &#123;</span><br><span class="line">                    mPlayingBackwards = false;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            if (fraction &gt;= 1f) &#123;</span><br><span class="line">                if (mCurrentIteration &lt; mRepeatCount || mRepeatCount == INFINITE) &#123;</span><br><span class="line">                    // Time to repeat</span><br><span class="line">                    if (mListeners != null) &#123;</span><br><span class="line">                        int numListeners = mListeners.size();</span><br><span class="line">                        for (int i = 0; i &lt; numListeners; ++i) &#123;</span><br><span class="line">                            mListeners.get(i).onAnimationRepeat(this); // 回调监听器的onAnimationRepeat()</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                    if (mRepeatMode == REVERSE) &#123;</span><br><span class="line">                        mPlayingBackwards = !mPlayingBackwards;</span><br><span class="line">                    &#125;</span><br><span class="line">                    mCurrentIteration += (int) fraction;</span><br><span class="line">                    fraction = fraction % 1f;</span><br><span class="line">                    mStartTime += mDuration;</span><br><span class="line">                    // Note: We do not need to update the value of mStartTimeCommitted here</span><br><span class="line">                    // since we just added a duration offset.</span><br><span class="line">                &#125; else &#123;</span><br><span class="line">                    done = true;</span><br><span class="line">                    fraction = Math.min(fraction, 1.0f);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            if (mPlayingBackwards) &#123;</span><br><span class="line">                fraction = 1f - fraction;</span><br><span class="line">            &#125;</span><br><span class="line">            </span><br><span class="line">            // 根据当前fraction将目标属性值动画化, 该函数的分析见上一段落.</span><br><span class="line">            animateValue(fraction);</span><br><span class="line">            break;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        return done;</span><br><span class="line">    &#125;</span><br><span class="line">    /**</span><br><span class="line">     * This custom, static handler handles the timing pulse that is shared by</span><br><span class="line">     * all active animations. This approach ensures that the setting of animation</span><br><span class="line">     * values will happen on the UI thread and that all animations will share</span><br><span class="line">     * the same times for calculating their values, which makes synchronizing</span><br><span class="line">     * animations possible.</span><br><span class="line">     *</span><br><span class="line">     * The handler uses the Choreographer for executing periodic callbacks.</span><br><span class="line">     *</span><br><span class="line">     * @hide</span><br><span class="line">     */</span><br><span class="line">    @SuppressWarnings(&quot;unchecked&quot;)</span><br><span class="line">    protected static class AnimationHandler &#123;</span><br><span class="line">        // The per-thread list of all active animations</span><br><span class="line">        /** @hide */</span><br><span class="line">        protected final ArrayList&lt;ValueAnimator&gt; mAnimations = new ArrayList&lt;ValueAnimator&gt;();</span><br><span class="line"></span><br><span class="line">        // Used in doAnimationFrame() to avoid concurrent modifications of mAnimations</span><br><span class="line">        private final ArrayList&lt;ValueAnimator&gt; mTmpAnimations = new ArrayList&lt;ValueAnimator&gt;();</span><br><span class="line"></span><br><span class="line">        // The per-thread set of animations to be started on the next animation frame</span><br><span class="line">        /** @hide */</span><br><span class="line">        protected final ArrayList&lt;ValueAnimator&gt; mPendingAnimations = new ArrayList&lt;ValueAnimator&gt;();</span><br><span class="line"></span><br><span class="line">        /**</span><br><span class="line">         * Internal per-thread collections used to avoid set collisions as animations start and end</span><br><span class="line">         * while being processed.</span><br><span class="line">         * @hide</span><br><span class="line">         */</span><br><span class="line">        protected final ArrayList&lt;ValueAnimator&gt; mDelayedAnims = new ArrayList&lt;ValueAnimator&gt;();</span><br><span class="line">        private final ArrayList&lt;ValueAnimator&gt; mEndingAnims = new ArrayList&lt;ValueAnimator&gt;();</span><br><span class="line">        private final ArrayList&lt;ValueAnimator&gt; mReadyAnims = new ArrayList&lt;ValueAnimator&gt;();</span><br><span class="line"></span><br><span class="line">        private final Choreographer mChoreographer;</span><br><span class="line">        private boolean mAnimationScheduled;</span><br><span class="line">        private long mLastFrameTime;</span><br><span class="line"></span><br><span class="line">        private AnimationHandler() &#123;</span><br><span class="line">            mChoreographer = Choreographer.getInstance();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        /**</span><br><span class="line">         * Start animating on the next frame.</span><br><span class="line">         */</span><br><span class="line">        public void start() &#123;</span><br><span class="line">            scheduleAnimation(); // 入口函数</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        void doAnimationFrame(long frameTime) &#123;</span><br><span class="line">            mLastFrameTime = frameTime;</span><br><span class="line"></span><br><span class="line">            // mPendingAnimations holds any animations that have requested to be started</span><br><span class="line">            // We&apos;re going to clear mPendingAnimations, but starting animation may</span><br><span class="line">            // cause more to be added to the pending list (for example, if one animation</span><br><span class="line">            // starting triggers another starting). So we loop until mPendingAnimations</span><br><span class="line">            // is empty.</span><br><span class="line">            while (mPendingAnimations.size() &gt; 0) &#123; // 是一个宽度优先遍历动画队列</span><br><span class="line">                ArrayList&lt;ValueAnimator&gt; pendingCopy =</span><br><span class="line">                        (ArrayList&lt;ValueAnimator&gt;) mPendingAnimations.clone(); // 拷贝队列</span><br><span class="line">                mPendingAnimations.clear(); // 清空原队列</span><br><span class="line">                int count = pendingCopy.size();</span><br><span class="line">                for (int i = 0; i &lt; count; ++i) &#123;</span><br><span class="line">                    ValueAnimator anim = pendingCopy.get(i);</span><br><span class="line">                    // If the animation has a startDelay, place it on the delayed list</span><br><span class="line">                    if (anim.mStartDelay == 0) &#123;</span><br><span class="line">                        anim.startAnimation(this); // 调用ValueAnimator.startAnimation开始动画, 可能会导致向原等待队列添加动画</span><br><span class="line">                    &#125; else &#123;</span><br><span class="line">                        mDelayedAnims.add(anim); // 添加到延迟动画队列</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            // Next, process animations currently sitting on the delayed queue, adding</span><br><span class="line">            // them to the active animations if they are ready</span><br><span class="line">            int numDelayedAnims = mDelayedAnims.size();</span><br><span class="line">            for (int i = 0; i &lt; numDelayedAnims; ++i) &#123; // 遍历延迟动画队列, 将已到达时点的动画添加进就绪动画队列(注意没有从延迟队列移除)</span><br><span class="line">                ValueAnimator anim = mDelayedAnims.get(i);</span><br><span class="line">                if (anim.delayedAnimationFrame(frameTime)) &#123;</span><br><span class="line">                    mReadyAnims.add(anim);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            int numReadyAnims = mReadyAnims.size();</span><br><span class="line">            if (numReadyAnims &gt; 0) &#123; // 遍历就绪动画队列, 调用ValueAnimator.startAnimation开始动画, 并从延迟动画队列中移除</span><br><span class="line">                for (int i = 0; i &lt; numReadyAnims; ++i) &#123;</span><br><span class="line">                    ValueAnimator anim = mReadyAnims.get(i);</span><br><span class="line">                    anim.startAnimation(this);</span><br><span class="line">                    anim.mRunning = true;</span><br><span class="line">                    mDelayedAnims.remove(anim);</span><br><span class="line">                &#125;</span><br><span class="line">                mReadyAnims.clear();</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            // Now process all active animations. The return value from animationFrame()</span><br><span class="line">            // tells the handler whether it should now be ended</span><br><span class="line">            int numAnims = mAnimations.size();</span><br><span class="line">            for (int i = 0; i &lt; numAnims; ++i) &#123;</span><br><span class="line">                mTmpAnimations.add(mAnimations.get(i));</span><br><span class="line">            &#125;</span><br><span class="line">            for (int i = 0; i &lt; numAnims; ++i) &#123; // 遍历动画队列, 调用ValueAnimator.doAnimationFrame, 如动画已结束则添加进结束动画队列</span><br><span class="line">                ValueAnimator anim = mTmpAnimations.get(i);</span><br><span class="line">                if (mAnimations.contains(anim) &amp;&amp; anim.doAnimationFrame(frameTime)) &#123;</span><br><span class="line">                    mEndingAnims.add(anim);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            mTmpAnimations.clear();</span><br><span class="line">            if (mEndingAnims.size() &gt; 0) &#123; // 遍历结束动画队列, 回调endAnimation, 然后清空队列.</span><br><span class="line">                for (int i = 0; i &lt; mEndingAnims.size(); ++i) &#123;</span><br><span class="line">                    mEndingAnims.get(i).endAnimation(this);</span><br><span class="line">                &#125;</span><br><span class="line">                mEndingAnims.clear();</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            // Schedule final commit for the frame.</span><br><span class="line">            mChoreographer.postCallback(Choreographer.CALLBACK_COMMIT, mCommit, null); // 发送mCommit回调. mCommit的定义见下面</span><br><span class="line"></span><br><span class="line">            // If there are still active or delayed animations, schedule a future call to</span><br><span class="line">            // onAnimate to process the next frame of the animations.</span><br><span class="line">            // 为还没有处理完的动画和延迟动画安排新一次的处理</span><br><span class="line">            if (!mAnimations.isEmpty() || !mDelayedAnims.isEmpty()) &#123;</span><br><span class="line">                scheduleAnimation();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        void commitAnimationFrame(long frameTime) &#123; // 结束本帧</span><br><span class="line">            final long adjustment = frameTime - mLastFrameTime;</span><br><span class="line">            final int numAnims = mAnimations.size();</span><br><span class="line">            for (int i = 0; i &lt; numAnims; ++i) &#123;</span><br><span class="line">                mAnimations.get(i).commitAnimationFrame(adjustment);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        private void scheduleAnimation() &#123;</span><br><span class="line">            if (!mAnimationScheduled) &#123;</span><br><span class="line">                mChoreographer.postCallback(Choreographer.CALLBACK_ANIMATION, mAnimate, null);</span><br><span class="line">                mAnimationScheduled = true;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        // Called by the Choreographer.</span><br><span class="line">        final Runnable mAnimate = new Runnable() &#123; // 匿名内部类, 调用真正的动画函数</span><br><span class="line">            @Override</span><br><span class="line">            public void run() &#123;</span><br><span class="line">                mAnimationScheduled = false;</span><br><span class="line">                doAnimationFrame(mChoreographer.getFrameTime()); // 这里调用的是AnimationHandler.doAnimationFrame</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line"></span><br><span class="line">        // Called by the Choreographer.</span><br><span class="line">        final Runnable mCommit = new Runnable() &#123; // 匿名内部类, 结束本帧动画后调用</span><br><span class="line">            @Override</span><br><span class="line">            public void run() &#123;</span><br><span class="line">                commitAnimationFrame(mChoreographer.getFrameTime());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>调用路径: <code>start -&gt; scheduleAnimation -&gt; Choreographer.postCallback(Choreographer.CALLBACK_ANIMATION, mAnimate, null) -&gt; run -&gt; doAnimationFrame</code>, 中间大概能猜到是一些消息发送和处理机制, 暂时我们按下不看, 细看<code>doAnimationFrame</code>. 传入的参数是<code>mChoreographer.getFrameTime()</code>, 也就是当前帧时间. 在该方法中, 依次处理了 立即执行动画/延迟动画/就绪动画/正在处理的动画/结束动画 这种情况的动画或动画列表, 最后对于还没处理完的动画则发起新的<code>scheduleAnimation</code>调用, 开始新一轮循环.  </p>
+<p>到此, 整个动画的执行过程就清清楚楚了. 回想一下, 是不是跟我们预先设想的其实差不多?  </p>
+<p>总结一下, <code>ObjectAnimator</code>动画的工作流程大致如下:  </p>
+<ol>
+<li>通过<code>ofXXX</code>实例化一个<code>ObjectAnimator</code>对象, 设置它的目标/属性名/mValues: PropertyValuesHolder[], 设置持续时间和插值器/估值器. PropertyValuesHolder用于保存动画过程每一帧的信息.  </li>
+<li>在调用<code>start()</code>开始动画之后, 首先更新当前动画状态, 根据当前执行时间/总持续时间, 得到当前执行的比例(fraction), 把这个fraction交给插值器得到新的fraction, 再给估值器, 计算目标属性的当前值, 并通过反射把这个值赋给目标属性.  </li>
+<li>完成赋值之后, 调用<code>AnimationHandler.start</code>开始更新动画. 利用<code>Choreographer</code>发送任务, 在执行任务时对于立即执行的动画, 调用<code>ValueAnimator.doAnimationFrame</code>完成真正的动画操作, 对于延迟动画/就绪动画/已结束动画则更新它们的状态. 如此反复直到所有动画处理完毕.  </li>
+</ol>
+<h3 id="动画的灵魂-数学"><a href="#动画的灵魂-数学" class="headerlink" title="动画的灵魂: 数学"></a>动画的灵魂: 数学</h3><p>这里我们讲解动画另一方面重要的内容: 数学.  </p>
+<p>诚然, 即便我们对数学不是那么精通, 也能够在知道效果的情况下反推出实现效果需要的数学运算, 这应该也是大多数工程师的第一反应. 然而在数学或者说算法基础扎实的情况下, 我们往往能够很快找到更快更好的实现方式, 也能更容易去理解别人代码中的本质和嗅到可以优化的地方. 有时候一些复杂的动画效果, 我们也可以通过数学方法将之分解为简单的部分从而让问题迎刃而解.<br>(为什么我们这里没有说”算法”? 因为动画是非常具体的形象, 它需要的往往不止”算法”, 还要借用”几何”甚至”数论”的思想和工具, 而这些都可以算在数学的范畴内.)  </p>
+<p>为了让模拟真实世界的动画效果显得更真实, 我们需要知道真实世界中的运动规律. 众多数学家和物理学家, 已经为我们总结出了很多宏观世界的运动规律, 我们这些麻瓜只要活学活用就好.  </p>
+<p>举个例子, 弹跳效果. 不考虑介质阻力的情况下, 弹跳轨迹与初速度/质量/落点高度/重力加速度等相关, 所以我们如果要让动画中的弹球像真实世界一样弹跳, 就需要定义它的各项属性按照真实世界中弹跳的过程来变化, 而这个变化规律就需要数学描述.<br>于是我们只要描述各个属性值的时间函数, 就可以知道在任一时点各个属性的值. 这个描述是不是很耳熟? 没错, 这就是插值器<code>Interpolator</code>做的事.<br>事实上, 插值器也可以看做是对”时间”这一维度做了映射, 前面说过在不设置<code>TypeEvaluator</code>的情况下, 就会直接按照比例分配属性的值了, 相当于是一个”线性映射”: <code>x_new = x + x_total_delta * (time_now - time_start) / time_duration</code>. 这么个函数别看简单, 其实是<code>TypeEvaluator(Interpolator())</code>两个函数的复合函数呢.<br>回到弹跳效果. 我们可以定义一个<code>BounceInterpolator</code>和一个<code>BounceEvaluator</code>, 分别完成对弹球过程中各个时点和各时点下的位移值的描述, 这样就能够实现弹球动画了. 事实上, <code>Android</code>源码中已经为我们预定义了弹跳插值器, 诶, 名字还就叫<code>BounceInterpolator</code>, 感兴趣的同学可以打开源码看看它里面定义的函数.  </p>
+<p><strong>插值器和估值器, 两个函数复合成一个动画函数, 这就是属性动画的数学本质.</strong> 以我们对数学的理解, 当然知道在某些情况下, 这个复合函数可以退化成一个简单函数, 什么情况呢? 插值器或估值器其中一个是完全线性映射, 也就是说, 什么都不做, 喂什么吐什么. 在简单函数时, 从效果上来说, 无论我们用插值器还是估值器, 都可以将描述函数转化为动画效果, 他们两个是等价的. 只是从逻辑上我还是希望大家能将这两种概念分清楚, 这样有助于理解源码中所定义的那些插值器和估值器.  </p>
+<p>关于从数学角度理解动画, 以及更多的跟动画有关的函数, <a href="https://hujiaweibujidao.github.io/blog/2016/05/28/when-math-meets-android-animation-3/" target="_blank" rel="noopener">潇湘同学的博客</a>有详细阐述.  </p>
+<h2 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h2><p>使用动画时要特别注意动画的生命周期处理, 播放完成的动画应及时<code>clear</code>, 否则容易引起OOM/内存泄漏/视图显示和事件响应不按预计的方式进行等问题.  </p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a href="https://developer.android.com/guide/topics/graphics/index.html" target="_blank" rel="noopener">官网 Animation Guide</a>  </li>
+<li><a href="http://www.jianshu.com/p/b7aa2a4a9787" target="_blank" rel="noopener">Android动画，一篇就够</a>  </li>
+<li><a href="http://blog.csdn.net/yanbober/article/details/46481171" target="_blank" rel="noopener">Android应用开发之所有动画使用详解</a>  </li>
+<li><a href="http://blog.csdn.net/singwhatiwanna/article/details/17841165" target="_blank" rel="noopener">Android属性动画深入分析：让你成为动画牛人</a>  </li>
+<li><p><a href="http://androidxref.com" target="_blank" rel="noopener">AndroidXRef</a>  </p>
+</li>
+<li><p><a href="https://github.com/daimajia/AndroidViewAnimations" target="_blank" rel="noopener">github/daimajia/AndroidViewAnimations</a>  </p>
+</li>
+<li><a href="https://github.com/hujiaweibujidao/FabDialogMorph" target="_blank" rel="noopener">github/hujiaweibujidao/FabDialogMorph</a>  </li>
+<li><a href="https://github.com/hujiaweibujidao/wava" target="_blank" rel="noopener">github/hujiaweibujidao/wava</a>  </li>
+<li><a href="https://github.com/hujiaweibujidao/yava" target="_blank" rel="noopener">github/hujiaweibujidao/yava</a>  </li>
+<li><a href="https://github.com/yanbober/SlideLayout" target="_blank" rel="noopener">github/yanbober/SlideLayout</a>  </li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/guide/">guide</a><a href="/tags/android/">android</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://hjhjw1991.github.io/android/2017/05/11/Animation详解/" data-title="Animation详解 | hjhjw1991&#39;s blog" data-tsina="1304671950" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev">
+ <a href="/android/2017/08/01/Android-6-7-8-更新小记/" title="Android 6-7-8 更新小记">
+  <strong>上一篇：</strong><br>
+  <span>
+  Android 6-7-8 更新小记</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/android/2017/05/02/初涉mmap/" title="初涉mmap">
+ <strong>下一篇：</strong><br> 
+ <span>初涉mmap
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#入门"><span class="toc-number">2.</span> <span class="toc-text">入门</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#View-Anima-Tween-Anima"><span class="toc-number">2.1.</span> <span class="toc-text">View Anima / Tween Anima</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Drawable-Anima-Frame-Anima"><span class="toc-number">2.2.</span> <span class="toc-text">Drawable Anima/Frame Anima</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Property-Anima"><span class="toc-number">2.3.</span> <span class="toc-text">Property Anima</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#解决问题"><span class="toc-number">2.4.</span> <span class="toc-text">解决问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#其他动画"><span class="toc-number">2.5.</span> <span class="toc-text">其他动画</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#深入源码"><span class="toc-number">3.</span> <span class="toc-text">深入源码</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#分步解析ObjectAnimator"><span class="toc-number">3.1.</span> <span class="toc-text">分步解析ObjectAnimator</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#动画的灵魂-数学"><span class="toc-number">3.2.</span> <span class="toc-text">动画的灵魂: 数学</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#注意"><span class="toc-number">4.</span> <span class="toc-text">注意</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">5.</span> <span class="toc-text">参考</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="hjhjw1991" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js"></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/android/" title="android">android<sup>26</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/blog/" title="blog">blog<sup>15</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/leetcode/" title="leetcode">leetcode<sup>9</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/opinion/" title="opinion">opinion<sup>4</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/tips/" title="tips">tips<sup>4</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/android/" title="android">android<sup>27</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guide/" title="guide">guide<sup>21</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/interview/" title="interview">interview<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/windows/" title="windows">windows<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/jekyll/" title="jekyll">jekyll<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vps/" title="vps">vps<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ssh/" title="ssh">ssh<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vpn/" title="vpn">vpn<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/regex/" title="regex">regex<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/uwsgi/" title="uwsgi">uwsgi<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ios/" title="ios">ios<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/linux/" title="linux">linux<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://google.com" target="_blank" title="Google">Google</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.goldenfrog.com/vyprvpn/refer-a-friend/get-a-free-month?ar=8betlkaq2h638_1" target="_blank" title="VyprVPN">VyprVPN</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="120" class="share_self" frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=1304671950&verifier=64e7ae81&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer">
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Huang Jun. <br>
+			This is my blog.</p>
+	</section>
+	 
+	<div class="social-font">
+		
+		<a href="http://weibo.com/1304671950" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/hjhjw1991" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:hjhjw1991@gmail.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="hjhjw1991">hjhjw1991</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'hjhjw1991';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?cd0e561542c22cc83da2e311ec57da84";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

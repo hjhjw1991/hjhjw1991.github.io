@@ -1,0 +1,923 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+  
+    <title>【Android源码伴读】OkHttp源码探索 | hjhjw1991&#39;s blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="hjhjw1991">
+    
+
+    
+    <meta name="description" content="本文讲OkHttp. 总体来说它是一个高效简洁易用易扩展的网络库.">
+<meta name="keywords" content="android">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【Android源码伴读】OkHttp源码探索">
+<meta property="og:url" content="https://hjhjw1991.github.io/android/2017/02/27/[Android源码伴读]OkHttp源码探索/index.html">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
+<meta property="og:description" content="本文讲OkHttp. 总体来说它是一个高效简洁易用易扩展的网络库.">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://hjhjw1991.github.io/images/blogs/okhttp_workflow.png">
+<meta property="og:updated_time" content="2019-02-20T16:36:35.393Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="【Android源码伴读】OkHttp源码探索">
+<meta name="twitter:description" content="本文讲OkHttp. 总体来说它是一个高效简洁易用易扩展的网络库.">
+<meta name="twitter:image" content="https://hjhjw1991.github.io/images/blogs/okhttp_workflow.png">
+
+    
+    <link rel="alternative" href="/atom.xml" title="hjhjw1991&#39;s blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/author.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/author.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="hjhjw1991&#39;s blog" title="hjhjw1991&#39;s blog"></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="hjhjw1991&#39;s blog">hjhjw1991&#39;s blog</a></h1>
+				<h2 class="blog-motto">Coder, Learn</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="http://zhannei.baidu.com/cse/search" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value="8741923514077570040"><input type="text" name="q" size="30" placeholder="搜索"><br>
+						</form>
+					
+					</li>
+				</ul>
+			</ul></nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/android/2017/02/27/[Android源码伴读]OkHttp源码探索/" title="【Android源码伴读】OkHttp源码探索" itemprop="url">【Android源码伴读】OkHttp源码探索</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="hjhjw1991" target="_blank" itemprop="author">hjhjw1991</a>
+		
+  </p><p class="article-time">
+    <time datetime="2017-02-26T16:00:00.000Z" itemprop="datePublished"> 发表于 2017-02-27</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#OkHttp的使用"><span class="toc-number">1.</span> <span class="toc-text">OkHttp的使用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#OkHttp源码探索"><span class="toc-number">2.</span> <span class="toc-text">OkHttp源码探索</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#OkHttp请求分发类Dispatcher"><span class="toc-number">2.1.</span> <span class="toc-text">OkHttp请求分发类Dispatcher</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#OkHttp请求执行和响应"><span class="toc-number">2.2.</span> <span class="toc-text">OkHttp请求执行和响应</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#OkHttp缓存Cache"><span class="toc-number">2.3.</span> <span class="toc-text">OkHttp缓存Cache</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">3.</span> <span class="toc-text">参考</span></a></li></ol>
+		
+		</div>
+		
+		<p><code>OkHttp</code>是一种面向<code>http</code>协议的高效网络请求库, 下面我们就来探索它的源码, 找到它高效的秘密.<br>源码github地址: <a href="https://github.com/square/okhttp" target="_blank" rel="noopener">https://github.com/square/okhttp</a>  </p>
+<h2 id="OkHttp的使用"><a href="#OkHttp的使用" class="headerlink" title="OkHttp的使用"></a>OkHttp的使用</h2><p>这一节是为了那些从未用过<code>OkHttp</code>而写, 如果您已经可以很熟练地使用<code>OkHttp</code>, 这节的内容不适合您.<br>可以通过配置<code>build.gradle</code>指定使用<code>OkHttp</code>.<br><code>OkHttp</code>采用<code>Builder</code>模式构造请求, 它可以做的事情在<code>public static class Builder</code>这个内部类中都告诉你了, 接口对应了<code>http</code>协议请求的内容. 也就是说, 你必须要了解<code>http</code>协议以及你想要构造的请求的具体内容, 才能很方便地使用<code>OkHttp</code>, 这就是我说<code>OkHttp</code>是面向<code>http</code>协议的请求库的原因. 直观上来说, 它把构造请求和获取响应的操作简单化了.<br>更多使用教程参见<a href="http://www.jcodecraeer.com/a/anzhuokaifa/androidkaifa/2015/0106/2275.html" target="_blank" rel="noopener">OkHttp使用教程</a>.  </p>
+<p>不仅如此, 查看它的<a href="http://square.github.io/okhttp/3.x/okhttp/" target="_blank" rel="noopener">文档</a>, 可以发现它定义了大约50个类, 除了常规的几个<code>Builder</code>类和<code>Factory</code>类以外, 其他类都是面向网络请求某一方面的. 从类名来看, 涵盖了请求, 响应, 回调, 鉴权, 加密, 证书, 连接池, Cookie, Dns, Tls, MultipartBody等方面. 可以很明显感受到它支持<code>Https</code>和<code>Http/2</code>协议. 据<a href="http://frodoking.github.io/2015/03/12/android-okhttp/" target="_blank" rel="noopener">OkHttp源码解析</a>所述, 它也同时支持<code>SPDY</code>.  </p>
+<h2 id="OkHttp源码探索"><a href="#OkHttp源码探索" class="headerlink" title="OkHttp源码探索"></a>OkHttp源码探索</h2><p>废话少说, 我们现在就开始源码探索. 在探索之前, 先对<code>OkHttp</code>工作流, 也就是它的模型有一个整体的认识, 见下图:<br><img src="/images/blogs/okhttp_workflow.png" alt="okhttp-workflow">  </p>
+<p>上图来自<a href="http://frodoking.github.io/2015/03/12/android-okhttp/" target="_blank" rel="noopener">这篇博客</a>, 很可惜博客已经过时了, 特别是<code>HttpEngine</code>已经被三个新的拦截器所取代, 不过架构还是没有变的.  </p>
+<h3 id="OkHttp请求分发类Dispatcher"><a href="#OkHttp请求分发类Dispatcher" class="headerlink" title="OkHttp请求分发类Dispatcher"></a>OkHttp请求分发类Dispatcher</h3><p>以下我们将介绍<code>OkHttp</code>中的类源码, 重点来介绍<code>OkHttp</code>为了优化网络请求做了哪些工作.<br>在发起一个请求的时候, 是调用<code>OkHttpClient.newCall().enqueue(Callback)</code>来入队一个异步请求, 其中调用<code>Dispatcher.enqueue(AsyncCall)</code>执行真正的入队操作. 我们来看看<code>Dispatcher</code>的注释:  </p>
+<pre><code>
+/**
+ * Policy on when async requests are executed.
+ *
+ * &lt;p&gt;Each dispatcher uses an {@link ExecutorService} to run calls internally. If you supply your
+ * own executor, it should be able to run {@linkplain #getMaxRequests the configured maximum} number
+ * of calls concurrently.
+ */
+
+</code></pre><p>这个分发器负责调度和并发执行请求, 看描述我们大致能猜到它内部使用了<code>ExecutorService</code>去执行请求队列. 打开文件发现它是直接<code>new ThreadPoolExecutor</code>来初始化的, 不限制线程池容量, 使用<code>SynchronousQueue</code>作为底层结构, 自行维护一个<code>maxRequests</code>来限制正在执行的请求的最大数量. 调用<code>enqueue()</code>将准备好的请求加入到正在执行的请求队列中并调用<code>executorService().execute(call)</code>执行(我们知道, 这里面就是把要执行的<code>Runnable</code>加入到队列中,等待被调度到的时候调用<code>Runnable.run()</code>接口).  </p>
+<p><code>AsyncCall</code>是<code>RealCall</code>的内部类, 在<code>enqueue</code>的时候实际上就是将一个<code>AsyncCall</code>实例入队到<code>ExecutorService</code>的队列中, 反而没<code>RealCall</code>什么事. <code>AsyncCall</code>继承自<code>NamedRunnable</code>, 而<code>NamedRunnable</code>显然继承自<code>Runnable</code>, 并且在它里面把<code>run()</code>方法实现为调用<code>execute()</code>方法. 这就使得<code>ExecutorService</code>通过调用<code>run()</code>方法最终会调用到<code>AsyncCall.execute()</code>方法. 那外层的<code>RealCall</code>又有什么用呢? 其实它提供了一个同步的<code>execute()</code>方法可以让<code>RealCall</code>实例立即被加入到执行队列中, 并等待返回.<br>下面我们来看<code>RealCall</code>的代码.  </p>
+<pre><code>
+// in file okhttp3/RealCall.java
+
+ @Override public Response execute() throws IOException {
+   synchronized (this) {
+     if (executed) throw new IllegalStateException(&quot;Already Executed&quot;);
+     executed = true;
+   }
+   captureCallStackTrace();
+   try {
+     client.dispatcher().executed(this);
+     Response result = getResponseWithInterceptorChain();
+     if (result == null) throw new IOException(&quot;Canceled&quot;);
+     return result;
+   } finally {
+     client.dispatcher().finished(this);
+   }
+ }
+
+ @Override public void enqueue(Callback responseCallback) {
+   synchronized (this) {
+     if (executed) throw new IllegalStateException(&quot;Already Executed&quot;);
+     executed = true;
+   }
+   captureCallStackTrace();
+   client.dispatcher().enqueue(new AsyncCall(responseCallback));
+ }
+
+   final class AsyncCall extends NamedRunnable {
+     private final Callback responseCallback;
+
+     AsyncCall(Callback responseCallback) {
+       this.responseCallback = responseCallback;
+     }
+
+     ......
+
+     @Override protected void execute() {
+       boolean signalledCallback = false;
+       try {
+         Response response = getResponseWithInterceptorChain();
+         if (retryAndFollowUpInterceptor.isCanceled()) {
+           signalledCallback = true;
+           responseCallback.onFailure(RealCall.this, new IOException(&quot;Canceled&quot;));
+         } else {
+           signalledCallback = true;
+           responseCallback.onResponse(RealCall.this, response);
+         }
+       } catch (IOException e) {
+         if (signalledCallback) {
+           // Do not signal the callback twice!
+           Platform.get().log(INFO, &quot;Callback failure for &quot; + toLoggableString(), e);
+         } else {
+           responseCallback.onFailure(RealCall.this, e);
+         }
+       } finally {
+         client.dispatcher().finished(this);
+       }
+     }
+   }
+
+</code></pre><h3 id="OkHttp请求执行和响应"><a href="#OkHttp请求执行和响应" class="headerlink" title="OkHttp请求执行和响应"></a>OkHttp请求执行和响应</h3><p> 现在我们了解了请求的并发执行, 我们再来看连接. 上述过程中好像没有看到哪里有管理连接的内容? 别急, 我们一步一步来, 先找到第一个返回<code>Response</code>的地方. 经过上述观察我们发现在<code>getResponseWithInterceptorChain</code>方法第一次得到<code>Response</code>. 在这个方法里面, 用了一系列拦截器(<code>Interceptor</code>)来初始化一个<code>RealInterceptorChain</code>实例, 并通过该实例的<code>proceed()</code>方法获得了<code>Response</code>. 打开<code>RealInterceptorChain.proceed</code>可以发现它是对<code>RealInterceptorChain</code>链上的<code>Interceptor</code>逐个地使用同一套连接参数去初始化和调用<code>intercept()</code>方法, 那么具体拦截下来做什么, 就得看具体<code>intercept</code>中的行为了. 这里可以看到拦截器链首先是添加了<code>Client</code>上的拦截器, 然后加上<code>retryAndFollowUpInterceptor</code>和另外三个拦截器. 我们看看默认的拦截器都有哪些:  </p>
+<pre><code>
+OkHttpClient(Builder builder) {
+  this.dispatcher = builder.dispatcher;
+  this.proxy = builder.proxy;
+  this.protocols = builder.protocols;
+  this.connectionSpecs = builder.connectionSpecs;
+  this.interceptors = Util.immutableList(builder.interceptors);// 初始化拦截器
+  this.networkInterceptors = Util.immutableList(builder.networkInterceptors);
+  this.proxySelector = builder.proxySelector;
+  this.cookieJar = builder.cookieJar;
+  this.cache = builder.cache;
+  this.internalCache = builder.internalCache;
+  this.socketFactory = builder.socketFactory;
+
+  boolean isTLS = false;
+  for (ConnectionSpec spec : connectionSpecs) {
+    isTLS = isTLS || spec.isTls();
+  }
+
+  if (builder.sslSocketFactory != null || !isTLS) {
+    this.sslSocketFactory = builder.sslSocketFactory;
+    this.certificateChainCleaner = builder.certificateChainCleaner;
+  } else {
+    X509TrustManager trustManager = systemDefaultTrustManager();
+    this.sslSocketFactory = systemDefaultSslSocketFactory(trustManager);
+    this.certificateChainCleaner = CertificateChainCleaner.get(trustManager);
+  }
+
+  this.hostnameVerifier = builder.hostnameVerifier;
+  this.certificatePinner = builder.certificatePinner.withCertificateChainCleaner(
+      certificateChainCleaner);
+  this.proxyAuthenticator = builder.proxyAuthenticator;
+  this.authenticator = builder.authenticator;
+  this.connectionPool = builder.connectionPool;
+  this.dns = builder.dns;
+  this.followSslRedirects = builder.followSslRedirects;
+  this.followRedirects = builder.followRedirects;
+  this.retryOnConnectionFailure = builder.retryOnConnectionFailure;
+  this.connectTimeout = builder.connectTimeout;
+  this.readTimeout = builder.readTimeout;
+  this.writeTimeout = builder.writeTimeout;
+  this.pingInterval = builder.pingInterval;
+}
+
+</code></pre><p>直接用的<code>Builder</code>的拦截器, 看一下发现是个空的<code>ArrayList</code>, 好吧, 啥都没有. 那第一个被调用<code>intercept</code>方法的就是<code>retryAndFollowUpInterceptor</code>了. 打开看看发现他是首先分配了一个<code>StreamAllocation</code>, 在流不断开的情况下不断调用传入的拦截器获得响应结果, 并与前面得到的响应结果组装起来, 在无后续响应结果的情况下返回响应.<br> 看来我们还得追踪下一个拦截器, 我估计追踪到最后一个就是实际的连接创建了. 果不其然, <code>BridgeInterceptor</code>作为桥, 将用户请求<code>Request</code>重新构造了一个<code>Request</code>并交给传入的拦截器处理, 对返回的<code>Response</code>也做了处理, 如存<code>Cookie</code>, 构造新的<code>Response</code>等. 它的下一个拦截器是<code>CacheInterceptor</code>, 这个拦截器就是处理缓存的了, 根据我们的缓存策略在缓存表中试图获取缓存的响应并判断是否只需要返回缓存就行了. 如果缓存不适用, 则调用传入的拦截器处理请求, 并根据返回的情况更新缓存时间或重写缓存. 我个人觉得需要注意它代码中多处地方都非常注意关闭缓存, 以防止内存泄漏. 下一个拦截器是<code>ConnectInterceptor</code>, 这应该就是真正发起请求的地方了, 它的代码比意料中少:  </p>
+<pre><code>
+// in file okhttp3/internal/connection/ConnectInterceptor.java
+@Override public Response intercept(Chain chain) throws IOException {
+  RealInterceptorChain realChain = (RealInterceptorChain) chain;
+  Request request = realChain.request();
+  StreamAllocation streamAllocation = realChain.streamAllocation();// #1
+
+  // We need the network to satisfy this request. Possibly for validating a conditional GET.
+  boolean doExtensiveHealthChecks = !request.method().equals(&quot;GET&quot;);
+  HttpCodec httpCodec = streamAllocation.newStream(client, doExtensiveHealthChecks); // #2
+  RealConnection connection = streamAllocation.connection();// #3
+
+  return realChain.proceed(request, streamAllocation, httpCodec, connection);// #4 注意它虽然调用的是`proceed`而不是`intercept`, 但由于`RealInterceptorChain`中`proceed`的实现就是调用当前`intercept.intercept()`, 所以最终还是走到`intercept()`
+}
+
+</code></pre><p>这里关键步骤出来了: 分配IO Stream, Connect, Proceed. 这里传入的拦截器是<code>CallServerInterceptor</code>. 打开分别看看这三步对应的代码. <code>streamAllocation</code>返回的是此次连接的<code>StreamAllocation</code>, <code>connection()</code>返回的也是此次连接, 这两个值从上文可以看到是在<code>retryAndFollowUpInterceptor</code>中就已经初始化了. <code>proceed</code>最终走到<code>CallServerInterceptor.intercept</code>, 代码注释如下:  </p>
+<pre><code>
+// in file okhttp3/internal/http/CallServerInterceptor.java
+@Override public Response intercept(Chain chain) throws IOException {
+  HttpCodec httpCodec = ((RealInterceptorChain) chain).httpStream();
+  StreamAllocation streamAllocation = ((RealInterceptorChain) chain).streamAllocation();
+  Request request = chain.request();
+
+  long sentRequestMillis = System.currentTimeMillis();
+  httpCodec.writeRequestHeaders(request);
+
+  Response.Builder responseBuilder = null;
+  if (HttpMethod.permitsRequestBody(request.method()) &amp;&amp; request.body() != null) {
+    // If there&apos;s a &quot;Expect: 100-continue&quot; header on the request, wait for a &quot;HTTP/1.1 100
+    // Continue&quot; response before transmitting the request body. If we don&apos;t get that, return what
+    // we did get (such as a 4xx response) without ever transmitting the request body.
+    ...
+
+    // Write the request body, unless an &quot;Expect: 100-continue&quot; expectation failed.
+    ...
+  }
+
+  httpCodec.finishRequest();
+
+  if (responseBuilder == null) {
+    responseBuilder = httpCodec.readResponseHeaders(false);
+  }
+
+  Response response = responseBuilder
+      .request(request)
+      .handshake(streamAllocation.connection().handshake())
+      .sentRequestAtMillis(sentRequestMillis)
+      .receivedResponseAtMillis(System.currentTimeMillis())
+      .build();
+
+  int code = response.code();
+  if (forWebSocket &amp;&amp; code == 101) {
+    // Connection is upgrading, but we need to ensure interceptors see a non-null response body.
+    response = response.newBuilder()
+        .body(Util.EMPTY_RESPONSE)
+        .build();
+  } else {
+    response = response.newBuilder()
+        .body(httpCodec.openResponseBody(response))
+        .build();
+  }
+
+  if (&quot;close&quot;.equalsIgnoreCase(response.request().header(&quot;Connection&quot;))
+      || &quot;close&quot;.equalsIgnoreCase(response.header(&quot;Connection&quot;))) {
+    streamAllocation.noNewStreams();
+  }
+
+  if ((code == 204 || code == 205) &amp;&amp; response.body().contentLength() &gt; 0) {
+    throw new ProtocolException(
+        &quot;HTTP &quot; + code + &quot; had non-zero Content-Length: &quot; + response.body().contentLength());
+  }
+
+  return response;
+}
+
+</code></pre><p>厉害了, 原来最后用的是<code>HttpCodec</code>的实例来完成的请求发送和响应接收, 查看它的继承类可以看到<code>Http1Codec</code>和<code>Http2Codec</code>, 明显就是对应两种协议了, 前面在<code>ConnectInterceptor#2</code>的时候实例化了这个编码解码器(实例化过程中通过连接池获取一个可用的连接).<br> 这一条路径下来, 请求构造-&gt;连接构造-&gt;请求发送-&gt;响应接收-&gt;响应解析都完成了, 不得不说大神的代码看起来有点吃力但是非常舒服(拦截器链这一块, 原先曾经是<code>HttpEngine.java</code>完成上文三个默认拦截器的工作, 由<code>Square</code>的另一个大神分解为三个单独的职责分明的拦截器), 逻辑清晰层次分明, 而且还有够用的注释, 吃力主要还是因为自己的抽象能力不足, 对于网络连接的场景需要做什么在心里没有一个完整的模型.<br> 代码中可以看到通过连接池对连接进行了复用, 具体的数据读写使用了<code>Okio</code>(也是<code>Square</code>家的项目).  </p>
+<h3 id="OkHttp缓存Cache"><a href="#OkHttp缓存Cache" class="headerlink" title="OkHttp缓存Cache"></a>OkHttp缓存Cache</h3><p>下面看看最后一个重点: 缓存<code>Cache</code>.<br>上文提到, 在<code>CacheInterceptor.intercept</code>中, 会在<code>InternalCache cache</code>中寻找当前请求的缓存, 并获取当前请求的缓存策略(<code>CacheStrategy.Factory(time, request, cacheCandidate).get()</code>), 如果<code>cache</code>不为<code>null</code>调用<code>cache.trackResponse</code>, 其余的判断是否请求被禁止或是否需要缓存等内容我们略过不提, 单看缓存更新<code>cache.update(cachedResponse, networkResponse)</code>和<code>cacheWritingResponse(cacheRequest, response)</code>, 这两种情况都已经访问了网络并获得了响应, 前者的响应表示未更改(状态码304), 客户端应直接读缓存, 所以我们只需要更新缓存的部分内容即可, 后者则需要更新整个缓存的<code>cacheResponse</code>. 两者代码分别如下:  </p>
+<pre><code>
+// in file okhttp3/Cache.java
+void update(Response cached, Response network) {
+  Entry entry = new Entry(network);
+  DiskLruCache.Snapshot snapshot = ((CacheResponseBody) cached.body()).snapshot;
+  DiskLruCache.Editor editor = null;
+  try {
+    editor = snapshot.edit(); // Returns null if snapshot is not current.
+    if (editor != null) {
+      entry.writeTo(editor);
+      editor.commit(); // 类似map, 写入缓存. 缓存的默认实现是DiskLruCache  
+    }
+  } catch (IOException e) {
+    abortQuietly(editor);
+  }
+}
+
+// in file okhttp3/internal/cache/CacheInterceptor.java
+
+  /**
+   * Returns a new source that writes bytes to {@code cacheRequest} as they are read by the source
+   * consumer. This is careful to discard bytes left over when the stream is closed; otherwise we
+   * may never exhaust the source stream and therefore not complete the cached response.
+   */
+  private Response cacheWritingResponse(final CacheRequest cacheRequest, Response response)
+      throws IOException {
+    // Some apps return a null body; for compatibility we treat that like a null cache request.
+    if (cacheRequest == null) return response;
+    Sink cacheBodyUnbuffered = cacheRequest.body();
+    if (cacheBodyUnbuffered == null) return response;
+
+    final BufferedSource source = response.body().source();
+    final BufferedSink cacheBody = Okio.buffer(cacheBodyUnbuffered);
+
+    Source cacheWritingSource = new Source() {
+      boolean cacheRequestClosed;
+
+      @Override public long read(Buffer sink, long byteCount) throws IOException {
+        long bytesRead;
+        try {
+          bytesRead = source.read(sink, byteCount);
+        } catch (IOException e) {
+          if (!cacheRequestClosed) {
+            cacheRequestClosed = true;
+            cacheRequest.abort(); // Failed to write a complete cache response.
+          }
+          throw e;
+        }
+
+        if (bytesRead == -1) {
+          if (!cacheRequestClosed) {
+            cacheRequestClosed = true;
+            cacheBody.close(); // The cache response is complete!
+          }
+          return -1;
+        }
+
+        sink.copyTo(cacheBody.buffer(), sink.size() - bytesRead, bytesRead);
+        cacheBody.emitCompleteSegments();
+        return bytesRead;
+      }
+
+      @Override public Timeout timeout() {
+        return source.timeout();
+      }
+
+      @Override public void close() throws IOException {
+        if (!cacheRequestClosed
+            &amp;&amp; !discard(this, HttpCodec.DISCARD_STREAM_TIMEOUT_MILLIS, MILLISECONDS)) {
+          cacheRequestClosed = true;
+          cacheRequest.abort();
+        }
+        source.close();
+      }
+    }; // 实现一个读取流, 读取Okio.BufferedSource接口的实例`response.body().source()`
+
+    return response.newBuilder()
+        .body(new RealResponseBody(response.headers(), Okio.buffer(cacheWritingSource)))
+        .build(); // 使用以上实现构造RealResponseBody, 传入当前响应, 构造新的响应拷贝
+  }
+
+</code></pre><p>其中<code>cache</code>的值是在<code>RealCall</code>中传入<code>new CacheInterceptor(client.internalCache())</code>时初始化的, 其值默认是<code>OkHttpClient.cache.internalCache</code>, 除非<code>cache</code>为空, 彼时会使用<code>OkHttpClient.internalCache</code>. 换句话说, 如果我们初始化<code>OkHttpClient</code>时把<code>cache</code>置空则可以通过设置<code>internalCache</code>使用我们自己的缓存. 事实上<code>OkHttpClient.Builder</code>中这两个缓存正是互斥的:  </p>
+<pre><code>
+/** Sets the response cache to be used to read and write cached responses. */
+void setInternalCache(InternalCache internalCache) {
+  this.internalCache = internalCache;
+  this.cache = null;
+}
+
+/** Sets the response cache to be used to read and write cached responses. */
+public Builder cache(Cache cache) {
+  this.cache = cache;
+  this.internalCache = null;
+  return this;
+}
+
+</code></pre><p>至此, <code>OkHttp</code>的主干流程已经探索得差不多了, 我们也知道了它提升<code>http</code>效率的主要手段: 复用连接, 并发请求, 缓存响应, 异步响应. 它使得<code>http</code>连接在频繁低载荷或多次连续的数据传输中, 不至于在缓存和重新建立连接上花费太多时间.  </p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a href="https://github.com/square/okhttp" target="_blank" rel="noopener">OkHttp源码</a>  </li>
+<li><a href="http://square.github.io/okhttp/3.x/okhttp/" target="_blank" rel="noopener">OkHttp文档</a>  </li>
+<li><a href="http://www.jcodecraeer.com/a/anzhuokaifa/androidkaifa/2015/0106/2275.html" target="_blank" rel="noopener">OkHttp使用教程</a>  </li>
+<li><a href="http://frodoking.github.io/2015/03/12/android-okhttp/" target="_blank" rel="noopener">OkHttp源码解析</a>  </li>
+<li><a href="http://www.jianshu.com/p/aad5aacd79bf" target="_blank" rel="noopener">OkHttp3源码分析综述</a>  </li>
+</ul>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/android/">android</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://hjhjw1991.github.io/android/2017/02/27/[Android源码伴读]OkHttp源码探索/" data-title="【Android源码伴读】OkHttp源码探索 | hjhjw1991&#39;s blog" data-tsina="1304671950" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev">
+ <a href="/android/2017/02/28/[Android教程]Android网络架构/" title="【Android教程】Android网络架构">
+  <strong>上一篇：</strong><br>
+  <span>
+  【Android教程】Android网络架构</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/android/2017/02/24/[Android教程]View&ViewGroup源码阅读/" title="【Android教程】View/ViewGroup源码阅读">
+ <strong>下一篇：</strong><br> 
+ <span>【Android教程】View/ViewGroup源码阅读
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#OkHttp的使用"><span class="toc-number">1.</span> <span class="toc-text">OkHttp的使用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#OkHttp源码探索"><span class="toc-number">2.</span> <span class="toc-text">OkHttp源码探索</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#OkHttp请求分发类Dispatcher"><span class="toc-number">2.1.</span> <span class="toc-text">OkHttp请求分发类Dispatcher</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#OkHttp请求执行和响应"><span class="toc-number">2.2.</span> <span class="toc-text">OkHttp请求执行和响应</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#OkHttp缓存Cache"><span class="toc-number">2.3.</span> <span class="toc-text">OkHttp缓存Cache</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">3.</span> <span class="toc-text">参考</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="hjhjw1991" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js"></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/android/" title="android">android<sup>26</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/blog/" title="blog">blog<sup>15</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/leetcode/" title="leetcode">leetcode<sup>9</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/opinion/" title="opinion">opinion<sup>4</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/tips/" title="tips">tips<sup>4</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/android/" title="android">android<sup>27</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guide/" title="guide">guide<sup>21</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/interview/" title="interview">interview<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/windows/" title="windows">windows<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/jekyll/" title="jekyll">jekyll<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vps/" title="vps">vps<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ssh/" title="ssh">ssh<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vpn/" title="vpn">vpn<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/regex/" title="regex">regex<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/uwsgi/" title="uwsgi">uwsgi<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ios/" title="ios">ios<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/linux/" title="linux">linux<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://google.com" target="_blank" title="Google">Google</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.goldenfrog.com/vyprvpn/refer-a-friend/get-a-free-month?ar=8betlkaq2h638_1" target="_blank" title="VyprVPN">VyprVPN</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="120" class="share_self" frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=1304671950&verifier=64e7ae81&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer">
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Huang Jun. <br>
+			This is my blog.</p>
+	</section>
+	 
+	<div class="social-font">
+		
+		<a href="http://weibo.com/1304671950" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/hjhjw1991" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:hjhjw1991@gmail.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="hjhjw1991">hjhjw1991</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'hjhjw1991';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?cd0e561542c22cc83da2e311ec57da84";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>
