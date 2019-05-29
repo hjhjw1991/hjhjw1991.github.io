@@ -1,0 +1,750 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+  
+    <title>再论热修复-sophix热修复思想 | hjhjw1991&#39;s blog</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="hjhjw1991">
+    
+
+    
+    <meta name="description" content="热修复这一技术虽说在我个人看来属于旁门左道, 但对它的研究可以极好地拓展自己对Android底层实现以及版本间差异的直观认识. 并且人难免犯错, 有时候一些严重的线上问题, 确实只能通过这种旁门左道的方式来减少损失">
+<meta name="keywords" content="android,hotfix">
+<meta property="og:type" content="article">
+<meta property="og:title" content="再论热修复-sophix热修复思想">
+<meta property="og:url" content="https://hjhjw1991.github.io/android/2019/05/29/再论热修复-sophix热修复思想/index.html">
+<meta property="og:site_name" content="hjhjw1991&#39;s blog">
+<meta property="og:description" content="热修复这一技术虽说在我个人看来属于旁门左道, 但对它的研究可以极好地拓展自己对Android底层实现以及版本间差异的直观认识. 并且人难免犯错, 有时候一些严重的线上问题, 确实只能通过这种旁门左道的方式来减少损失">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://hjhjw1991.github.io/images/blogs/动态注册native方法实时生效.png">
+<meta property="og:image" content="https://hjhjw1991.github.io/images/blogs/静态注册native方法实时生效.png">
+<meta property="og:image" content="https://hjhjw1991.github.io/images/blogs/接口调用替换实现.png">
+<meta property="og:image" content="https://hjhjw1991.github.io/images/blogs/反射注入实现.png">
+<meta property="og:image" content="https://hjhjw1991.github.io/images/blogs/如何选择primaryCpuAbis.png">
+<meta property="og:image" content="https://hjhjw1991.github.io/images/blogs/resources_arsc.png">
+<meta property="og:image" content="https://hjhjw1991.github.io/images/blogs/resource_patch.png">
+<meta property="og:updated_time" content="2019-05-29T13:27:11.560Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="再论热修复-sophix热修复思想">
+<meta name="twitter:description" content="热修复这一技术虽说在我个人看来属于旁门左道, 但对它的研究可以极好地拓展自己对Android底层实现以及版本间差异的直观认识. 并且人难免犯错, 有时候一些严重的线上问题, 确实只能通过这种旁门左道的方式来减少损失">
+<meta name="twitter:image" content="https://hjhjw1991.github.io/images/blogs/动态注册native方法实时生效.png">
+
+    
+    <link rel="alternative" href="/atom.xml" title="hjhjw1991&#39;s blog" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/author.png">
+    <link rel="apple-touch-icon-precomposed" href="/img/author.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="hjhjw1991&#39;s blog" title="hjhjw1991&#39;s blog"></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="hjhjw1991&#39;s blog">hjhjw1991&#39;s blog</a></h1>
+				<h2 class="blog-motto">Coder, Learn</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					<ul>
+					 
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+						<form class="search" action="http://zhannei.baidu.com/cse/search" target="_blank">
+							<label>Search</label>
+						<input name="s" type="hidden" value="8741923514077570040"><input type="text" name="q" size="30" placeholder="搜索"><br>
+						</form>
+					
+					</li>
+				</ul>
+			</ul></nav>			
+</div>
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/android/2019/05/29/再论热修复-sophix热修复思想/" title="再论热修复-sophix热修复思想" itemprop="url">再论热修复-sophix热修复思想</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="hjhjw1991" target="_blank" itemprop="author">hjhjw1991</a>
+		
+  </p><p class="article-time">
+    <time datetime="2019-05-28T16:00:00.000Z" itemprop="datePublished"> 发表于 2019-05-29</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-热修复面临的问题"><span class="toc-number">1.</span> <span class="toc-text">1. 热修复面临的问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-从问题说起–热修复即时生效"><span class="toc-number">2.</span> <span class="toc-text">2. 从问题说起–热修复即时生效</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-虚拟机调用方法原理"><span class="toc-number">2.1.</span> <span class="toc-text">2.1. 虚拟机调用方法原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-兼容性问题"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 兼容性问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-访问权限问题"><span class="toc-number">2.3.</span> <span class="toc-text">2.3. 访问权限问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-反射调用方法"><span class="toc-number">2.4.</span> <span class="toc-text">2.4. 反射调用方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-即时生效的限制"><span class="toc-number">2.5.</span> <span class="toc-text">2.5. 即时生效的限制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-从问题说起–so库热修复"><span class="toc-number">3.</span> <span class="toc-text">3. 从问题说起–so库热修复</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-so库加载原理"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 so库加载原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-so库热修复方案"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 so库热修复方案</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-1-方法热修复实时生效"><span class="toc-number">3.2.1.</span> <span class="toc-text">3.2.1 方法热修复实时生效</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-2-冷启动修复生效"><span class="toc-number">3.2.2.</span> <span class="toc-text">3.2.2 冷启动修复生效</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-3-如何感知客户端abi"><span class="toc-number">3.2.3.</span> <span class="toc-text">3.2.3 如何感知客户端abi</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-从问题说起–资源热修复"><span class="toc-number">4.</span> <span class="toc-text">4. 从问题说起–资源热修复</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Instant-Run-方案"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 Instant Run 方案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-sophix阿里百川"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 sophix阿里百川</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-参考"><span class="toc-number">5.</span> <span class="toc-text">5. 参考</span></a></li></ol>
+		
+		</div>
+		
+		<p>热修复这一技术虽说在我个人看来属于旁门左道, 但对它的研究可以极好地拓展自己对Android底层实现以及版本间差异的直观认识. 并且人难免犯错, 有时候一些严重的线上问题, 确实只能通过这种旁门左道的方式来减少损失.<br>我已经写过几个跟热修复有关的文章, 那时候对热修复的认识还停留在ClassLoader上, 本文借着对sophix热修复框架的研究, 从头梳理一下热修复所涉及的方方面面.  </p>
+<h2 id="1-热修复面临的问题"><a href="#1-热修复面临的问题" class="headerlink" title="1. 热修复面临的问题"></a>1. 热修复面临的问题</h2><ul>
+<li>即时生效</li>
+<li>静态函数</li>
+<li>非静态函数</li>
+<li>静态成员</li>
+<li>非静态成员</li>
+<li>非代码资源</li>
+<li>编译优化技术JIT</li>
+<li>编译优化技术AOT</li>
+<li>Dalvik与Art, 不同的虚拟机</li>
+</ul>
+<p>Android上的热修复方案无可避免要面对以上的几种或全部问题, 本文将一一给出sophix的解答, 当然这些解答都是基于我自己的理解. –这意味着本文是个难读的长文.  </p>
+<p>为了节省篇幅和聚焦重点, 本文不会详细对比sophix与其他热修复框架的优劣, 只着重讲解sophix背后的热修复思想. –在我看来, 这是个很”笨重”的思想, 完全与优雅沾不上边, 甚至有些”dirty”, 但是读过众多代码的话就会发现, 哪怕是被誉为天才的程序员, 在追求极致的路上也无法做到既高效又优雅, 总会牺牲一部分.  </p>
+<h2 id="2-从问题说起–热修复即时生效"><a href="#2-从问题说起–热修复即时生效" class="headerlink" title="2. 从问题说起–热修复即时生效"></a>2. 从问题说起–热修复即时生效</h2><blockquote>
+<p>在native层整个替换ArtMethod结构体, 将方法指针指向补丁包中的方法地址, 从而达到即时生效的目的.  </p>
+</blockquote>
+<p>市面上有不少开源的热修复工具, 其中具有代表性的是腾讯的Tinker系列, 之前我也写过. 它们的热修复原理是利用Java ClassLoader类加载顺序, 让补丁类代替原有类, 从而达成热修复目的. 但是基于ClassLoader的热修复方案都有一个明显的缺陷, 那就是不能即时生效, 原因是类加载器只有在虚拟机启动的时候才会去查找类, 在此之后类对象在内存中就固定了, 这注定了所有基于类加载器的热修复方案只有在虚拟机重启时才能生效.  </p>
+<p>想要让热修复即时生效, 很自然想到需要修改内存. 怎么修改内存, 这里就是热修复框架的技巧了.  </p>
+<p>sophix是阿里家热修复框架的名字, 它的前身是andfix. 出于数据保密要求, 我无法详细讲它的实现, 这里只能从原理上讲一讲这个热修复流派不同于T家的修复思路(我所讲的内容均已有官方披露).  </p>
+<p>基本上, 它是在方法的粒度上, 从内存着手, 实现热修复实时生效.  </p>
+<h3 id="2-1-虚拟机调用方法原理"><a href="#2-1-虚拟机调用方法原理" class="headerlink" title="2.1. 虚拟机调用方法原理"></a>2.1. 虚拟机调用方法原理</h3><p>在程序开发中, 很大一部分问题可以通过修改方法实现来解决, 因此如果一个热修复框架可以完成方法粒度的热修复, 理论上这个框架就可以成立. 我们可以从这个角度入手, 基于虚拟机调用方法的过程, 导出sophix的修复方案.<br>在虚拟机载入类之后, 每个类的每个方法, 都对应一个内存地址, 我们都知道一个方法在内存中存在的形式就是一个地址以及这个地址指向的指令块. 在虚拟机角度, 会对方法做一个结构抽象, 这里不说具体的字段, 只说存在这么个结构体, 我们姑且称为<code>VMMethod</code>, 它描述了虚拟机方法的基本信息, 例如起始地址, 所属类.<br>由于Android的JIT, AOT等各种优化手段的存在, class中定义的某个方法, 其成为机器码后, 在内存中的地址并不固定. 比如Art虚拟机可以通过解释执行的方式把Dex指令拿出来, 逐条解释执行, 也可以先把Dex指令编译成机器码, 之后每次运行直接运行机器码而不依赖原来的Dex文件. 这两种模式下, 同一个方法的入口地址是不同的, 体现在<code>VMMethod</code>里就是两个不同的字段. 根据不同的执行模式, 虚拟机会从不同的字段去寻找方法入口.<br>那么, 如果把方法入口地址从旧地址换到新地址, 不就可以实现方法替换了吗? 是的, 基本原理就是这样, 但没有那么简单. 一个<code>VMMethod</code>除了方法入口外, 方法调用还依赖其他的字段. 在热修复时, 不能仅仅替换方法入口, 新方法中对<code>VMMethod</code>的依赖也需要可用才行.<br>那么把整个<code>VMMethod</code>都替换掉, 不就可以了吗? Andfix就是这么做的, 事实证明完全可以, 但这么做有个非常严重的问题, 就是接下来要讲的兼容性问题.  </p>
+<h3 id="2-2-兼容性问题"><a href="#2-2-兼容性问题" class="headerlink" title="2.2 兼容性问题"></a>2.2 兼容性问题</h3><p><code>VMMethod</code>这个抽象结构的具体字段在虚拟机版本变迁中以及厂商定制中很可能会有变化, 而热修复框架必然是基于官方开源的系统源码进行开发, 即便它能够兼容所有官方版本的<code>VMMethod</code>, 也无法保证能兼容大千世界各种手机厂商的魔改rom.  </p>
+<p>例如, 厂商在方法结构上删除或增加了某个字段, 跟官方开源的方法结构不一致了, 那么你做替换时原本想替换的字段, 可能就错位成了另一个字段, 带来不可预知的内存错误.  </p>
+<p>sophix解决了这个兼容问题. 它是怎么解决的呢? 它基于一个更稳定的假设. 事实上, 我们做开发都是基于某个假设的(或者说标准): 系统源码与官方一致, 编码协议一致, 字节码格式一致… <code>Andfix</code>基于的假设是<code>VMMethod</code>结构, 而sophix基于一个更稳定的假设: 虚拟机总是通过<code>VMMethod</code>来识别和使用方法, 并且方法总是连续存储在一个数组中. 在这样的假设下, 我们只需要把旧方法的<code>VMMethod</code>, 替换成新方法的<code>VMMethod</code>, 不就可以达成修复的目的了吗? –反正在同一个虚拟机上, 旧方法和新方法的<code>VMMethod</code>结构肯定是一样的, 这样也就规避了<code>VMMethod</code>结构变化导致的兼容问题, 使得同一套热修复可以应用在不同的系统版本上.  </p>
+<p>替换底层方法, 理论上看起来可行, 可是实现时有个困难: 从旧方法的起始地址开始, 我们应该替换多大的内存范围呢? 作为系统开发者, 我只要<code>sizeof(VMMethod)</code>就可以拿到方法结构的大小, 因为这是系统编译期就可以决定的值, 但是作为上层开发者, 我们并不能拿到<code>VMMethod</code>的具体实现, 一旦尺寸计算失误, 可能会破坏掉整个类.  </p>
+<p>深入虚拟机代码, 我们可以发现虚拟机对类方法的定义(<code>VMMethod</code>), 以及填充类对象的过程. 类的方法有direct方法和virtual方法。direct方法包含static方法和所有不可继承的对象方法, 而virtual方法就是所有可以继承的对象方法了. 通过观察源码, 我们发现方法是存在一个连续空间的数组中的, 那么我们只要人工构造两个相邻的方法, 并计算一下起始地址差, 这不就是一个<code>VMMethod</code>的大小了吗? 于是这个问题也解决了.  </p>
+<h3 id="2-3-访问权限问题"><a href="#2-3-访问权限问题" class="headerlink" title="2.3. 访问权限问题"></a>2.3. 访问权限问题</h3><p>旧方法和新方法本质上是存在于两个不同类中的不同方法, 而我们知道方法调用时是有可见性限制的, 那么直接这么替换方法指针, 不会面临权限问题吗?  </p>
+<p>要回答这个问题, 我们仍需要深入虚拟机汇编码. 这里省略汇编码, 直接说结论: 调用同一个类下的其他方法时, 不做权限检查, 但调用其他类中的方法时会有权限检查.  </p>
+<p>这也是可以理解的: 如果要调用的方法本来就在我所处的类中, 那不管它是什么修饰符, 我都可以访问它, 自然就不必检查权限了.  </p>
+<p>而要解决调用其他类方法的问题, 我们就要搞清楚它的权限检查机制. 查阅虚拟机源码后(此处省略数百字), 我们发现它会检查调用方和被调用方是否同一个ClassLoader实例. 在这里, 调用方就是旧方法所在的类, 而被调用方就是新方法所在的类. 因此, 我们只要把新方法所在类的ClassLoader设置成旧方法所在类的ClassLoader, 就可以成功欺骗虚拟机, 通过包权限检查.  </p>
+<h3 id="2-4-反射调用方法"><a href="#2-4-反射调用方法" class="headerlink" title="2.4. 反射调用方法"></a>2.4. 反射调用方法</h3><p>以上类替换的方式, 基本可以满足大部分情况, 但是如果<strong>代码中有通过反射的方式调用经过热修复的非静态方法, 则会因为反射时校验不通过而无法成功, 抛出异常</strong>. 原因是非静态方法通过<code>Method.invoke(object, params)</code>反射调用时, 会检查<code>object</code>这个接收的实例对象, 是否是<code>Method</code>所属类的实例, 而通过热修复替换掉的<code>Method</code>, 其所属类是新方法所在类, 与<code>object</code>所属的旧方法所在类是两个不同的类对象, 因此无法通过检查.  </p>
+<p>静态方法不存在这个问题, 因为静态方法不检查接收的实例对象.  </p>
+<p>方法替换无法解决上述问题, 因此我们需要另辟蹊径, 例如通过冷启动方式解决.  </p>
+<h3 id="2-5-即时生效的限制"><a href="#2-5-即时生效的限制" class="headerlink" title="2.5. 即时生效的限制"></a>2.5. 即时生效的限制</h3><p>上述热修复一直都在说旧方法替换成新方法, 实际上就算仅仅是方法粒度的热修复, 当然也远远不止替换这一种需求场景. 我们往往还需要新增或删除方法或字段.  </p>
+<p>但是上述热修复方案, 无法支持方法或字段的新增或删除. 原因就是上述热修复方法的基本假设: 方法总是连续存储在一个数组中. 事实上, 不仅方法, 字段也是按固定顺序排列在内存结构中的, 如果我们新增或删除了方法, 则相当于打乱了原有的索引顺序. 原先的类对象数据结构中的方法索引, 就无法指向正确的内存地址, 从而造成不可预知的后果.  </p>
+<p>换句话说, 只要是<strong>引起原有类的结构变化的修改, 都不能通过上述即时生效的方案进行热修复</strong>. 如果完全新增一个原来不存在的类, 则没有这个限制.  </p>
+<h2 id="3-从问题说起–so库热修复"><a href="#3-从问题说起–so库热修复" class="headerlink" title="3. 从问题说起–so库热修复"></a>3. 从问题说起–so库热修复</h2><blockquote>
+<p>与class method类似的思想, 将补丁so重新load一遍, 用补丁的方法替换原来load的方法, 从而达到即时生效的热修复效果.  </p>
+</blockquote>
+<h3 id="3-1-so库加载原理"><a href="#3-1-so库加载原理" class="headerlink" title="3.1 so库加载原理"></a>3.1 so库加载原理</h3><p>so(shared object)库, 我在之前的JNI相关文章里已经讲过, 这里简单回顾一下so库的加载原理.<br>在Android中, 目前都是通过文件名的方式找到so文件, 通过mmap方式加载到内存的. 加载完so文件后, 系统会调用<code>JNI_OnLoad</code>方法, 将so中动态注册的方法注册到虚拟机维护的方法数组中, 这样就完成了native方法的动态映射.<br>调用native方法时, 首先会判断是否动态映射, 然后会按照静态映射规则构造静态映射方法名, 查找对应的方法, 如果还没映射则进行静态映射, 当然前提是so已经load到内存中. 如果都没有找到, 就会抛出异常了.  </p>
+<p>静态注册和动态注册的方法, 在映射时机上的区别就在于, 静态注册的方法是在第一次调用时完成映射, 而动态注册的方法则是在so载入内存后通过回调<code>JNI_OnLoad</code>主动完成方法映射.  </p>
+<h3 id="3-2-so库热修复方案"><a href="#3-2-so库热修复方案" class="headerlink" title="3.2 so库热修复方案"></a>3.2 so库热修复方案</h3><p>对so载入原理有了基本认识, 接下来在不同条件下探索一下如何进行热修复.  </p>
+<h4 id="3-2-1-方法热修复实时生效"><a href="#3-2-1-方法热修复实时生效" class="headerlink" title="3.2.1 方法热修复实时生效"></a>3.2.1 方法热修复实时生效</h4><p>要让方法实时生效, 必然需要从内存载入上让补丁so代替原来so发挥作用, 这就需要区别对待静态注册和动态注册的方法.<br>先来看动态注册.<br>很自然的我们想到, 既然动态注册是回调<code>JNI_OnLoad</code>后完成的方法映射, 那么我们只要让补丁so再执行一次<code>JNI_OnLoad</code>, 不就可以覆盖先注册的方法的映射了吗?<br><img src="/images/blogs/动态注册native方法实时生效.png" alt="动态注册修复"><br>实际上是否可行呢? 实测发现, 在Art虚拟机上可以实时生效, 但Dalvik不能实时生效.<br><code>loadLibrary</code>调用的是以下两个native方法:</p>
+<ul>
+<li><code>dlopen()</code>:返回给我们一个动态链接库的句柄</li>
+<li><code>dlsym()</code>: 通过一个<code>dlopen</code>得到的动态连接库句柄，来查找一个symbol</li>
+</ul>
+<p>首先来看下Dalvik虚拟机下面<code>dlopen</code>的实现, 源码在<code>/bionic/linker/dlfcn.cpp</code>文件, 方法调用链路:<code>dlopen-&gt; do_dlopen -&gt; find_library -&gt; find_library_internal</code>.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">static soinfo* find_library_internal(const char* name) &#123;</span><br><span class="line">  soinfo* si = find_loaded_library(name);</span><br><span class="line">  if (si != NULL) &#123; //so库已经加载过</span><br><span class="line">    if (si-&gt;flags &amp; FLAG_LINKED) &#123;</span><br><span class="line">      return si; //直接返回该so库的句柄</span><br><span class="line">    &#125;</span><br><span class="line">    DL_ERR(&quot;OOPS: recursive link to \&quot;%s\&quot;&quot;, si-&gt;name);</span><br><span class="line">    return NULL;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  TRACE(&quot;[ &apos;%s&apos; has not been loaded yet.  Locating...]&quot;, name);</span><br><span class="line">  si = load_library(name); //so库从未加载过, load_library执行加载</span><br><span class="line">  if (si == NULL) &#123;</span><br><span class="line">    return NULL;</span><br><span class="line">  &#125;</span><br><span class="line">  return si;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static soinfo *find_loaded_library(const char *name) &#123;</span><br><span class="line">    soinfo *si;</span><br><span class="line">    const char *bname;</span><br><span class="line"></span><br><span class="line">    // TODO: don&apos;t use basename only for determining libraries</span><br><span class="line">    // http://code.google.com/p/android/issues/detail?id=6670</span><br><span class="line">    bname = strrchr(name, &apos;/&apos;);</span><br><span class="line">    bname = bname ? bname + 1 : name;</span><br><span class="line"></span><br><span class="line">    for (si = solist; si != NULL; si = si-&gt;next) &#123;</span><br><span class="line">        if (!strcmp(bname, si-&gt;name)) &#123;</span><br><span class="line">            return si;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    return NULL;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到, 加载补丁so的时候, 在Dalvik虚拟机上是以basename(而非完整的so路径)作为key来查询是否已经加载过了, 如果表中存在这个basename, 则返回已经加载的句柄. 于是, 加载补丁so时也返回了原so的句柄.<br>知道原因后, 我们尝试将补丁so的basename重命名, 问题解决.  </p>
+<p>但是这样无法修复静态注册的方法.<br>前面说过, 静态注册的方法是在第一次调用时才做映射, 那么如果加载补丁so时, 要修复的静态注册方法已经被调用过了, 则不会再次被映射. 幸运的是, JNI API提供了注销Native方法的接口.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">static jint UnregisterNatives(JNIEnv* env, jclass jclazz) &#123;</span><br><span class="line">    ClassObject* clazz = (ClassObject*) dvmDecodeIndirectRef(ts.self(), jclazz);</span><br><span class="line">    dvmUnregisterJNINativeMethods(clazz);</span><br><span class="line">    return JNI_OK;</span><br><span class="line">&#125;</span><br><span class="line">/*</span><br><span class="line"> * Un-register all JNI native methods from a class.</span><br><span class="line"> */</span><br><span class="line">void dvmUnregisterJNINativeMethods(ClassObject* clazz)&#123;</span><br><span class="line">    unregisterJNINativeMethods(clazz-&gt;directMethods, clazz-&gt;directMethodCount);</span><br><span class="line">    unregisterJNINativeMethods(clazz-&gt;virtualMethods, clazz-&gt;virtualMethodCount);</span><br><span class="line">&#125;</span><br><span class="line">static void unregisterJNINativeMethods(Method* methods, size_t count)&#123;</span><br><span class="line">    while (count != 0) &#123;</span><br><span class="line">        count--;</span><br><span class="line">        Method* meth = &amp;methods[count];</span><br><span class="line">        if (!dvmIsNativeMethod(meth))</span><br><span class="line">            continue;</span><br><span class="line">        if (dvmIsAbstractMethod(meth))      /* avoid abstract method stubs */</span><br><span class="line">            continue;</span><br><span class="line"></span><br><span class="line">        dvmSetNativeFunc(meth, dvmResolveNativeMethod, NULL); //meth-&gt;nativeFunc重新指向dvmResolveNativeMethod</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>UnregisterNatives</code>函数会把<code>jclazz</code>所在类的<strong>所有native方法都重新指向为<code>dvmResolveNativeMethod</code></strong>, 所以调用<code>UnregisterNatives</code>之后不管是静态注册还是动态注册的native方法在加载补丁so的时候都会重新做映射. 这里有个难点就是找到这个正确的<code>jclazz</code>对象, 这里假设我们知道哪个类对象里的native方法需要做修复. 但是测试发现, 在补丁so库重命名的前提下, Java层native方法可能映射到原so库的方法, 也可能映射到补丁so库的新方法.  </p>
+<p>首先静态注册的native方法之前从未执行(或者调用了<code>unregisterJNINativeMethods</code>注销方法), 首先尝试解析该方法. 该方法将指向<code>meth-&gt;nativeFunc = dvmResolveNativeMethod</code>, 那么真正运行该方法的时候, 实际上执行的是<code>dvmResolveNativeMethod</code>函数. 这个函数主要完成java层native方法和native层方法的映射逻辑.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">void dvmResolveNativeMethod(const u4* args, JValue* pResult,</span><br><span class="line">    const Method* method, Thread* self) &#123;</span><br><span class="line">    ClassObject* clazz = method-&gt;clazz;</span><br><span class="line">    .....</span><br><span class="line">    /* now scan any DLLs we have loaded for JNI signatures */</span><br><span class="line">    void* func = lookupSharedLibMethod(method); //调用lookupSharedLibMethod方法, 拿到so库文件对应的native方法函数指针.</span><br><span class="line">    if (func != NULL) &#123;</span><br><span class="line">        /* found it, point it at the JNI bridge and then call it */</span><br><span class="line">        dvmUseJNIBridge((Method*) method, func);</span><br><span class="line">        (*method-&gt;nativeFunc)(args, pResult, method, self);</span><br><span class="line">        return;</span><br><span class="line">    &#125;</span><br><span class="line">    .....</span><br><span class="line"></span><br><span class="line">    dvmThrowUnsatisfiedLinkError(&quot;Native method not found&quot;, method);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static void* lookupSharedLibMethod(const Method* method)&#123;</span><br><span class="line">    return (void*) dvmHashForeach(gDvm.nativeLibs, findMethodInLib,</span><br><span class="line">        (void*) method);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int dvmHashForeach(HashTable* pHashTable, HashForeachFunc func, void* arg)&#123;</span><br><span class="line">    int i, val, tableSize;</span><br><span class="line">    tableSize = pHashTable-&gt;tableSize;</span><br><span class="line"></span><br><span class="line">    for (i = 0; i &lt; tableSize; i++) &#123;</span><br><span class="line">        HashEntry* pEnt = &amp;pHashTable-&gt;pEntries[i];</span><br><span class="line">        if (pEnt-&gt;data != NULL &amp;&amp; pEnt-&gt;data != HASH_TOMBSTONE) &#123;</span><br><span class="line">            val = (*func)(pEnt-&gt;data, arg);</span><br><span class="line">            if (val != 0)</span><br><span class="line">                return val;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>gDvm.nativeLibs</code>是一个全局变量, 它是一个<code>hashtable</code>, 存放着整个虚拟机实例加载so库的SharedLib结构指针. 该变量作为参数传递给<code>dvmHashForeach</code>函数进行<code>hashtable</code>遍历. 执行<code>findMethodInLib</code>函数看是否找到对应的native函数指针, 如果找到就直接短路return, 不再继续查找.</p>
+<p>在虚拟机中大量使用到了<code>hashtable</code>这个数据结构, <code>hashtable</code>的实现源码在<code>dalvik/vm/Hash.h和dalvik/vm/Hash.cpp</code>文件中, 有兴趣可以自行查看源码. <code>hashtable</code>的遍历和插入都是在<code>dvmHashTableLookup</code>方法中实现, 简单说下Java的hashtable和Dalvik的hashtable的异同点:</p>
+<ul>
+<li>共同点: 两者底层都是数组实现, hashtable容量如果超过默认值都会进行扩容, 都是对key进行hash计算然后跟hashtable的长度进行取模作为bucket.</li>
+<li>不同点: Dalvik虚拟机下hashtable put/get操作实现方法, 实际上要比Java的<code>Hashmap</code>实现简单一些. Java <code>Hashmap</code>的put实现需要处理hash冲突的情况, 一般情况下会通过在冲突节点上新增一个链表处理冲突. get实现则会遍历这个链表通过equals方法比较value是否一致进行查找. Davlik的hashtable的put实现上(doAdd=true)只是简单的把指针下移直到下一个空节点. get实现(doAdd=false)首先根据hash值计算出bucket位置, 然后通过<code>cmpFunc</code>函数比较值是否一致, 不一致则指针下移, 这个过程实际就是数组遍历.  </li>
+</ul>
+<p>知道了Davlik下hashtable的实现原理, 那我们再来看下前面提到的: 补丁so库重命名的前提下, 为什么Java层native方法可能映射到原so库的方法也可能映射到补丁so库的新方法? 事实上, 这跟静态方法在hashtable上的顺序有关, 因为先找到的函数指针会生效, 而重命名后的补丁so的方法, 既有可能在原方法前面, 也有可能在其后面. 一张图说明情况<br><img src="/images/blogs/静态注册native方法实时生效.png" alt="静态注册修复"></p>
+<p>小结一下. 补丁so实时生效的条件如下:</p>
+<ul>
+<li>为了兼容Dalvik下动态注册方法的实时生效, 补丁so需要单独命名, 与原so不重名</li>
+<li>so库静态注册的方法要实时生效, 需要在补丁so中先把静态注册方法注销, 强制虚拟机重新映射  </li>
+<li>原so和补丁so会同时存在于内存中</li>
+<li>补丁so不能新增动态注册方法, 否则会因为找不到对应的Java方法而报<code>NoSuchMethodError</code></li>
+</ul>
+<h4 id="3-2-2-冷启动修复生效"><a href="#3-2-2-冷启动修复生效" class="headerlink" title="3.2.2 冷启动修复生效"></a>3.2.2 冷启动修复生效</h4><p>从上一节可以看到, 让so实时生效的限制条件较多. 如果换个思路, 允许冷启动后补丁生效, 又会如何呢?<br>这里又有两种方案, 一是我们自己接管<code>loadLibrary</code>方法, 启动时先从特定路径查找补丁so, 找到则加载补丁so, 否则加载原so. 这个方法的优点是普适性较好, 缺点是so的载入过程我们自己要有控制权, 如果是已经编译打包好的库里的so, 要做修复就无能为力了.<br><img src="/images/blogs/接口调用替换实现.png" alt="接管接口调用"></p>
+<p>为了让冷启动修复能对打包好的第三方so也有修复能力, 我们考虑另一种方案: 与dex修复类似, 将补丁so的路径通过反射的方式插入到so路径数组中原so路径前面, 让补丁so优先加载. 这种方式的缺点是, 不同的系统版本中, 载入so的具体方式可能不同, 需要根据系统版本做适配兼容.<br><img src="/images/blogs/反射注入实现.png" alt="反射注入"></p>
+<h4 id="3-2-3-如何感知客户端abi"><a href="#3-2-3-如何感知客户端abi" class="headerlink" title="3.2.3 如何感知客户端abi"></a>3.2.3 如何感知客户端abi</h4><p>我们知道, 客户端有不同的cpu架构, 对应apk里有不同的abi, 一般来说客户端虚拟机只会在某个特定目录下寻找so, 那么我们在进行so热修复时, 也需要考虑客户端具体用的什么cpu.<br>如何感知客户端的abi呢?<br><img src="/images/blogs/如何选择primaryCpuAbis.png" alt="如何选择abi"></p>
+<ul>
+<li>sdk&gt;=21, 直接反射拿到<code>ApplicationInfo</code>对象的<code>primaryCpuAbi</code>即可</li>
+<li>sdk&lt;21, 由于此时不支持64位, 所以直接把<code>Build.CPU_ABI</code>, <code>Build.CPU_ABI2</code>作为<code>primaryCpuAbi</code>即可</li>
+</ul>
+<h2 id="4-从问题说起–资源热修复"><a href="#4-从问题说起–资源热修复" class="headerlink" title="4. 从问题说起–资源热修复"></a>4. 从问题说起–资源热修复</h2><p>与代码不同, 资源在Android中最后都是被分类打包好的, 并以一个id作为资源指针(我们知道, 编译时会生成一个R文件, 里面就是各种资源对应的编号), 资源映射信息则存储在<code>resources.arsc</code>文件中.<br>资源文件的格式定义在<code>frameworks\base\include\androidfw\ResourceTypes.h</code>, 网上有很多关于这个格式的说明, 这里就不一一讲解了. 我们只要知道, 资源文件信息都在这个文件里就够了.<br>资源热修复, 就是在不需重新安装App的前提下, 利用补丁包的形式将App中的资源更新的技术.<br><img src="/images/blogs/resources_arsc.png" alt="arsc资源格式"></p>
+<h3 id="4-1-Instant-Run-方案"><a href="#4-1-Instant-Run-方案" class="headerlink" title="4.1 Instant Run 方案"></a>4.1 Instant Run 方案</h3><p>Instant Run实现了资源的热修复生效, 目前很多资源热修复方案也是仿照它实现的. 那么它是怎么实现资源热修复的呢?<br>Instant Run资源热修复的核心代码是这个<code>monkeyPatchExistingResources</code>方法:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br></pre></td><td class="code"><pre><span class="line">@com/android/tools/fd/runtime/MonkeyPatcher.java</span><br><span class="line"></span><br><span class="line">public static void monkeyPatchExistingResources(@Nullable Context context,</span><br><span class="line">                                                    @Nullable String externalResourceFile,</span><br><span class="line">                                                    @Nullable Collection&lt;Activity&gt; activities) &#123;</span><br><span class="line"></span><br><span class="line">    if (externalResourceFile == null) &#123;</span><br><span class="line">        return;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    try &#123;</span><br><span class="line">        // %% Part 1. 创建一个新的AssetManager，并通过反射调用addAssetPath添加/sdcard上的新资源包.</span><br><span class="line">        //         这样就构造出了一个带新资源的AssetManager</span><br><span class="line">        // Create a new AssetManager instance and point it to the resources installed under</span><br><span class="line">        // /sdcard</span><br><span class="line">        AssetManager newAssetManager = AssetManager.class.getConstructor().newInstance();</span><br><span class="line">        Method mAddAssetPath = AssetManager.class.getDeclaredMethod(&quot;addAssetPath&quot;, String.class);</span><br><span class="line">        mAddAssetPath.setAccessible(true);</span><br><span class="line">        if (((Integer) mAddAssetPath.invoke(newAssetManager, externalResourceFile)) == 0) &#123;</span><br><span class="line">            throw new IllegalStateException(&quot;Could not create new AssetManager&quot;);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        // Kitkat needs this method call, Lollipop doesn&apos;t. However, it doesn&apos;t seem to cause any harm</span><br><span class="line">        // in L, so we do it unconditionally.</span><br><span class="line">        Method mEnsureStringBlocks = AssetManager.class.getDeclaredMethod(&quot;ensureStringBlocks&quot;);</span><br><span class="line">        mEnsureStringBlocks.setAccessible(true);</span><br><span class="line">        mEnsureStringBlocks.invoke(newAssetManager);</span><br><span class="line"></span><br><span class="line">        // %% Part 2. 反射得到Activity中AssetManager的引用处，全部换成刚才新构建的newAssetManager</span><br><span class="line">        if (activities != null) &#123;</span><br><span class="line">            for (Activity activity : activities) &#123;</span><br><span class="line">                Resources resources = activity.getResources();</span><br><span class="line"></span><br><span class="line">                try &#123;</span><br><span class="line">                    Field mAssets = Resources.class.getDeclaredField(&quot;mAssets&quot;);</span><br><span class="line">                    mAssets.setAccessible(true);</span><br><span class="line">                    mAssets.set(resources, newAssetManager);</span><br><span class="line">                &#125; catch (Throwable ignore) &#123;</span><br><span class="line">                    Field mResourcesImpl = Resources.class.getDeclaredField(&quot;mResourcesImpl&quot;);</span><br><span class="line">                    mResourcesImpl.setAccessible(true);</span><br><span class="line">                    Object resourceImpl = mResourcesImpl.get(resources);</span><br><span class="line">                    Field implAssets = resourceImpl.getClass().getDeclaredField(&quot;mAssets&quot;);</span><br><span class="line">                    implAssets.setAccessible(true);</span><br><span class="line">                    implAssets.set(resourceImpl, newAssetManager);</span><br><span class="line">                &#125;</span><br><span class="line">                    ... ...</span><br><span class="line"></span><br><span class="line">                pruneResourceCaches(resources);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        // %% Part 3. 得到Resources的弱引用集合，把他们的AssetManager成员替换成newAssetManager</span><br><span class="line">        // Iterate over all known Resources objects</span><br><span class="line">        Collection&lt;WeakReference&lt;Resources&gt;&gt; references;</span><br><span class="line">        if (SDK_INT &gt;= KITKAT) &#123;</span><br><span class="line">            // Find the singleton instance of ResourcesManager</span><br><span class="line">            Class&lt;?&gt; resourcesManagerClass = Class.forName(&quot;android.app.ResourcesManager&quot;);</span><br><span class="line">            Method mGetInstance = resourcesManagerClass.getDeclaredMethod(&quot;getInstance&quot;);</span><br><span class="line">            mGetInstance.setAccessible(true);</span><br><span class="line">            Object resourcesManager = mGetInstance.invoke(null);</span><br><span class="line">            try &#123;</span><br><span class="line">                Field fMActiveResources = resourcesManagerClass.getDeclaredField(&quot;mActiveResources&quot;);</span><br><span class="line">                fMActiveResources.setAccessible(true);</span><br><span class="line">                @SuppressWarnings(&quot;unchecked&quot;)</span><br><span class="line">                ArrayMap&lt;?, WeakReference&lt;Resources&gt;&gt; arrayMap =</span><br><span class="line">                        (ArrayMap&lt;?, WeakReference&lt;Resources&gt;&gt;) fMActiveResources.get(resourcesManager);</span><br><span class="line">                references = arrayMap.values();</span><br><span class="line">            &#125; catch (NoSuchFieldException ignore) &#123;</span><br><span class="line">                Field mResourceReferences = resourcesManagerClass.getDeclaredField(&quot;mResourceReferences&quot;);</span><br><span class="line">                mResourceReferences.setAccessible(true);</span><br><span class="line">                //noinspection unchecked</span><br><span class="line">                references = (Collection&lt;WeakReference&lt;Resources&gt;&gt;) mResourceReferences.get(resourcesManager);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; else &#123;</span><br><span class="line">            Class&lt;?&gt; activityThread = Class.forName(&quot;android.app.ActivityThread&quot;);</span><br><span class="line">            Field fMActiveResources = activityThread.getDeclaredField(&quot;mActiveResources&quot;);</span><br><span class="line">            fMActiveResources.setAccessible(true);</span><br><span class="line">            Object thread = getActivityThread(context, activityThread);</span><br><span class="line">            @SuppressWarnings(&quot;unchecked&quot;)</span><br><span class="line">            HashMap&lt;?, WeakReference&lt;Resources&gt;&gt; map =</span><br><span class="line">                    (HashMap&lt;?, WeakReference&lt;Resources&gt;&gt;) fMActiveResources.get(thread);</span><br><span class="line">            references = map.values();</span><br><span class="line">        &#125;</span><br><span class="line">        for (WeakReference&lt;Resources&gt; wr : references) &#123;</span><br><span class="line">            Resources resources = wr.get();</span><br><span class="line">            if (resources != null) &#123;</span><br><span class="line">                // Set the AssetManager of the Resources instance to our brand new one</span><br><span class="line">                try &#123;</span><br><span class="line">                    Field mAssets = Resources.class.getDeclaredField(&quot;mAssets&quot;);</span><br><span class="line">                    mAssets.setAccessible(true);</span><br><span class="line">                    mAssets.set(resources, newAssetManager);</span><br><span class="line">                &#125; catch (Throwable ignore) &#123;</span><br><span class="line">                    Field mResourcesImpl = Resources.class.getDeclaredField(&quot;mResourcesImpl&quot;);</span><br><span class="line">                    mResourcesImpl.setAccessible(true);</span><br><span class="line">                    Object resourceImpl = mResourcesImpl.get(resources);</span><br><span class="line">                    Field implAssets = resourceImpl.getClass().getDeclaredField(&quot;mAssets&quot;);</span><br><span class="line">                    implAssets.setAccessible(true);</span><br><span class="line">                    implAssets.set(resourceImpl, newAssetManager);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                resources.updateConfiguration(resources.getConfiguration(), resources.getDisplayMetrics());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; catch (Throwable e) &#123;</span><br><span class="line">        throw new IllegalStateException(e);</span><br><span class="line">    &#125;&#125;</span><br></pre></td></tr></table></figure>
+<p>总体思路是分为两步:  </p>
+<ol>
+<li>构造一个新的<code>AssetManager</code>, 通过反射调用<code>addAssetPath</code>, 将包含补丁资源的完整资源包路径加入到新的<code>AssetManager</code>中.  </li>
+<li>找到原应用中引用<code>AssetManager</code>的所有地方, 通过反射替换成新的<code>AssetManager</code>.  </li>
+</ol>
+<p>这里面关键的步骤自然是<code>addAssetPath</code>方法调用. 这个方法最终会调用Native方法, 对传入的资源包中的<code>resource.arsc</code>文件进行解析. 调用路径大概是这样<code>addAssetPath -&gt; jni:: android_content_AssetManager_addAssetPath -&gt; AssetManager::addAssetPath -&gt; AssetManager::appendPathToResTable -&gt; ResTable::add -&gt; ResTable::addInternal -&gt; ResTable::parsePackage</code>.<br>最后对文件进行解析的部分, 可以参考上述的文件格式定义.<br>举个例子，我们随便找个带资源的apk, 用aapt解析一下, 看到其中的一行是:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ aapt d resources app-debug.apk</span><br><span class="line"></span><br><span class="line">... ...</span><br><span class="line">      spec resource 0x7f040019 com.taobao.patch.demo:layout/activity_main: flags=0x00000000</span><br><span class="line">... ...</span><br></pre></td></tr></table></figure>
+<p>这就表示, <code>activity_main.xml</code>这个资源的编号是<code>0x7f040019</code>, 它的<code>package id</code>是<code>0x7f</code>, 资源类型的id为<code>0x04</code>, <code>Type String Pool</code>里的第四个字符串正是<code>layout</code>类型, 而0x04类型的第<code>0x0019</code>个资源项就是<code>activity_main</code>这个资源. </p>
+<p>默认由Android SDK编出来的apk, 是由aapt工具进行打包的, 其资源包的<code>package id</code>就是<code>0x7f</code>. </p>
+<p>系统的资源包, 也就是<code>framework-res.jar</code>, <code>package id</code>为<code>0x01</code>.  </p>
+<p>在走到app的第一行代码之前, 系统就已经帮我们构造好一个已经添加了系统资源和安装包资源的<code>AssetManager</code>了.  </p>
+<p>如果我们不替换<code>AssetManager</code>, 而是在原来的<code>AssetManager</code>上直接添加补丁资源包路径, 会发生什么呢?<br>由于默认情况下, 补丁包的<code>package id</code>也是<code>0x7f</code>, 这就使得同一个<code>package id</code>的资源会被加载两次(原包一次, 补丁包一次).<br>在Android L之后, 这样直接添加是没问题的, 系统会默默地把后来的包添加到之前的包的同一个<code>PackageGroup</code>下面.<br>在资源解析的时候, 会与之前的包比较同一个type id所对应的类型, 如果该类型下的资源项数目和之前添加过的不一致, 会打出一条warning log, 但是仍旧加入到该类型的<code>TypeList</code>中. 这就完成了资源添加.<br>但是在获取某个类型的资源的时候, 是从前往后遍历资源列表, 也就是说会先访问原安装包中的资源, 除非后面资源的config比前面更详细, 对于相同config的资源, 靠后位置的补丁包资源就无法载入了. 也就是说, 这种补丁包直接添加到原<code>AssetManager</code>的方式, 在Android L以上无法生效.  </p>
+<p>Andorid KitKat以下, <code>AssetManager</code>解析资源的时机稍有不同. <code>addAssetPath</code>只是把资源路径添加到成员变量中, 只有在app第一次执行<code>AssetManager::getResTable</code>的时候才进行资源包解析. 也即是说, 我们调用<code>addAssetPath</code>添加补丁资源包, 并不会触发资源包解析动作. 而<code>AssetManager::getResTable</code>方法, 可能此时已经被Android Framework调用过无数次了. 所以新添加的补丁资源包, 根本不会解析到内存中.  </p>
+<p>综上, 以Instant Run为例的资源热修复方案, 必须要用一个全新的<code>AssetManager</code>来替换原来的<code>AssetManager</code>, 才能达到热修复效果.  </p>
+<h3 id="4-2-sophix阿里百川"><a href="#4-2-sophix阿里百川" class="headerlink" title="4.2 sophix阿里百川"></a>4.2 sophix阿里百川</h3><p>和其他热修复一样, 一个好的资源热修复方案, 应该有以下几个目标: </p>
+<ul>
+<li>补丁包足够小. 下发完整资源包的方式, 当然也能完成布热修复, 但肯定不是一个好选择.  </li>
+<li>补丁方式简单, 兼容性强. 有些方案是用diff工具打出补丁包, 再在本地合成一个完整资源包. 这样在本地合成这一步就较为复杂, 且增加客户端负担.</li>
+<li>避免侵入正常打包流程. 有些方案是修改aapt工具, 通过给补丁包资源重新编号的方式, 完成补丁包生成. 这样涉及到修改aapt, 并不通用, 还涉及aapt升级的问题.  </li>
+</ul>
+<p>对于Android L以上的系统. 我们可以构造一个<code>package id</code>为<code>0x66</code>(只要在<code>0x7f</code>之前, 在<code>0x01</code>之后, 理论上都行)的补丁资源包, 这个包里只包含<strong>改变了</strong>的资源项. 然后将这个资源包通过<code>addAssetPath</code>添加到原包的<code>AssetManager</code>中, 理论上就可以了.  </p>
+<p>改变了的资源有以下情况:  </p>
+<ul>
+<li>新增资源. 新增资源, 直接放到补丁包中就可以了, 因为只有补丁包的代码才可能引用到新增资源.  </li>
+<li>删除资源. 删除资源, 只要补丁包中不引用资源就可以了, 不用考虑主动删除.  </li>
+<li>资源修改. 例如资源替换, 这个可以视作新增资源, 只要把代码里原有的引用该资源id的地方, 全部替换为引用新资源id即可.  </li>
+</ul>
+<p><img src="/images/blogs/resource_patch.png" alt="resource_patch"><br>绿色: 新增资源;<br>红色: 内容改变的资源;<br>黑色: 资源id发生改变的资源;<br>✘: 删除的资源;  </p>
+<p>图里的id值存在错误, 将就看吧.  </p>
+<ul>
+<li>新增资源. 可以看到新增的资源会导致资源所在type里, 它后面的资源id发生位移. 由于新增资源插入的相对位置是随机的, 所以哪些资源会发生id位移也跟具体的aapt解析xml顺序有关. id发生位移的资源, 在补丁包的代码里对其的引用, 需要相应恢复原来的id. 例如图中对于同一个资源<code>R.drawable.holo_light</code>, 原包id是<code>0x7f020002</code>, 补丁包中的代码里, 引用id会变成<code>0x7f020003</code>, 实际上这个资源并没发生改变, 因此在生成代码补丁包的过程中, 新包对这个资源的引用应该修正恢复成<code>0x7f020002</code>再来进行新旧包比较, 这样避免将没有发生实质改变(仅仅id改变)的资源引用也计算到代码补丁包中.  </li>
+<li>删除资源. 删除资源由于在新包中不会有引用, 故不影响补丁包的生成. </li>
+<li>资源修改. 对于内容发生改变的资源(类型为layout的<code>activity_main</code>, 这可能是我们修改了<code>activity_main.xml</code>的文件内容), 它们都会被加入到patch中, 并重新编号为新id. 这样一来, 原来代码中<code>setContentView(R.layout.activity_main);</code>(实际上等价于<code>setContentView(0x7f030000);</code>), 在对比新旧代码生成代码补丁之前, 我们应该把新包里面的这行代码的资源id替换为补丁id, 即<code>setContentView(0x66020000);</code>. 这样, 在进行代码对比时, 会检测到这行代码所在函数发生了改变, 于是生成相应的修复代码, 引用到补丁包中正确的新资源.  </li>
+</ul>
+<p>由于type<code>0x01</code>的所有资源项都没有变化, 所以整个type<code>0x01</code>资源都没有加入到patch中. 这也使得后面的type的id都往前移了一位. 因此资源文件中<code>Type String Pool</code>中的字符串也要进行修正, 这样才能使得<code>0x01</code>的type指向<code>drawable</code>, 而不是原来的<code>attr</code>.  </p>
+<p>以上做法, 将运行时应用patch变的简单了, 真正复杂的地方在于构造patch. 我们需要把新旧两个资源包解开, 分别解析其中的<code>resources.arsc</code>文件, 对比新旧的不同, 并将它们重新打成带有新<code>package id</code>的补丁资源包. 构造这样的补丁资源包, 需要对整个<code>resources.arsc</code>的结构十分了解, 要对二进制形式的一个一个chunk进行解析分类, 然后再把补丁信息一个一个重新组装成二进制的chunk, 这是一个相当繁琐的工作, 好在网上已经有相关开源工具帮我们完成解析这一步. 这里面很多工作与aapt做的类似, 开发打包工具时可以参考aapt和系统加载资源的代码.  </p>
+<p>上面说了, 对于Android L以上的系统可以直接通过原有的<code>AssetManager</code>完成热修复, 但是Android Kitkat及以下版本, 并不会触发重新解析资源包的逻辑, 那我们应该怎么做呢? 难道要不可避免走上Instant Run的路子吗?<br>事实上, 我们可以主动原地置换<code>AssetManager</code>, 通过<code>Java: AssetManager.destroy()</code>方法将Native端资源析构, 再通过<code>Java: AssetManager.init()</code>方法创建一个全新Native实例, 此时这个全新实例会直接设置到当前<code>AssetManager</code>对象上, 这样我们就完成了<code>AssetManager</code>的原地置换, 得到了一个未经初始化的全新的<code>AssetManager</code>, 此时我们只需对它用补丁包进行<code>addAssetPath</code>, 之后由于<code>mResource</code>没有初始化过, 就可以正常走到解析<code>mResources</code>的逻辑, 加载所有已经add进去的资源了.  </p>
+<p>这个方案的实现代码:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">    Method initMeth = assetManagerMethod(&quot;init&quot;);</span><br><span class="line">    Method destroyMeth = assetManagerMethod(&quot;destroy&quot;);</span><br><span class="line">    Method addAssetPathMeth = assetManagerMethod(&quot;addAssetPath&quot;, String.class);</span><br><span class="line"></span><br><span class="line">    // %% 析构AssetManager</span><br><span class="line">    destroyMeth.invoke(am);</span><br><span class="line"></span><br><span class="line">    // %% 重新构造AssetManager</span><br><span class="line">    initMeth.invoke(am);</span><br><span class="line"></span><br><span class="line">    // %% 置空mStringBlocks</span><br><span class="line">    assetManagerField(&quot;mStringBlocks&quot;).set(am, null);</span><br><span class="line"></span><br><span class="line">    // %% 重新添加原有AssetManager中加载过的资源路径</span><br><span class="line">    for (String path : loadedPaths) &#123;</span><br><span class="line">        LogTool.d(TAG, &quot;pexyResources&quot; + path);</span><br><span class="line">        addAssetPathMeth.invoke(am, path);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // %% 添加patch资源路径</span><br><span class="line">    addAssetPathMeth.invoke(am, patchPath);</span><br><span class="line"></span><br><span class="line">    // %% 重新对mStringBlocks赋值</span><br><span class="line">    assetManagerMethod(&quot;ensureStringBlocks&quot;).invoke(am);</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">private Method assetManagerMethod(String name, Class&lt;?&gt;... parameterTypes) &#123;</span><br><span class="line">   try &#123;</span><br><span class="line">       Method meth = Class.forName(&quot;android.content.res.AssetManager&quot;)</span><br><span class="line">                        .getDeclaredMethod(name, parameterTypes);</span><br><span class="line">       meth.setAccessible(true);</span><br><span class="line">       return meth;</span><br><span class="line">   &#125; catch (Exception e) &#123;</span><br><span class="line">       LogTool.e(TAG, &quot;assetManagerMethod&quot;, e);</span><br><span class="line">       return null;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">private Field assetManagerField(String name) &#123;</span><br><span class="line">    try &#123;</span><br><span class="line">        Field field = mAssetManagerClass.getDeclaredField(name);</span><br><span class="line">        field.setAccessible(true);</span><br><span class="line">        return field;</span><br><span class="line">    &#125; catch (Exception e) &#123;</span><br><span class="line">        LogTool.e(TAG, &quot;assetManagerField&quot;, e);</span><br><span class="line">        return null;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里需要注意的地方是<code>mStringBlocks</code>, 它记录了之前加载过的所有资源包的<code>String Pool</code>, 因此很多时候访问字符串是通过它来找到的, 如果不进行重新构造, 在后面使用到它时就会导致崩溃.<br>资源修改必然伴随资源引用, 所以是无法脱离代码热修复而单独存在的.  </p>
+<h2 id="5-参考"><a href="#5-参考" class="headerlink" title="5. 参考"></a>5. 参考</h2><p>主要参考了阿里云上的系列公开文档.<br><a href="https://yq.aliyun.com/articles/115122" target="_blank" rel="noopener">安卓热修复宝典</a><br><a href="https://yq.aliyun.com/articles/74598" target="_blank" rel="noopener">代码热替换</a><br><a href="https://yq.aliyun.com/articles/96378" target="_blank" rel="noopener">资源更新之新思路</a><br><a href="https://yq.aliyun.com/articles/107396" target="_blank" rel="noopener">Dalvik下冷启动修复的新探索</a>  </p>
+<p>另外还参考了如下资料.  </p>
+<ol>
+<li>自己以前的系列文章</li>
+<li>简书上的相关文章. <ul>
+<li><a href="https://www.jianshu.com/p/9e5a1ef72c08" target="_blank" rel="noopener">https://www.jianshu.com/p/9e5a1ef72c08</a></li>
+<li><a href="https://www.jianshu.com/p/1347c782582d" target="_blank" rel="noopener">https://www.jianshu.com/p/1347c782582d</a></li>
+</ul>
+</li>
+</ol>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/android/">android</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/android/">android</a><a href="/tags/hotfix/">hotfix</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://hjhjw1991.github.io/android/2019/05/29/再论热修复-sophix热修复思想/" data-title="再论热修复-sophix热修复思想 | hjhjw1991&#39;s blog" data-tsina="1304671950" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+
+<div class="next">
+<a href="/android/2018/06/13/Android-9.0变化/" title="Android 9.0变化">
+ <strong>下一篇：</strong><br> 
+ <span>Android 9.0变化
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-热修复面临的问题"><span class="toc-number">1.</span> <span class="toc-text">1. 热修复面临的问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-从问题说起–热修复即时生效"><span class="toc-number">2.</span> <span class="toc-text">2. 从问题说起–热修复即时生效</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-虚拟机调用方法原理"><span class="toc-number">2.1.</span> <span class="toc-text">2.1. 虚拟机调用方法原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-兼容性问题"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 兼容性问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-访问权限问题"><span class="toc-number">2.3.</span> <span class="toc-text">2.3. 访问权限问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-反射调用方法"><span class="toc-number">2.4.</span> <span class="toc-text">2.4. 反射调用方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-即时生效的限制"><span class="toc-number">2.5.</span> <span class="toc-text">2.5. 即时生效的限制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-从问题说起–so库热修复"><span class="toc-number">3.</span> <span class="toc-text">3. 从问题说起–so库热修复</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-so库加载原理"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 so库加载原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-so库热修复方案"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 so库热修复方案</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-1-方法热修复实时生效"><span class="toc-number">3.2.1.</span> <span class="toc-text">3.2.1 方法热修复实时生效</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-2-冷启动修复生效"><span class="toc-number">3.2.2.</span> <span class="toc-text">3.2.2 冷启动修复生效</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-3-如何感知客户端abi"><span class="toc-number">3.2.3.</span> <span class="toc-text">3.2.3 如何感知客户端abi</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-从问题说起–资源热修复"><span class="toc-number">4.</span> <span class="toc-text">4. 从问题说起–资源热修复</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Instant-Run-方案"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 Instant Run 方案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-sophix阿里百川"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 sophix阿里百川</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-参考"><span class="toc-number">5.</span> <span class="toc-text">5. 参考</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+<div class="github-card">
+<p class="asidetitle">Github 名片</p>
+<div class="github-card" data-github="hjhjw1991" data-width="220" data-height="119" data-theme="medium">
+<script type="text/javascript" src="//cdn.jsdelivr.net/github-cards/latest/widget.js"></script>
+</div>
+  </div>
+
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/android/" title="android">android<sup>27</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/blog/" title="blog">blog<sup>15</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/leetcode/" title="leetcode">leetcode<sup>9</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/opinion/" title="opinion">opinion<sup>4</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/tips/" title="tips">tips<sup>4</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/android/" title="android">android<sup>28</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/guide/" title="guide">guide<sup>21</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/git/" title="git">git<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/interview/" title="interview">interview<sup>7</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/Java/" title="Java">Java<sup>4</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/windows/" title="windows">windows<sup>3</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/jekyll/" title="jekyll">jekyll<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vps/" title="vps">vps<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ssh/" title="ssh">ssh<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/vpn/" title="vpn">vpn<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/python/" title="python">python<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/regex/" title="regex">regex<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/mac/" title="mac">mac<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/uwsgi/" title="uwsgi">uwsgi<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/ios/" title="ios">ios<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/linux/" title="linux">linux<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/hotfix/" title="hotfix">hotfix<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://google.com" target="_blank" title="Google">Google</a>
+            
+          </li>
+        
+          <li>
+            
+            	<a href="https://www.goldenfrog.com/vyprvpn/refer-a-friend/get-a-free-month?ar=8betlkaq2h638_1" target="_blank" title="VyprVPN">VyprVPN</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+  
+
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+  <div class="weiboshow">
+  <p class="asidetitle">新浪微博</p>
+    <iframe width="100%" height="120" class="share_self" frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=1&isTitle=1&noborder=1&isWeibo=0&isFans=0&uid=1304671950&verifier=64e7ae81&dpc=1"></iframe>
+</div>
+
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer">
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> Hello ,I&#39;m Huang Jun. <br>
+			This is my blog.</p>
+	</section>
+	 
+	<div class="social-font">
+		
+		<a href="http://weibo.com/1304671950" target="_blank" class="icon-weibo" title="微博"></a>
+		
+		
+		<a href="https://github.com/hjhjw1991" target="_blank" class="icon-github" title="github"></a>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		<a href="mailto:hjhjw1991@gmail.com" target="_blank" class="icon-email" title="Email Me"></a>
+		
+	</div>
+			
+		
+
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2019 
+		
+		<a href="/about" target="_blank" title="hjhjw1991">hjhjw1991</a>
+		
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'hjhjw1991';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?cd0e561542c22cc83da2e311ec57da84";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>
